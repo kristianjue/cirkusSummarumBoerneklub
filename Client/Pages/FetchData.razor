@@ -1,65 +1,135 @@
 ﻿@page "/fetchdata"
-@inject HttpClient Http
+@using Client.Model
 
-<PageTitle>Weather forecast</PageTitle>
+<div class="admin-dashboard">
+    <div class="top-sections">
+        <div class="section">
+            <h3>Applikationer</h3>
+            @foreach (var app in applications)
+            {
+                <div draggable="true" @ondragstart="@(() => StartDrag(app))" class="application">
+                    @app.Id @app.Status
+                </div>
+            }
+        </div>
 
-<h1>Administrator</h1>
+        <div class="week-sections">
+            @foreach (var week in new[] { "Uge 27", "Uge 28" })
+            {
+                <div class="section">
+                    <h3>@week</h3>
+                    <div class="sub-section" @ondrop="@(e => Drop(e, week + " Ons-Søn"))" @ondragover="AllowDrop">
+                        <h4>Ons-Søn</h4>
+                    </div>
+                    <div class="sub-section" @ondrop="@(e => Drop(e, week + " Ons-Fre"))" @ondragover="AllowDrop">
+                        <h4>Ons-Fre</h4>
+                    </div>
+                    <div class="sub-section" @ondrop="@(e => Drop(e, week + " Lør-Søn"))" @ondragover="AllowDrop">
+                        <h4>Lør-Søn</h4>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
 
-<style>
-#div1, #div2 {
-  float: left;
-  width: 100px;
-  height: 35px;
-  margin: 10px;
-  padding: 10px;
-  border: 1px solid black;
-}
-</style>
-<script>
-function allowDrop(ev) {
-  ev.preventDefault();
-}
+    <div class="bottom-sections">
+        <div class="section">
+            <h3>Venteliste</h3>
+            <div @ondrop="@(e => Drop(e, "Venteliste"))" @ondragover="AllowDrop" class="drop-zone">
+            </div>
+        </div>
 
-function drag(ev) {
-  ev.dataTransfer.setData("text", ev.target.id);
-}
-
-function drop(ev) {
-  ev.preventDefault();
-  var data = ev.dataTransfer.getData("text");
-  ev.target.appendChild(document.getElementById(data));
-}
-</script>
-<body>
-
-<h2>Drag and Drop</h2>
-<p>Drag the image back and forth between the two div elements.</p>
-
-<div id="div1" ondrop="drop(event)" ondragover="allowDrop(event)">
-  <img src="img_w3slogo.gif" draggable="true" ondragstart="drag(event)" id="drag1" width="88" height="31">
+        <div class="section">
+            <h3>Afvist</h3>
+            <div @ondrop="@(e => Drop(e, "Afvist"))" @ondragover="AllowDrop" class="drop-zone">
+            </div>
+        </div>
+    </div>
 </div>
 
-<div id="div2" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
-
-</body>
 
 @code {
-    private WeatherForecast[]? forecasts;
+    List<ApplicationModel> applications = new List<ApplicationModel>();
+    ApplicationModel currentDraggedItem;
 
     protected override async Task OnInitializedAsync()
     {
-        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json");
+        applications = new List<ApplicationModel>
+        {
+            new ApplicationModel { Id = "Daniel", Status = "uge 28" },
+            new ApplicationModel { Id = "Sofie", Status = "uge 27" },
+            new ApplicationModel { Id = "Markus", Status = "Uge 28" },
+            new ApplicationModel { Id = "Mikkel", Status = "Uge 27" },
+            new ApplicationModel { Id = "Hassan", Status = "Uge 28" },
+            new ApplicationModel { Id = "Abdi", Status = "Uge 27" },
+            new ApplicationModel { Id = "Laura", Status = "Uge 28" },
+            new ApplicationModel { Id = "Susanne", Status = "Uge 27" }
+        };
     }
 
-    public class WeatherForecast
+    void StartDrag(ApplicationModel app)
     {
-        public DateOnly Date { get; set; }
-
-        public int TemperatureC { get; set; }
-
-        public string? Summary { get; set; }
-
-        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+        currentDraggedItem = app;
     }
 
+    void Drop(DragEventArgs e, string newStatus)
+    {
+        if (currentDraggedItem != null)
+        {
+            applications.Remove(currentDraggedItem);
+            currentDraggedItem.Status = newStatus;
+            applications.Add(currentDraggedItem);
+            StateHasChanged(); // Opdater UI
+        }
+    }
+
+    void AllowDrop(DragEventArgs e)
+    {
+       // e.PreventDefault(); // Dette kan være nødvendigt for at tillade drop handlinger
+    }
 }
+
+
+<style>
+    .admin-dashboard {
+        display: flex;
+        flex-direction: column; /* Styrer den overordnede flex retning til kolonne */
+    }
+
+    .top-sections {
+        display: flex;
+        justify-content: space-around;
+    }
+
+    .week-sections {
+        display: flex;
+        justify-content: space-around;
+        flex-grow: 1; /* Giver ugerne plads til at udvide sig indenfor toppen sektioner */
+    }
+
+    .bottom-sections {
+        display: flex;
+        justify-content: space-around;
+    }
+
+    .section, .sub-section {
+        flex: 1;
+        padding: 10px;
+        min-width: 150px;
+    }
+
+    .drop-zone, .sub-section {
+        border: 1px dashed gray;
+        min-height: 150px;
+        padding: 10px;
+        background-color: #f9f9f9;
+    }
+
+    .application {
+        padding: 5px;
+        border: 1px solid lightgray;
+        margin-bottom: 5px;
+        background-color: white;
+    }
+
+</style>
