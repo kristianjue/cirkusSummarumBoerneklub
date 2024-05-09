@@ -1,0 +1,230 @@
+﻿@page "/tilmelding"
+
+<PageTitle>Tilmelding</PageTitle>
+
+<div style="text-align: center; margin-bottom: 50px">
+<h1>Tilmelding</h1>
+<p>Her kan du tilmelde børn til børnepasning. Det er vigtigt at du selv er tilmeldt den/de uger hvor du ansøger om at få dit/dine børn passet. Hvis i f.eks. har mulighed for at deltage i enten 28 eller 29 skal du være tilmeldt begge uger som forældre i krævet.dk og herefter kan du ansøge om pasning med 1. og 2. prioritet. Kan du f.eks. kun i uge 28, vælger du ikke en anden prioritet.</p>
+</div>
+<h3>Forældre:</h3>
+
+<div class="row" style="margin-bottom: 30px">
+    <div class="col-md-6 mb-3">
+        <label for="fullName">Fulde navn</label>
+        <input type="text" class="form-control" id="fullName">
+    </div>
+    <div class="col-md-6 mb-3">
+        <label for="email">Email</label>
+        <input type="email" class="form-control" id="email">
+    </div>
+    <div class="col-md-6 mb-3">
+        <label for="phoneNumber">Telefonnummer</label>
+        <input type="text" class="form-control" id="phoneNumber">
+    </div>
+    <div class="col-md-6 mb-3">
+        <label for="memberNumber">Krævnummer</label>
+        <input type="text" class="form-control" id="memberNumber">
+    </div>
+</div>
+
+@if(ekstraKid == false)
+{
+    <h3>Barn:</h3>
+}
+else {
+    <h3>Barn 1:</h3>
+}
+    
+<div class="row" style="margin-bottom: 30px">
+    <div class="col-md-3 mb-3">
+        <label for="kidName">Barnets navn</label>
+        <input type="text" class="form-control" id="kidName">
+    </div>
+    <div class="col-md-3 mb-3">
+        <label for="kidAge">Alder</label>
+        <select type="text" class="form-control" id="kidAge">
+            <option value="5">5 år</option>
+            <option value="6">6 år</option>
+            <option value="7">7 år</option>
+            <option value="8">8 år</option>
+            <option value="9">9 år</option>
+            <option value="10">10 år</option>
+            <option value="11">11 år</option>
+            <option value="12">12 år</option>
+            <option value="13">13 år</option>
+            <option value="14">14 år</option>
+            <option value="15">15 år</option>
+        </select>
+    </div>
+    <div class="col-md-3 mb-3">
+        <label for="kidSize">T-shirt størrelse</label>
+        <select type="text" class="form-control" id="kidSize">
+            <option value="XXS">XXS</option>
+            <option value="XS">XS</option>
+            <option value="S">S</option>
+            <option value="M">M</option>
+            <option value="L">L</option>
+            <option value="XL">XL</option>
+        </select>
+    </div>
+    <div class="col-md-3 mb-3">
+        <label for="beenThereBefore">Har været med før?</label>
+        <select type="text" class="form-control" id="beenThereBefore">
+            <option value="Nej">Nej</option>
+            <option value="Ja">Ja</option>
+        </select>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label for="comment">Kommentar</label>
+        <textarea type="text" class="form-control" id="comment"></textarea>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label for="interests">Interresser</label>
+        <textarea type="text" class="form-control" id="interests"></textarea>
+    </div>
+    <div class="row">
+        <div class="col-3"></div>
+        <div class="col-6">
+            <h4 style="text-align: center;margin-bottom: 10px;margin-top: 10px">Underskrift</h4>
+            <SignaturePad @bind-Value="SignatureForKid1" style="width: 100%;background-color: #F7F7F7"/>
+        </div>
+    </div>
+</div>
+
+@if (ekstraKid == false)
+{
+    <div style="margin-bottom: 50px">
+        <button type="submit" class="btn btn-secondary" @onclick="addKid" style="margin-top: 10px">Tilføj barn</button>
+    </div> 
+}
+
+@if (ekstraKid == true)
+{
+    <h3>Barn 2:</h3>
+    <div class="row" style="margin-bottom: 30px">
+        <div class="col-md-3 mb-3">
+            <label for="kidName">Barnets navn</label>
+            <input type="text" class="form-control" id="kidName">
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="kidAge">Alder</label>
+            <select type="text" class="form-control" id="kidAge">
+                <option value="5">5 år</option>
+                <option value="6">6 år</option>
+                <option value="7">7 år</option>
+                <option value="8">8 år</option>
+                <option value="9">9 år</option>
+                <option value="10">10 år</option>
+                <option value="11">11 år</option>
+                <option value="12">12 år</option>
+                <option value="13">13 år</option>
+                <option value="14">14 år</option>
+                <option value="15">15 år</option>
+            </select>
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="kidSize">T-shirt størrelse</label>
+            <select type="text" class="form-control" id="kidSize">
+                <option value="XXS">XXS</option>
+                <option value="XS">XS</option>
+                <option value="S">S</option>
+                <option value="M">M</option>
+                <option value="L">L</option>
+                <option value="XL">XL</option>
+            </select>
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="beenThereBefore">Har været med før?</label>
+            <select type="text" class="form-control" id="beenThereBefore">
+                <option value="Nej">Nej</option>
+                <option value="Ja">Ja</option>
+            </select>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="comment">Kommentar</label>
+            <textarea type="text" class="form-control" id="comment"></textarea>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="interests">Interresser</label>
+            <textarea type="text" class="form-control" id="interests"></textarea>
+        </div>
+         <div class="row">
+                <div class="col-3"></div>
+                <div class="col-6">
+                    <h4 style="text-align: center;margin-bottom: 10px;margin-top: 10px">Underskrift</h4>
+                    <SignaturePad @bind-Value="SignatureForKid2" style="width: 100%;background-color: #F7F7F7;"/>
+                </div>
+            </div>
+    </div>
+    
+    <div style="margin-bottom: 50px">
+        <button type="submit" class="btn btn-danger" @onclick="removeKid" style="margin-top: 10px">Fjern barn</button>
+    </div> 
+}
+
+<h3>Pasnings Ønske:</h3>
+<div class="row" style="margin-bottom: 50px">
+    <div class="col-md-3 mb-3">
+        <label for="location">By</label>
+        <select type="text" class="form-control" id="location">
+            <option value="Aarhus">Aarhus</option>
+            <option value="Ballerup">Ballerup</option>
+        </select>
+    </div>
+    <div class="col-md-3 mb-3">
+        <label for="priority1">1. prioritet</label>
+        <select type="text" class="form-control" id="priority1">
+            <option value="u27ons-søn">Uge 27: Onsdag-søndag</option>
+            <option value="u27ons-fre">Uge 27: Onsdag-fredag</option>
+            <option value="u27lør-søn">Uge 27: Lørdag-søndag</option>
+            <option value="u28ons-søn">Uge 28: Onsdag-søndag</option>
+            <option value="u28ons-fre">Uge 28: Onsdag-fredag</option>
+            <option value="u28lør-søn">Uge 28: Lørdag-søndag</option>
+        </select>
+    </div>
+    <div class="col-md-3 mb-3">
+        <label for="priority2">2. prioritet</label>
+        <select type="text" class="form-control" id="priority2">
+            <option value="ingen2.">Jeg ønsker ikke en 2. prioritet</option>
+            <option value="u27ons-søn">Uge 27: Onsdag-søndag</option>
+            <option value="u27ons-fre">Uge 27: Onsdag-fredag</option>
+            <option value="u27lør-søn">Uge 27: Lørdag-søndag</option>
+            <option value="u28ons-søn">Uge 28: Onsdag-søndag</option>
+            <option value="u28ons-fre">Uge 28: Onsdag-fredag</option>
+            <option value="u28lør-søn">Uge 28: Lørdag-søndag</option>
+        </select>
+    </div>
+</div>
+
+<div class="row" style="margin-bottom: 50px; text-align: center">
+    <div class="col-12 mb-3" >
+        <input type="checkbox" name="confirm"/>
+        <label for="confirm">Jeg bekræfter at jeg er tilmeldt den/de uger jeg ansøger om pasning</label>
+        <br/>
+        <button type="submit" class="btn btn-success" style="margin-top: 10px">Send ansøgning</button>
+    </div>
+</div>
+
+@code {
+
+    public bool ekstraKid = false;
+
+    public void addKid()
+    {
+        ekstraKid = true;
+    }
+
+    public void removeKid()
+    {
+        ekstraKid = false;
+    }
+    
+    
+    public byte[] SignatureForKid1 { get; set; } = Array.Empty<byte>();
+
+    public byte[] SignatureForKid2 { get; set; } = Array.Empty<byte>();
+
+}
+
+
+
