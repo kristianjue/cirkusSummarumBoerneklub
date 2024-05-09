@@ -1,0 +1,73 @@
+﻿@page "/signatur"
+
+<PageTitle>Tilmelding</PageTitle>
+
+<div style="text-align: center; margin-bottom: 50px">
+<h1>Signatur</h1>
+<p>Hvis dit barn på mellem 16 og 18 år ønsker at være frivillig, skal en værge underskrive denne formular for at give dem tilladelse til at deltage. Det er vigtigt, at du som værge bekræfter, at du har læst og forstået vilkårene for deltagelse.</p>
+</div>
+<h3>Værge:</h3>
+
+<div class="row" style="margin-bottom: 30px">
+    <div class="col-md-3 mb-3">
+        <label for="fullName">Fulde navn</label>
+        <input type="text" class="form-control" id="fullName">
+    </div>
+    <div class="col-md-3 mb-3">
+        <label for="phoneNumber">Telefonnummer</label>
+        <input type="text" class="form-control" id="phoneNumber">
+    </div>
+    <div class="col-md-6 mb-3">
+        <label for="email">Email</label>
+        <input type="email" class="form-control" id="email">
+    </div>
+</div>
+
+    <h3>Frivillig:</h3>
+<div class="row" style="margin-bottom: 30px">
+    <div class="col-md-3 mb-3">
+        <label for="voluntaryName">Frivilligs navn</label>
+        <input type="text" class="form-control" id="voluntaryName">
+    </div>
+    <div class="col-md-3 mb-3">
+        <label for="voluntaryNumber">Kræv nummer</label>
+        <input type="text" class="form-control" id="voluntaryNumber">
+    </div>
+    <div class="col-md-6 mb-3">
+        <label for="email">Email</label>
+        <input type="email" class="form-control" id="email">
+    </div>
+</div>
+
+<div class="row" style="margin-top: 10px; text-align: center">
+    <div class="col-12 mb-3" >
+        <input type="checkbox" name="confirm1"/>
+        <label for="confirm">Jeg er indforstået med, og giver tilladelse til, at mit barn opholder sig og deltager i frivilligheden på Cirkus Summarum.</label>
+    </div>
+</div>
+
+    
+<div class="row">
+    <div class="col-3"></div>
+    <div class="col-6">
+        <h4 style="text-align: center;margin-bottom: 10px;margin-top: 10px">Underskrift</h4>
+        <SignaturePad @bind-Value="SignatureForVoulenteer" style="width: 100%;background-color: #F7F7F7"/>
+    </div>
+</div>
+
+<div class="row" style="margin-bottom: 50px; text-align: center">
+    <div class="col-12 mb-3" >
+        <button type="submit" class="btn btn-success" style="margin-top: 50px">Send kontrakt</button>
+    </div>
+</div>
+
+@code {
+
+   
+    public byte[] SignatureForVoulenteer { get; set; } = Array.Empty<byte>();
+
+
+}
+
+
+

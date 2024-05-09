@@ -7,6 +7,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+
+        <PackageReference Include="Blazor.SignaturePad" Version="7.5.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.16"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.16" PrivateAssets="all"/>
         <PackageReference Include="Blazorise" Version="1.5.2" />
         <PackageReference Include="Blazorise.DataGrid" Version="1.5.2" />
         <PackageReference Include="Blazorise.Snackbar" Version="1.5.2" />
