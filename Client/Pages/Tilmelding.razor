@@ -82,10 +82,18 @@ else {
         <label for="interests">Interresser</label>
         <textarea type="text" class="form-control" id="interests"></textarea>
     </div>
+    
+    <div class="row" style="margin-top: 10px; text-align: center">
+        <div class="col-12 mb-3" >
+            <input type="checkbox" name="confirm1"/>
+            <label for="confirm">Jeg er indforstået med, og giver tilladelse til, at mit barn opholder sig og deltager i Cirkus Summarums Børneklub</label>
+        </div>
+    </div>
+    
     <div class="row">
         <div class="col-3"></div>
         <div class="col-6">
-            <h4 style="text-align: center;margin-bottom: 10px;margin-top: 10px">Underskrift</h4>
+            <h4 style="text-align: center;margin-bottom: 10px;">Underskrift</h4>
             <SignaturePad @bind-Value="SignatureForKid1" style="width: 100%;background-color: #F7F7F7"/>
         </div>
     </div>
@@ -94,7 +102,7 @@ else {
 @if (ekstraKid == false)
 {
     <div style="margin-bottom: 50px">
-        <button type="submit" class="btn btn-secondary" @onclick="addKid" style="margin-top: 10px">Tilføj barn</button>
+        <button type="submit" class="btn btn-primary" @onclick="addKid" style="margin-top: 10px">Tilføj barn</button>
     </div> 
 }
 
@@ -148,10 +156,18 @@ else {
             <label for="interests">Interresser</label>
             <textarea type="text" class="form-control" id="interests"></textarea>
         </div>
-         <div class="row">
+        
+        <div class="row" style="margin-top: 10px; text-align: center">
+            <div class="col-12 mb-3" >
+                <input type="checkbox" name="confirm1"/>
+                <label for="confirm">Jeg er indforstået med, og giver tilladelse til, at mit barn opholder sig og deltager i Cirkus Summarums Børneklub.</label>
+            </div>
+        </div>
+        
+        <div class="row">
                 <div class="col-3"></div>
                 <div class="col-6">
-                    <h4 style="text-align: center;margin-bottom: 10px;margin-top: 10px">Underskrift</h4>
+                    <h4 style="text-align: center;margin-bottom: 10px;">Underskrift</h4>
                     <SignaturePad @bind-Value="SignatureForKid2" style="width: 100%;background-color: #F7F7F7;"/>
                 </div>
             </div>
@@ -164,14 +180,14 @@ else {
 
 <h3>Pasnings Ønske:</h3>
 <div class="row" style="margin-bottom: 50px">
-    <div class="col-md-3 mb-3">
+    <div class="col-md-4 mb-3">
         <label for="location">By</label>
         <select type="text" class="form-control" id="location">
             <option value="Aarhus">Aarhus</option>
             <option value="Ballerup">Ballerup</option>
         </select>
     </div>
-    <div class="col-md-3 mb-3">
+    <div class="col-md-4 mb-3">
         <label for="priority1">1. prioritet</label>
         <select type="text" class="form-control" id="priority1">
             <option value="u27ons-søn">Uge 27: Onsdag-søndag</option>
@@ -182,7 +198,7 @@ else {
             <option value="u28lør-søn">Uge 28: Lørdag-søndag</option>
         </select>
     </div>
-    <div class="col-md-3 mb-3">
+    <div class="col-md-4 mb-3">
         <label for="priority2">2. prioritet</label>
         <select type="text" class="form-control" id="priority2">
             <option value="ingen2.">Jeg ønsker ikke en 2. prioritet</option>
@@ -198,8 +214,8 @@ else {
 
 <div class="row" style="margin-bottom: 50px; text-align: center">
     <div class="col-12 mb-3" >
-        <input type="checkbox" name="confirm"/>
-        <label for="confirm">Jeg bekræfter at jeg er tilmeldt den/de uger jeg ansøger om pasning</label>
+        <input type="checkbox" name="confirm2"/>
+        <label for="confirm">Jeg bekræfter at jeg er tilmeldt den/de uger jeg ansøger om pasning.</label>
         <br/>
         <button type="submit" class="btn btn-success" style="margin-top: 10px">Send ansøgning</button>
     </div>
