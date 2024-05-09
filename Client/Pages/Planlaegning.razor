@@ -1,10 +1,19 @@
-﻿@page "/fetchdata"
+﻿@page "/planlaegning"
 @using Client.Model
 @using System.Net.Http
 @using System.Net.Http.Json
 @using System.Threading.Tasks
 
 <div class="admin-dashboard">
+    <div class="row justify-content-end" style="margin-bottom: 20px">
+        <div class="col-3">
+            <h5><label for="city">Lokation</label></h5>
+            <select name="city" class="form-select">
+                <option>Aarhus</option>
+                <option>Ballerup</option>
+            </select>
+        </div>
+    </div>
     <div class="top-sections">
         <div class="section">
             <h3>Applikationer</h3>
