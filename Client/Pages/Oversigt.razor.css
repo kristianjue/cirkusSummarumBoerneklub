@@ -1,0 +1,26 @@
+.overview-label{
+    font-size: 0.9em;
+}
+
+.overview-guardian{
+    background-color: #FFFFFF; 
+    border-radius: 5px;
+    padding-top: 10px;
+    padding-left: 10px;
+    border-color: black;
+    border-width: 2px;
+    border-style: solid;
+    text-align: center;
+}
+
+.overview-child{
+    background-color: #F7F7F7;
+    border-radius: 0px 0px 5px 5px;
+    padding-top: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    border-color: black;
+    border-width: 0px 2px 2px 2px;
+    border-style: solid;
+    text-align: center;
+}
