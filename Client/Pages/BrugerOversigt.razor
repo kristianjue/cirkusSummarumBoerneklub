@@ -1,0 +1,130 @@
+﻿@page "/brugeroversigt"
+
+
+<div class="header">
+    <h3>Bruger oversigt</h3>
+    <button class="add-button" @onclick="AddNewUser">Tilføj Ny Bruger</button>
+</div>
+
+<div class="container">
+    @foreach (var user in users)
+    {
+        <div class="column">
+            <div class="column-header">
+                <h5>@user.Name (@user.Type)</h5>
+                <button class="view-button" @onclick="() => ViewUser(user)">Se bruger</button>
+            </div>
+            <div class="user-details">
+                <p>Email: @user.Email</p>
+                <p>Telefon: @user.PhoneNumber</p>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 10px;
+    }
+
+    .container {
+        display: auto;
+        flex-direction: column;
+        align-items: center;
+        padding: 10px;
+    }
+
+    .column {
+        width: 80%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        margin-bottom: 20px;
+        background-color: #f9f9f9;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        border-radius: 8px;
+        position: relative;
+    }
+
+    .column-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .view-button {
+        padding: 5px 10px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-left: auto;
+    }
+
+    .add-button {
+        padding: 5px 10px;
+        background-color: #007BFF;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .user-details {
+        padding-top: 10px;
+    }
+
+    button:hover {
+        opacity: 0.8;
+    }
+
+    h5 {
+        margin: 0;
+        color: #333;
+    }
+
+    p {
+        margin: 5px 0;
+        color: #666;
+    }
+</style>
+
+@code {
+    private List<User> users = new List<User>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        users = await GetUserListAsync();
+    }
+
+    private Task<List<User>> GetUserListAsync()
+    {
+        return Task.FromResult(new List<User>
+        {
+            new User { Name = "Sebastian", Type = "Admin", Email = "seb123@gmail.com", PhoneNumber = 50505050  },
+            new User { Name = "Jakob", Type = "Admin", Email = "jak321@gmail.com", PhoneNumber = 10101010 },
+            new User { Name = "Mikkel", Type = "Admin", Email = "chef999@gmail.com", PhoneNumber = 20202020 }
+        });
+    }
+
+    private void AddNewUser()
+    {
+        Console.WriteLine("Tilføj ny bruger klikket");
+    }
+
+    private void ViewUser(User user)
+    {
+        Console.WriteLine($"Viser bruger: {user.Name}");
+    }
+
+    private class User
+    {
+        public string Name { get; set; }
+        public string Type { get; set; }
+        public string Email { get; set; }
+        public int PhoneNumber { get; set; }
+    }
+}

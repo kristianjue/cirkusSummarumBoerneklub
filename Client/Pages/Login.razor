@@ -1,0 +1,40 @@
+﻿@page "/login"
+@using Core
+@inject NavigationManager Navigation
+
+<h3>Login</h3>
+<EditForm EditContext="@aEditContext" OnSubmit="@HandleSubmit" class="row p-3">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="col-md-6 mb-3">
+        <label for="Name">Brugernavn</label>
+        <InputText id="Name" @bind-Value="loginModel.Username" class="form-control" />
+    </div>
+    <div class="col-md-6 mb-3">
+        <label for="password">Adgangskode</label>
+        <InputText type="password" @bind-Value="loginModel.Password"  id="password" class="form-control" />
+    </div>
+    <div class="col-12 mb-3">
+        <button type="submit" class="btn btn-success">Login</button>
+    </div>
+</EditForm>
+
+@code {
+    private EditContext aEditContext;
+    private LoginModel loginModel = new LoginModel();
+
+    protected override void OnInitialized()
+    {
+        aEditContext = new EditContext(loginModel);
+    }
+
+    private void HandleSubmit()
+    {
+        if (aEditContext.Validate())
+        {
+            // Logik til at håndtere indsendelse
+            // For eksempel kan du navigere til en anden side
+            Navigation.NavigateTo("/home");
+        }
+    }
+}
