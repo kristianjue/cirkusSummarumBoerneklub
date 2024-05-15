@@ -1,4 +1,4 @@
-﻿namespace Client.Model
+﻿namespace Core
 {
     public class AdministratorModel
     {
