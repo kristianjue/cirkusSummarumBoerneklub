@@ -13,7 +13,7 @@ namespace Api.Repositories
 
         public LoginRepository(IMongoClient mongoClient)
         {
-            database = mongoClient.GetDatabase("GenbrugEaaa");
+            database = mongoClient.GetDatabase("CirkusSummarum");
             AdministratorCollection = database.GetCollection<Administrator>("Administrator");
         }
 
@@ -34,17 +34,15 @@ namespace Api.Repositories
 
         public Administrator VerifyLogin(string email, string password)
         {
-            // Husk at hashe password før sammenligning, hvis du bruger hashing i databasen.
-            var filter = Builders<Administrator>.Filter.Eq(administrator => administrator.Email, email)
-                & Builders<Administrator>.Filter.Eq(administrator => administrator.Password, password); // Du bør hashe password
-            return AdministratorCollection.Find(filter).SingleOrDefault();
-
-            Console.WriteLine("Login successful");
+            var filter = Builders<Administrator>.Filter.Eq(Administrator => Administrator.Email, email) &
+                         Builders<Administrator>.Filter.Eq(Administrator => Administrator.Password, password);
+            var admin = AdministratorCollection.Find(filter).SingleOrDefault();
+            return admin;
         }
 
         public Administrator GetUserByEmail(string email)
         {
-            var filter = Builders<Administrator>.Filter.Eq(administrator => administrator.Email, email);
+            var filter = Builders<Administrator>.Filter.Eq(Administrator => Administrator.Email, email);
             return AdministratorCollection.Find(filter).SingleOrDefault();
         }
 
