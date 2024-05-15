@@ -256,7 +256,11 @@ else {
             _newTilmelding.Children.Add(kid2);
         }
         
-        await Http.PostAsJsonAsync<Application>($"https://localhost:7026/api/admin/create",_newTilmelding);
+        _newTilmelding.Id = Guid.NewGuid().ToString();
+        
+        _newTilmelding.Status = "Ny";
+        
+        await Http.PostAsJsonAsync<Application>($"https://localhost:7026/api/application/create",_newTilmelding);
         
         navigationManager.NavigateTo($"brugeroversigt");
     }

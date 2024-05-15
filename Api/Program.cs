@@ -20,6 +20,7 @@ public class Program
         builder.Services.AddSingleton<IMongoClient>(sp => new MongoClient("mongodb+srv://system:system@cirkussummarum.to00ch9.mongodb.net/"));
         builder.Services.AddSingleton<ILoginRepository, LoginRepository>();
         builder.Services.AddSingleton<IAdminRepository, AdminRespository>();
+        builder.Services.AddSingleton<IApplicationRepository, ApplicationRepository>();
         
         
 

@@ -38,8 +38,8 @@ var filter = Builders<Application>.Filter.Eq(application => application.Id, appl
         var update = Builders<Application>.Update
             .Set(application => application.Status, application.Status)
             .Set(application => application.Location, application.Location)
-            .Set(application => application.FirstPriority, application.FirstPriority)
-            .Set(application => application.SecondPriority, application.SecondPriority)
+            .Set(application => application.Priority1, application.Priority1)
+            .Set(application => application.Priority2, application.Priority2)
             .Set(application => application.Volunteer, application.Volunteer);
 
 
