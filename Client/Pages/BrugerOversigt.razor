@@ -1,4 +1,6 @@
-﻿@page "/brugeroversigt"
+﻿@using Core
+@page "/brugeroversigt"
+@inject NavigationManager NavigationManager
 
 
 <div class="header">
@@ -7,7 +9,7 @@
 </div>
 
 <div class="container">
-    @foreach (var user in users)
+    @foreach (var user in Administrators)
     {
         <div class="column">
             <div class="column-header">
@@ -93,38 +95,15 @@
 </style>
 
 @code {
-    private List<User> users = new List<User>();
-
-    protected override async Task OnInitializedAsync()
-    {
-        users = await GetUserListAsync();
-    }
-
-    private Task<List<User>> GetUserListAsync()
-    {
-        return Task.FromResult(new List<User>
-        {
-            new User { Name = "Sebastian", Type = "Admin", Email = "seb123@gmail.com", PhoneNumber = 50505050  },
-            new User { Name = "Jakob", Type = "Admin", Email = "jak321@gmail.com", PhoneNumber = 10101010 },
-            new User { Name = "Mikkel", Type = "Admin", Email = "chef999@gmail.com", PhoneNumber = 20202020 }
-        });
-    }
-
+    private List<Administrator> Administrators = new List<Administrator>();
+    
     private void AddNewUser()
     {
-        Console.WriteLine("Tilføj ny bruger klikket");
+        NavigationManager.NavigateTo("/nybruger");
     }
-
-    private void ViewUser(User user)
+    
+    private void ViewUser(Administrator administrator)
     {
-        Console.WriteLine($"Viser bruger: {user.Name}");
-    }
-
-    private class User
-    {
-        public string Name { get; set; }
-        public string Type { get; set; }
-        public string Email { get; set; }
-        public int PhoneNumber { get; set; }
+        Console.WriteLine($"Viser bruger: {administrator.Name}");
     }
 }
