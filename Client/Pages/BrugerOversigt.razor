@@ -9,22 +9,22 @@
 </div>
 
 <div class="container">
-    @if (Administrators == null)
+    @if (AllAdmins == null)
     {
         <p>Loading...</p>
     }
     else
     {
-        @foreach (var user in Administrators)
+        @foreach (var admin in AllAdmins)
         {
             <div class="column">
                 <div class="column-header">
-                    <h5>@user.Name</h5>
-                    <button class="view-button" @onclick="() => ViewUser(user)">Se bruger</button>
+                    <h5>@admin.Name</h5>
+                    <button class="view-button" @onclick="() => ViewUser(admin)">Se bruger</button>
                 </div>
                 <div class="user-details">
-                    <p>Email: @user.Email</p>
-                    <p>Telefon: @user.PhoneNumber</p>
+                    <p>Email: @admin.Email</p>
+                    <p>Telefon: @admin.PhoneNumber</p>
                 </div>
             </div>
         }
@@ -102,7 +102,6 @@
 </style>
 
 @code {
-    private List<Administrator> Administrators;
     private List<Administrator> AllAdmins;
 
     protected override async Task OnInitializedAsync()
