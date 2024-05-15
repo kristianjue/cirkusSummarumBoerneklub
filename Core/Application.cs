@@ -5,9 +5,10 @@
         public string Id { get; set; }
         public string Status { get; set; }
         public string Location { get; set; }
-        public DateTime FirstPriority { get; set; }
-        public DateTime SecondPriority { get; set; }
+        public string Priority1 { get; set; }
+        public string Priority2 { get; set; }
         public Volunteer Volunteer { get; set; } // Antager at VolunteerModel klassen eksisterer 
+        public List<Child> Children { get; set; }
 
     }
 
