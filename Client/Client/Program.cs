@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Core;
-using Core.Pages;
+using Client;
+
 
 namespace Core;
 
