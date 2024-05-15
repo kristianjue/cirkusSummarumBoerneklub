@@ -5,8 +5,8 @@ namespace Api.Interfaces
 {
     public interface ILoginRepository
     {
-        void CreateAccount(Administrator customer);
-        Administrator VerifyLogin(string username, string password);
-        Administrator GetUserByUserName(string username);
+        void CreateAccount(Administrator administrator);
+        Administrator VerifyLogin(string email, string password);
+        Administrator GetUserByEmail(string email);
     }
 }

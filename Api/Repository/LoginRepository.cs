@@ -40,7 +40,7 @@ namespace Api.Repositories
             return AdministratorCollection.Find(filter).SingleOrDefault();
         }
 
-        public Administrator GetUserByUserName(string email)
+        public Administrator GetUserByEmail(string email)
         {
             var filter = Builders<Administrator>.Filter.Eq(administrator => administrator.Email, email);
             return AdministratorCollection.Find(filter).SingleOrDefault();

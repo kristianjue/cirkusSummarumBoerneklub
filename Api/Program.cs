@@ -1,5 +1,4 @@
 using Api.Interfaces;
-using Api.Repositories;
 using Api.Repository;
 using Core;
 using MongoDB.Driver;
