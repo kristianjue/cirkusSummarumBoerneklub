@@ -20,7 +20,10 @@
             <div class="column">
                 <div class="column-header">
                     <h5>@admin.Name</h5>
-                    <button class="view-button" @onclick="() => ViewUser(admin)">Se bruger</button>
+                    <button class="view-button" @onclick="() => ViewUser(admin.Email)">Se bruger</button>
+                </div>
+                <div class="col-6">
+                    <img class="card-img-top" src="data:image/jpg;base64,@admin.Image" alt="Image" style="height: 200px; object-fit: cover;">
                 </div>
                 <div class="user-details">
                     <p>Email: @admin.Email</p>
@@ -119,8 +122,8 @@
         NavigationManager.NavigateTo("/nybruger");
     }
 
-    private void ViewUser(Administrator administrator)
+    private void ViewUser(string email)
     {
-        Console.WriteLine($"Viser bruger: {administrator.Name}");
+        NavigationManager.NavigateTo($"/admin/{email}");
     }
 }
