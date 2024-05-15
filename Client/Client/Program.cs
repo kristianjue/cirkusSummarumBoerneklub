@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Core;
 using Client;
-using Client.Pages;
 
-namespace Client;
+
+namespace Core;
 
 public class Program
 {

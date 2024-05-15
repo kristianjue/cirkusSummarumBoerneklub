@@ -7,12 +7,12 @@
     <DataAnnotationsValidator />
     <ValidationSummary />
     <div class="col-md-6 mb-3">
-        <label for="Name">Brugernavn</label>
-        <InputText id="Name" @bind-Value="loginModel.Username" class="form-control" />
+        <label for="Email">Email</label>
+        <InputText id="Email" @bind-Value="administrator.Email" class="form-control" />
     </div>
     <div class="col-md-6 mb-3">
         <label for="password">Adgangskode</label>
-        <InputText type="password" @bind-Value="loginModel.Password"  id="password" class="form-control" />
+        <InputText type="password" @bind-Value="administrator.Password" id="password" class="form-control" />
     </div>
     <div class="col-12 mb-3">
         <button type="submit" class="btn btn-success">Login</button>
@@ -21,11 +21,11 @@
 
 @code {
     private EditContext aEditContext;
-    private LoginModel loginModel = new LoginModel();
+    private Core.Administrator administrator = new Core.Administrator();
 
     protected override void OnInitialized()
     {
-        aEditContext = new EditContext(loginModel);
+        aEditContext = new EditContext(administrator);
     }
 
     private void HandleSubmit()

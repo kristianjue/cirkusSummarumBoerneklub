@@ -1,5 +1,5 @@
 ﻿@page "/planlaegning"
-@using Client.Model
+@using Core
 @using System.Net.Http
 @using System.Net.Http.Json
 @using System.Threading.Tasks
@@ -60,25 +60,25 @@
 </div>
 
 @code {
-    List<ApplicationModel> applications = new List<ApplicationModel>();
-    ApplicationModel currentDraggedItem;
+    List<Application> applications = new List<Application>();
+    Application currentDraggedItem;
 
     protected override async Task OnInitializedAsync()
     {
-        applications = new List<ApplicationModel>
+        applications = new List<Application>
         {
-            new ApplicationModel { Id = "Daniel", Status = "uge 28" },
-            new ApplicationModel { Id = "Sofie", Status = "uge 27" },
-            new ApplicationModel { Id = "Markus", Status = "Uge 28" },
-            new ApplicationModel { Id = "Mikkel", Status = "Uge 27" },
-            new ApplicationModel { Id = "Hassan", Status = "Uge 28" },
-            new ApplicationModel { Id = "Abdi", Status = "Uge 27" },
-            new ApplicationModel { Id = "Laura", Status = "Uge 28" },
-            new ApplicationModel { Id = "Susanne", Status = "Uge 27" }
+            new Application { Id = "Daniel", Status = "uge 28" },
+            new Application { Id = "Sofie", Status = "uge 27" },
+            new Application { Id = "Markus", Status = "Uge 28" },
+            new Application { Id = "Mikkel", Status = "Uge 27" },
+            new Application { Id = "Hassan", Status = "Uge 28" },
+            new Application { Id = "Abdi", Status = "Uge 27" },
+            new Application { Id = "Laura", Status = "Uge 28" },
+            new Application { Id = "Susanne", Status = "Uge 27" }
         };
     }
 
-    void StartDrag(ApplicationModel app, DragEventArgs e)
+    void StartDrag(Application app, DragEventArgs e)
     {
         currentDraggedItem = app;
         e.DataTransfer.DropEffect = "move";

@@ -1,6 +1,6 @@
-﻿namespace Client.Model
+﻿namespace Core
 {
-    public class ChildModel
+    public class Child
     {
         public string Name { get; set; }
         public int Age { get; set; }
