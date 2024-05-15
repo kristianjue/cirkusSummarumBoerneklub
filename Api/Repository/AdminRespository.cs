@@ -46,7 +46,7 @@ public class AdminRespository : IAdminRepository
         var update = Builders<Administrator>.Update
             .Set(administrator => administrator.Name, admin.Name)
             .Set(administrator => administrator.Email, admin.Email)
-            .Set(administrator => administrator.Telefonnummer, admin.Telefonnummer)
+            .Set(administrator => administrator.PhoneNumber, admin.PhoneNumber)
             .Set(administrator => administrator.Password, admin.Password)
             .Set(administrator => administrator.KrævNumber, admin.KrævNumber);
 

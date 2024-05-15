@@ -34,7 +34,6 @@
         <button type="submit" class="btn btn-success" style="margin-top: 10px">Tilføj bruger</button>
     </div>
     </EditForm>
-    </EditForm>
     
     @code {
         Administrator _newAdministrater = new();
@@ -48,10 +47,9 @@
 
     public async Task HandleValidSubmit()
     {
-        _newAdministrater.AdministratorId = Guid.NewGuid().ToString(); //Laver et unikt Id til kunden
-        await Http.PostAsJsonAsync<Administrator>($"https://localhost:7157/api/admin/create", _newAdministrater);
+        await Http.PostAsJsonAsync<Administrator>($"https://localhost:7026/api/admin/create", _newAdministrater);
         
-        navigationManager.NavigateTo($"MyProfile");
+        navigationManager.NavigateTo($"brugeroversigt");
 
     }
 }
