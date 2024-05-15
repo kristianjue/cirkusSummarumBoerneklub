@@ -1,6 +1,6 @@
 ﻿namespace Core
 {
-    public class YoungVolunteerModel
+    public class YoungVolunteer
     {
         public string Name { get; set; }
         public int Age { get; set; }

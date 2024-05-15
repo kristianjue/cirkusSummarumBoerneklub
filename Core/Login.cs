@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Core
 {
-    public class LoginModel
+    public class Login
     {
         public string Username { get; set; }
         public string Password { get; set; }

@@ -1,13 +1,13 @@
 ﻿namespace Core
 {
-    public class ApplicationModel
+    public class Application
     {
         public string Id { get; set; }
         public string Status { get; set; }
         public string Location { get; set; }
         public DateTime FirstPriority { get; set; }
         public DateTime SecondPriority { get; set; }
-        public VolunteerModel Volunteer { get; set; } // Antager at VolunteerModel klassen eksisterer 
+        public Volunteer Volunteer { get; set; } // Antager at VolunteerModel klassen eksisterer 
 
     }
 
