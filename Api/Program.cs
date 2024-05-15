@@ -1,37 +1,50 @@
 using Api.Interfaces;
-using Api.Repositories;
-using MongoDB.Driver;
+using Api.Repository;
 using Core;
+using MongoDB.Driver;
 
-var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddControllers();
-builder.Services.AddSingleton<IMongoClient>(sp => new MongoClient("mongodb+srv://eaa23krju:PwJX0IIg5tK6TFBgbrJ6@cirkussummarum.to00ch9.mongodb.net/"));
-builder.Services.AddSingleton<ILoginRepository, LoginRepository>();
 
-builder.Services.AddCors(options =>
+namespace ServerAPI;
+
+public class Program
 {
-    options.AddPolicy("policy",
-                      policy =>
-                      {
-                          policy.AllowAnyOrigin();
-                          policy.AllowAnyMethod();
-                          policy.AllowAnyHeader();
-                      });
-});
+    public static void Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
 
-var app = builder.Build();
+        // Add services to the container.
 
+        builder.Services.AddControllers();
 
-app.UseHttpsRedirection();
+        builder.Services.AddSingleton<IMongoClient>(sp => new MongoClient("mongodb+srv://system:system@cirkussummarum.to00ch9.mongodb.net/"));
+        builder.Services.AddSingleton<ILoginRepository, LoginRepository>();
+        builder.Services.AddSingleton<IAdminRepository, AdminRespository>();
+        
+        
 
-app.UseAuthorization();
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("policy",
+                policy =>
+                {
+                    policy.AllowAnyOrigin();
+                    policy.AllowAnyMethod();
+                    policy.AllowAnyHeader();
+                });
+        });
 
-app.UseCors("policy");
+        var app = builder.Build();
 
-app.MapControllers();
+        // Configure the HTTP request pipeline.
 
-app.Run();
+        app.UseHttpsRedirection();
 
-app.MapGet("/", () => "Hello World!");
+        app.UseAuthorization();
 
-app.Run();
+        app.UseCors("policy");
+
+        app.MapControllers();
+
+        app.Run();
+    }
+}
