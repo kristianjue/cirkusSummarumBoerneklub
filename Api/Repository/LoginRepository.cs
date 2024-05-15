@@ -9,7 +9,7 @@ namespace Api.Repositories
     {
         private IMongoDatabase database;
         private IMongoCollection<Administrator> AdministratorCollection;
-        private string connectionString = "mongodb+srv://eaa23krju:PwJX0IIg5tK6TFBgbrJ6@cirkussummarum.to00ch9.mongodb.net/";
+        private string connectionString = "mongodb+srv://system:system@cirkussummarum.to00ch9.mongodb.net/";
 
         public LoginRepository(IMongoClient mongoClient)
         {
@@ -38,6 +38,8 @@ namespace Api.Repositories
             var filter = Builders<Administrator>.Filter.Eq(administrator => administrator.Email, email)
                 & Builders<Administrator>.Filter.Eq(administrator => administrator.Password, password); // Du bør hashe password
             return AdministratorCollection.Find(filter).SingleOrDefault();
+
+            Console.WriteLine("Login successful");
         }
 
         public Administrator GetUserByEmail(string email)
