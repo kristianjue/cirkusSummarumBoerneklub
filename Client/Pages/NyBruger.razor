@@ -28,6 +28,10 @@
         <label for="password">Adgangskode</label>
         <InputText id="Password" @bind-Value="_newAdministrater.Password" class="form-control" />
     </div>
+        <div class="col-md-6 mb-3">
+            <label for="Image">Billede</label>
+            <InputFile id="image" @bind-Value="_newAdministrater.Image" OnChange="HandleFileUpload" accept="image/jpeg" class="form-control" />
+        </div>
 </div>
 
     <div>
@@ -36,7 +40,7 @@
     </EditForm>
     
     @code {
-        Administrator _newAdministrater = new();
+    Administrator _newAdministrater = new();
         
     private EditContext aEditContext;
     
@@ -51,5 +55,17 @@
         
         navigationManager.NavigateTo($"brugeroversigt");
 
+    }
+
+
+    private async Task HandleFileUpload(InputFileChangeEventArgs image)
+    {
+        var file = image.File; //Henter filen fra input
+        var buffer = new byte[file.Size]; // Opretter en "beholder"/buffer med samme størrelse som filen, hvor vi kan gemme filens data
+        await file.OpenReadStream().ReadAsync(buffer); //Læser filen ind i bufferen
+
+        var imageString = Convert.ToBase64String(buffer); //Konverterer bufferen til en base64 string
+
+        _newAdministrater.Image = imageString; //Gemmer base64 stringen i listing objektet
     }
 }
