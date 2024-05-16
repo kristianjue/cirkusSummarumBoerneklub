@@ -3,10 +3,17 @@
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 
-<div class="header mb-4 d-flex justify-content-between align-items-center">
-    <h3 class="mb-0">Bruger oversigt</h3>
-    <button class="btn btn-primary" @onclick="AddNewUser">Tilføj Ny Bruger</button>
+<div class="row">
+    <div class="col-9">
+            <h3 class="mb-0">Bruger oversigt</h3>
+
+    </div>
+    <div class="col-3 float-end">
+                <button class="btn btn-primary" @onclick="AddNewUser">Tilføj Ny Bruger</button>
+
+        </div>
 </div>
+
 
 
 <div class="container">
