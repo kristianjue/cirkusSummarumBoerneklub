@@ -1,4 +1,7 @@
 ﻿@page "/signatur"
+@inject NavigationManager navigationManager
+@inject HttpClient Http
+@using Core
 
 <PageTitle>Signatur</PageTitle>
 
@@ -10,10 +13,14 @@
 {
 <h3>Forældre:</h3>
 
+<EditForm EditContext="@aEditContext" class="row p-3" OnValidSubmit="@HandleValidSubmit">
+<DataAnnotationsValidator />
+<ValidationSummary />
+
 <div class="row" style="margin-bottom: 30px">
     <div class="col-md-3 mb-3">
         <label for="fullName">Fulde navn</label>
-        <input type="text" class="form-control" id="fullName">
+        <InputText id="fullName" @bind-Value="_newSignatur.Volunteer.Name" class="form-control" />
     </div>
     <div class="col-md-3 mb-3">
         <label for="phoneNumber">Telefonnummer</label>
@@ -109,8 +116,31 @@ else
         <button type="submit" class="btn btn-success" style="margin-top: 50px">Send kontrakt</button>
     </div>
 </div>
+</EditForm>
+
 
 @code {
+    
+    private EditContext aEditContext;
+    
+    Signatur _newSignatur = new();
+    
+    protected override void OnInitialized()
+    {
+        
+    }
+    
+    public async Task HandleValidSubmit()
+    {
+        _newSignatur.Id = System.Guid.NewGuid().ToString();
+        _newSignatur.Volunteer.Id = Guid.NewGuid().ToString();
+        _newSignatur.Status = "Ny";
+        
+        await Http.PostAsJsonAsync<Application>($"https://localhost:7026/api/application/create",_newTilmelding);
+        
+        navigationManager.NavigateTo($"brugeroversigt");
+    }
+
 
     public bool addguardien = false; 
     
@@ -119,12 +149,9 @@ else
         addguardien = !addguardien;
     }
     
-  
-  
-  
-  
-    
     public byte[] SignatureForVoulenteer { get; set; } = Array.Empty<byte>();
+    
+    public string SignatureForVoulenteerAsBase64 => System.Text.Encoding.UTF8.GetString(SignatureForVoulenteer);
 
 
 }
