@@ -1,24 +1,49 @@
-﻿@page "/brugeroversigt"
+@page "/brugeroversigt"
+@using Core
+@inject HttpClient Http
 @inject NavigationManager NavigationManager
 
+<div class="row">
+    <div class="col-9">
+            <h3 class="mb-0">Bruger oversigt</h3>
 
-<div class="header">
-    <h3>Bruger oversigt</h3>
-    <button class="add-button" @onclick="AddNewUser">Tilføj Ny Bruger</button>
+    </div>
+    <div class="col-3 float-end">
+                <button class="btn btn-primary" @onclick="AddNewUser">Tilføj Ny Bruger</button>
+
+        </div>
 </div>
 
+
+
 <div class="container">
-    @foreach (var user in users)
+    @if (AllAdmins == null)
     {
-        <div class="column">
-            <div class="column-header">
-                <h5>@user.Name (@user.Type)</h5>
-                <button class="view-button" @onclick="() => ViewUser(user)">Se bruger</button>
-            </div>
-            <div class="user-details">
-                <p>Email: @user.Email</p>
-                <p>Telefon: @user.PhoneNumber</p>
-            </div>
+        <p>Loading...</p>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var admin in AllAdmins)
+            {
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="row no-gutters">
+                            <div class="col-md-4">
+                                <img src="data:image/jpg;base64,@admin.Image" class="card-img" alt="Image" style="height: 100%; object-fit: cover;">
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card-body">
+                                    <h5 class="card-title">@admin.Name</h5>
+                                    <p class="card-text"><strong>Email:</strong> @admin.Email</p>
+                                    <p class="card-text"><strong>Telefon:</strong> @admin.PhoneNumber</p>
+                                    <button class="btn btn-success" @onclick="() => ViewUser(admin.Email)">Se bruger</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
     }
 </div>
@@ -32,101 +57,55 @@
     }
 
     .container {
-        display: auto;
-        flex-direction: column;
-        align-items: center;
-        padding: 10px;
-    }
-
-    .column {
-        width: 80%;
-        padding: 10px;
-        border: 1px solid #ccc;
-        margin-bottom: 20px;
-        background-color: #f9f9f9;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        border-radius: 8px;
-        position: relative;
-    }
-
-    .column-header {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
+        flex-direction: column;
+        padding: 10px;
     }
 
-    .view-button {
-        padding: 5px 10px;
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        margin-left: auto;
+    .card {
+        border-radius: 8px;
     }
 
-    .add-button {
-        padding: 5px 10px;
-        background-color: #007BFF;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
+    .card-img {
+        border-radius: 8px 0 0 8px;
     }
 
-    .user-details {
-        padding-top: 10px;
+    .card-body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
 
-    button:hover {
-        opacity: 0.8;
-    }
-
-    h5 {
-        margin: 0;
-        color: #333;
-    }
-
-    p {
-        margin: 5px 0;
-        color: #666;
+    .btn {
+        width: 100%;
     }
 </style>
 
 @code {
-    private List<User> users = new List<User>();
+    private List<Administrator> AllAdmins;
 
     protected override async Task OnInitializedAsync()
     {
-        users = await GetUserListAsync();
+        await GetAllAdmins();
     }
 
-    private Task<List<User>> GetUserListAsync()
+    public async Task GetAllAdmins()
     {
-        return Task.FromResult(new List<User>
-        {
-            new User { Name = "Sebastian", Type = "Admin", Email = "seb123@gmail.com", PhoneNumber = 50505050  },
-            new User { Name = "Jakob", Type = "Admin", Email = "jak321@gmail.com", PhoneNumber = 10101010 },
-            new User { Name = "Mikkel", Type = "Admin", Email = "chef999@gmail.com", PhoneNumber = 20202020 }
-        });
+        AllAdmins = await Http.GetFromJsonAsync<List<Administrator>>("https://localhost:7026/api/admin/get-all");
     }
 
     private void AddNewUser()
     {
-        Console.WriteLine("Tilføj ny bruger klikket");
         NavigationManager.NavigateTo("/tilføjadmin");
     }
 
     private void ViewUser(User user)
     {
-        Console.WriteLine($"Viser bruger: {user.Name}");
+        NavigationManager.NavigateTo("/nybruger");
     }
 
-    private class User
+    private void ViewUser(string email)
     {
-        public string Name { get; set; }
-        public string Type { get; set; }
-        public string Email { get; set; }
-        public int PhoneNumber { get; set; }
+        NavigationManager.NavigateTo($"/admin/{email}");
     }
 }

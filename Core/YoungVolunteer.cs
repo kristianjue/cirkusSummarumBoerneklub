@@ -1,10 +1,9 @@
-﻿namespace Client.Model
+﻿namespace Core
 {
-    public class ChildModel
+    public class YoungVolunteer
     {
         public string Name { get; set; }
         public int Age { get; set; }
-        public string Size { get; set; }
         public string Signature { get; set; }
     }
 }

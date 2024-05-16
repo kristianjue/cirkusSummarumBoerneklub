@@ -1,0 +1,74 @@
+﻿@page "/admin/{email}"
+@using Core
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4 shadow-sm">
+                <div class="row no-gutters">
+                    <div class="col-md-4">
+                        <img src="data:image/jpg;base64,@admin.Image" class="card-img" alt="Image" style="height: 100%; object-fit: cover;">
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <h5 class="card-title">@admin.Name</h5>
+                            <p class="card-text"><strong>Email:</strong> @admin.Email</p>
+                            <p class="card-text"><strong>Telefon:</strong> @admin.PhoneNumber</p>
+                            <p class="card-text"><strong>Kræv Number:</strong> @admin.KrævNumber</p>
+                            <button class="btn btn-primary" @onclick="EditAdmin">Edit Admin</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-light mb-4 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Admin Details:</h5>
+                    <p class="card-text"><strong>Navn:</strong> @admin.Name</p>
+                    <p class="card-text"><strong>Email:</strong> @admin.Email</p>
+                    <p class="card-text"><strong>Telefon:</strong> @admin.PhoneNumber</p>
+                    <p class="card-text"><strong>Kræv Number:</strong> @admin.KrævNumber</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string email { get; set; }
+    private Administrator admin = new Administrator();
+    private string errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetAdminByEmail(email);
+    }
+
+    private async Task GetAdminByEmail(string email)
+    {
+        try
+        {
+            admin = await Http.GetFromJsonAsync<Administrator>($"https://localhost:7026/api/admin/get-by-email/{email}");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error fetching admin data: {ex.Message}";
+            Console.WriteLine(errorMessage);
+        }
+    }
+
+    private void EditAdmin()
+    {
+        // Navigate to the edit page
+        NavigationManager.NavigateTo($"/edit-admin/{admin.Email}");
+    }
+
+    private async Task<bool> Confirm(string message)
+    {
+        return await JSRuntime.InvokeAsync<bool>("confirm", message);
+    }
+}
