@@ -3,10 +3,11 @@
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 
-<div class="header">
-    <h3>Bruger oversigt</h3>
-    <button class="add-button" @onclick="AddNewUser">Tilføj Ny Bruger</button>
+<div class="header mb-4 d-flex justify-content-between align-items-center">
+    <h3 class="mb-0">Bruger oversigt</h3>
+    <button class="btn btn-primary" @onclick="AddNewUser">Tilføj Ny Bruger</button>
 </div>
+
 
 <div class="container">
     @if (AllAdmins == null)
@@ -15,22 +16,28 @@
     }
     else
     {
-        @foreach (var admin in AllAdmins)
-        {
-            <div class="column">
-                <div class="column-header">
-                    <h5>@admin.Name</h5>
-                    <button class="view-button" @onclick="() => ViewUser(admin.Email)">Se bruger</button>
+        <div class="row">
+            @foreach (var admin in AllAdmins)
+            {
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="row no-gutters">
+                            <div class="col-md-4">
+                                <img src="data:image/jpg;base64,@admin.Image" class="card-img" alt="Image" style="height: 100%; object-fit: cover;">
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card-body">
+                                    <h5 class="card-title">@admin.Name</h5>
+                                    <p class="card-text"><strong>Email:</strong> @admin.Email</p>
+                                    <p class="card-text"><strong>Telefon:</strong> @admin.PhoneNumber</p>
+                                    <button class="btn btn-success" @onclick="() => ViewUser(admin.Email)">Se bruger</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-6">
-                    <img class="card-img-top" src="data:image/jpg;base64,@admin.Image" alt="Image" style="height: 200px; object-fit: cover;">
-                </div>
-                <div class="user-details">
-                    <p>Email: @admin.Email</p>
-                    <p>Telefon: @admin.PhoneNumber</p>
-                </div>
-            </div>
-        }
+            }
+        </div>
     }
 </div>
 
@@ -45,62 +52,25 @@
     .container {
         display: flex;
         flex-direction: column;
-        align-items: center;
         padding: 10px;
     }
 
-    .column {
-        width: 80%;
-        padding: 10px;
-        border: 1px solid #ccc;
-        margin-bottom: 20px;
-        background-color: #f9f9f9;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    .card {
         border-radius: 8px;
-        position: relative;
     }
 
-    .column-header {
+    .card-img {
+        border-radius: 8px 0 0 8px;
+    }
+
+    .card-body {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
+        flex-direction: column;
+        justify-content: center;
     }
 
-    .view-button {
-        padding: 5px 10px;
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        margin-left: auto;
-    }
-
-    .add-button {
-        padding: 5px 10px;
-        background-color: #007BFF;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-
-    .user-details {
-        padding-top: 10px;
-    }
-
-    button:hover {
-        opacity: 0.8;
-    }
-
-    h5 {
-        margin: 0;
-        color: #333;
-    }
-
-    p {
-        margin: 5px 0;
-        color: #666;
+    .btn {
+        width: 100%;
     }
 </style>
 
