@@ -33,7 +33,7 @@ public class ApplicationController : ControllerBase
     
     [HttpGet]
     [Route("getall")]
-    public ActionResult<Application> GetApplication([FromQuery] string applicationId)
+    public ActionResult<Application> GetApplication()
     {
         var applicationFromDb = _applicationRepository.GetAllApplications();
         if (applicationFromDb == null)
