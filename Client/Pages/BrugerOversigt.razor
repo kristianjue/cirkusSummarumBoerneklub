@@ -1,0 +1,106 @@
+﻿@page "/brugeroversigt"
+@using Core
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<div class="row">
+    <div class="col-9">
+            <h3 class="mb-0">Bruger oversigt</h3>
+
+    </div>
+    <div class="col-3 float-end">
+                <button class="btn btn-primary" @onclick="AddNewUser">Tilføj Ny Bruger</button>
+
+        </div>
+</div>
+
+
+
+<div class="container">
+    @if (AllAdmins == null)
+    {
+        <p>Loading...</p>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var admin in AllAdmins)
+            {
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="row no-gutters">
+                            <div class="col-md-4">
+                                <img src="data:image/jpg;base64,@admin.Image" class="card-img" alt="Image" style="height: 100%; object-fit: cover;">
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card-body">
+                                    <h5 class="card-title">@admin.Name</h5>
+                                    <p class="card-text"><strong>Email:</strong> @admin.Email</p>
+                                    <p class="card-text"><strong>Telefon:</strong> @admin.PhoneNumber</p>
+                                    <button class="btn btn-success" @onclick="() => ViewUser(admin.Email)">Se bruger</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 10px;
+    }
+
+    .container {
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+    }
+
+    .card {
+        border-radius: 8px;
+    }
+
+    .card-img {
+        border-radius: 8px 0 0 8px;
+    }
+
+    .card-body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .btn {
+        width: 100%;
+    }
+</style>
+
+@code {
+    private List<Administrator> AllAdmins;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetAllAdmins();
+    }
+
+    public async Task GetAllAdmins()
+    {
+        AllAdmins = await Http.GetFromJsonAsync<List<Administrator>>("https://localhost:7026/api/admin/get-all");
+    }
+
+    private void AddNewUser()
+    {
+        NavigationManager.NavigateTo("/nybruger");
+    }
+
+    private void ViewUser(string email)
+    {
+        NavigationManager.NavigateTo($"/admin/{email}");
+    }
+}

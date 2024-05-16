@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Blazored.LocalStorage;
+using Core;
 using Client;
 
-namespace Client;
+namespace Core;
 
 public class Program
 {
@@ -13,6 +15,9 @@ public class Program
         builder.RootComponents.Add<HeadOutlet>("head::after");
 
         builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+
+        // Tilføj denne linje for at registrere Blazored.LocalStorage
+        builder.Services.AddBlazoredLocalStorage();
 
         await builder.Build().RunAsync();
     }

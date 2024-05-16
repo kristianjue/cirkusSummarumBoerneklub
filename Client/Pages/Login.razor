@@ -1,0 +1,71 @@
+﻿@page "/login"
+@using Blazored.LocalStorage
+@using Core
+@inject NavigationManager Navigation
+@inject ILocalStorageService localStore
+@inject HttpClient Http
+
+<h3>Login</h3>
+<EditForm EditContext="@aEditContext" OnSubmit="@HandleSubmit" class="row p-3">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="col-md-6 mb-3">
+        <label for="Email">Email</label>
+        <InputText id="Email" @bind-Value="administrator.Email" class="form-control" />
+    </div>
+    <div class="col-md-6 mb-3">
+        <label for="password">Adgangskode</label>
+        <InputText type="password" @bind-Value="administrator.Password" id="password" class="form-control" />
+    </div>
+    <div class="col-12 mb-3">
+        <button type="submit" class="btn btn-success">Login</button>
+    </div>
+</EditForm>
+
+@code {
+    private EditContext aEditContext;
+    private Core.Administrator administrator = new Core.Administrator();
+
+    protected override void OnInitialized()
+    {
+        aEditContext = new EditContext(administrator);
+    }
+
+    private async Task HandleSubmit()
+    {
+        var validAdmin = await ValidLogin(administrator.Email, administrator.Password);
+        if (validAdmin)
+        {
+            // Get the user
+            var theAdmin = await GetUserByEmail(administrator.Email);
+
+            // Save it in local storage
+            await localStore.SetItemAsync<Administrator>("currentAdministrator", theAdmin);
+
+            // Get where to navigate to
+            var target = await localStore.GetItemAsStringAsync("target");
+
+            Navigation.NavigateTo(target, true);
+        }
+        else
+        {
+            Navigation.NavigateTo("/");
+        }
+    }
+
+    private async Task<bool> ValidLogin(string email, string password)
+    {
+        var url = $"https://localhost:7026/api/login?email={email}&password={password}";
+        var res = await Http.GetFromJsonAsync<bool>(url);
+
+        return res;
+    }
+
+    private async Task<Administrator> GetUserByEmail(string email)
+    {
+        var url = $"https://localhost:7026/api/login/getuser?email={email}";
+        var res = await Http.GetFromJsonAsync<Administrator>(url);
+
+        return res;
+    }
+}

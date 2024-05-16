@@ -1,0 +1,108 @@
+@page "/Oversigt"
+<div class="row">
+    <div class="col-9">
+        <h3>Oversigt</h3>
+    </div>
+    <div class="col-3">
+        <div class="float-end">
+            <button class="btn btn-secondary">Send mail</button>
+            <button class="btn btn-secondary">Hent pdf</button>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-6">
+        <div class="row">
+            <div class="col-3">
+                            <label for="city">Type</label>
+                            <select type="text" class="form-control" id="city">
+                                <option value="ingen2.">Alle typer</option>
+                                <option value="u27ons-søn">Børneklubben</option>
+                                <option value="u27ons-fre">Ung frivillig</option>
+                            </select>
+                        </div>
+            <div class="col-3">
+                <label for="city">By</label>
+                <select type="text" class="form-control" id="city">
+                    <option value="ingen2.">Alle byer</option>
+                    <option value="u27ons-søn">Aarhus</option>
+                    <option value="u27ons-fre">Ballerup</option>
+                </select>
+            </div>
+            <div class="col-3">
+                <label for="period">Periode</label>
+                <select type="text" class="form-control" id="period">
+                    <option value="ingen2.">Alle perioder</option>
+                    <option value="u27ons-søn">Uge 27: Onsdag-søndag</option>
+                    <option value="u27ons-fre">Uge 27: Onsdag-fredag</option>
+                    <option value="u27lør-søn">Uge 27: Lørdag-søndag</option>
+                    <option value="u28ons-søn">Uge 28: Onsdag-søndag</option>
+                    <option value="u28ons-fre">Uge 28: Onsdag-fredag</option>
+                    <option value="u28lør-søn">Uge 28: Lørdag-søndag</option>
+                </select>
+            </div>
+            <div class="col-3">
+                <label for="status">Status</label>
+                <select type="text" class="form-control" id="status">
+                    <option value="ingen2.">Alle ansøgninger</option>
+                    <option value="u27ons-søn">Nye ansøgninger</option>
+                    <option value="u27ons-fre">Godkendte ansøgninger</option>
+                    <option value="u27lør-søn">Afviste ansøgninger</option>
+                    <option value="u28ons-søn">Ansøgninger på venteliste</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="col-6">
+        <div class="float-end">
+            <label for="search">Søg</label>
+            <input type="text" class="form-control" id="search">
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    @for (int i = 0; i < 5; i++)
+    {
+        <div class="col-9 mx-auto mt-4">
+            <div class="row overview-guardian">
+                <div class="col-3">
+                    <p class="overview-label">Værges navn:</p>
+                    <p>Test testesen</p>
+                </div>
+                <div class="col-3">
+                    <p class="overview-label">Periode:</p>
+                    <p>Uge 27: Onsdag-fredag</p>
+                </div>
+                <div class="col-3">
+                    <p class="overview-label">Status:</p>
+                    <p>Godkendt</p>
+                </div>
+                <div class="col-3">
+                    <div class="float-end" style="margin-top: 17px">
+                        <button class="btn btn-dark">Pdf</button>
+                        <button class="btn btn-danger">Rediger</button>
+                    </div>
+                </div>
+            </div>
+            <div class="row overview-child">
+                <div class="col-4">
+                    <p class="overview-label">Barnets navn:</p>
+                    <p>Kasper Braad</p>
+                </div>
+                <div class="col-4">
+                    <p class="overview-label">Alder:</p>
+                    <p>8 år.</p>
+                </div>
+                <div class="col-4">
+                    <p class="overview-label">Type:</p>
+                    <p>Børneklubben</p>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    
+}

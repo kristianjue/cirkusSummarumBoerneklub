@@ -1,0 +1,142 @@
+﻿@page "/planlaegning"
+@using Core
+@using System.Net.Http
+@using System.Net.Http.Json
+@using System.Threading.Tasks
+
+<div class="admin-dashboard">
+    <div class="row justify-content-end" style="margin-bottom: 20px">
+        <div class="col-3">
+            <h5><label for="city">Lokation</label></h5>
+            <select name="city" class="form-select">
+                <option>Aarhus</option>
+                <option>Ballerup</option>
+            </select>
+        </div>
+    </div>
+    <div class="top-sections">
+        <div class="section">
+            <h3>Applikationer</h3>
+            @foreach (var app in applications)
+            {
+                <div draggable="true" @ondragstart="@((e) => StartDrag(app, e))" class="application">
+                    @app.Id @app.Status
+                </div>
+            }
+        </div>
+
+        <div class="week-sections">
+            @foreach (var week in new[] { "Uge 27", "Uge 28" })
+            {
+                <div class="section">
+                    <h3>@week</h3>
+                    <div class="sub-section" @ondrop="@(e => Drop(e, week + " Ons-Søn"))" @ondragover:preventDefault="true" @ondrop:preventDefault="true">
+                        <h4>Ons-Søn</h4>
+                    </div>
+                    <div class="sub-section" @ondrop="@(e => Drop(e, week + " Ons-Fre"))" @ondragover:preventDefault="true" @ondrop:preventDefault="true">
+                        <h4>Ons-Fre</h4>
+                    </div>
+                    <div class="sub-section" @ondrop="@(e => Drop(e, week + " Lør-Søn"))" @ondragover:preventDefault="true" @ondrop:preventDefault="true">
+                        <h4>Lør-Søn</h4>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="bottom-sections">
+        <div class="section">
+            <h3>Venteliste</h3>
+            <div @ondrop="@(e => Drop(e, "Venteliste"))" @ondragover:preventDefault="true" @ondrop:preventDefault="true" class="drop-zone">
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Afvist</h3>
+            <div @ondrop="@(e => Drop(e, "Afvist"))" @ondragover:preventDefault="true" @ondrop:preventDefault="true" class="drop-zone">
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    List<Application> applications = new List<Application>();
+    Application currentDraggedItem;
+
+    protected override async Task OnInitializedAsync()
+    {
+        applications = new List<Application>
+        {
+            new Application { Id = "Daniel", Status = "uge 28" },
+            new Application { Id = "Sofie", Status = "uge 27" },
+            new Application { Id = "Markus", Status = "Uge 28" },
+            new Application { Id = "Mikkel", Status = "Uge 27" },
+            new Application { Id = "Hassan", Status = "Uge 28" },
+            new Application { Id = "Abdi", Status = "Uge 27" },
+            new Application { Id = "Laura", Status = "Uge 28" },
+            new Application { Id = "Susanne", Status = "Uge 27" }
+        };
+    }
+
+    void StartDrag(Application app, DragEventArgs e)
+    {
+        currentDraggedItem = app;
+        e.DataTransfer.DropEffect = "move";
+        //e.DataTransfer.SetData("application/json", System.Text.Json.JsonSerializer.Serialize(app));
+    }
+
+    void Drop(DragEventArgs e, string newStatus)
+    {
+        if (currentDraggedItem != null)
+        {
+            applications.Remove(currentDraggedItem);
+            currentDraggedItem.Status = newStatus;
+            applications.Add(currentDraggedItem);
+            StateHasChanged();
+        }
+    }
+}
+
+<style>
+    .admin-dashboard {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .top-sections {
+        display: flex;
+        justify-content: space-around;
+    }
+
+    .week-sections {
+        display: flex;
+        justify-content: space-around;
+        flex-grow: 1;
+    }
+
+    .bottom-sections {
+        display: flex;
+        justify-content: space-around;
+    }
+
+    .section, .sub-section {
+        flex: 1;
+        padding: 10px;
+        min-width: 150px;
+    }
+
+    .drop-zone, .sub-section {
+        border: 1px dashed gray;
+        min-height: 150px;
+        padding: 10px;
+        background-color: #f9f9f9;
+    }
+
+    .application {
+        padding: 5px;
+        border: 1px solid lightgray;
+        margin-bottom: 5px;
+        background-color: white;
+        cursor: grab;
+    }
+</style>
