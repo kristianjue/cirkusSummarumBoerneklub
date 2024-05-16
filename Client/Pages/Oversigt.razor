@@ -1,6 +1,7 @@
 @page "/Oversigt"
 @using Core
 @inject HttpClient Http
+@inject NavigationManager NavigationManager
 
 <div class="row">
     <div class="col-9">
@@ -90,26 +91,29 @@
                     <div class="col-3">
                         <div class="float-end" style="margin-top: 17px">
                             <button class="btn btn-dark">Pdf</button>
-                            <button class="btn btn-danger">Rediger</button>
+                            <button class="btn btn-danger" @onclick="() => EditApplication(application.Id)">Rediger</button>
                         </div>
                     </div>
                 </div>
-                @foreach (var child in application.Children)
+                @if (application.Volunteer.Children != null)
                 {
-                    <div class="row overview-child">
-                        <div class="col-4">
-                            <p class="overview-label">Barnets navn:</p>
-                            <p>@child.Name</p>
+                    @foreach (var child in application.Volunteer.Children)
+                    {
+                        <div class="row overview-child">
+                            <div class="col-4">
+                                <p class="overview-label">Barnets navn:</p>
+                                <p>@child.Name</p>
+                            </div>
+                            <div class="col-4">
+                                <p class="overview-label">Alder:</p>
+                                <p>@child.Age år</p>
+                            </div>
+                            <div class="col-4">
+                                <p class="overview-label">Type:</p>
+                                <p>@application.Priority2</p>
+                            </div>
                         </div>
-                        <div class="col-4">
-                            <p class="overview-label">Alder:</p>
-                            <p>@child.Age år</p>
-                        </div>
-                        <div class="col-4">
-                            <p class="overview-label">Type:</p>
-                            <p>@application.Priority2</p>
-                        </div>
-                    </div>
+                    }
                 }
             </div>
         }
@@ -129,4 +133,10 @@
     {
         applications = await Http.GetFromJsonAsync<List<Application>>("https://localhost:7026/api/application/getall");
     }
+
+    private void EditApplication(string applicationId)
+    {
+        NavigationManager.NavigateTo($"/edit-application/{applicationId}");
+    }
 }
+

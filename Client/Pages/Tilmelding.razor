@@ -256,7 +256,7 @@ else {
             _newTilmelding.Volunteer.Children.Add(kid2);
         }
         
-        _newTilmelding.Id = Guid.NewGuid().ToString();
+        _newTilmelding.Id = System.Guid.NewGuid().ToString();
         _newTilmelding.Volunteer.Id = Guid.NewGuid().ToString();
         _newTilmelding.Status = "Ny";
         

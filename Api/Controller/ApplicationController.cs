@@ -30,10 +30,10 @@ public class ApplicationController : ControllerBase
             return BadRequest(ex.Message);
         }
     }
-    
+
     [HttpGet]
     [Route("getall")]
-    public ActionResult<Application> GetApplication([FromQuery] string applicationId)
+    public ActionResult<Application> GetApplication()
     {
         var applicationFromDb = _applicationRepository.GetAllApplications();
         if (applicationFromDb == null)
@@ -54,6 +54,20 @@ public class ApplicationController : ControllerBase
         }
         return Ok(applicationFromDb);
     }
-    
+
+    [HttpPut]
+    [Route("update/{applicationId}")]
+    public ActionResult<Application> UpdateApplication([FromBody] Application application)
+    {
+        try
+        {
+            _applicationRepository.UpdateApplication(application);
+            return Ok(application);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
     
 }
