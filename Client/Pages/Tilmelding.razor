@@ -239,7 +239,7 @@ else {
     protected override void OnInitialized()
     {
         _newTilmelding.Volunteer = new Volunteer();
-        _newTilmelding.Children = new List<Child>();
+        _newTilmelding.Volunteer.Children = new List<Child>();
         aEditContext = new EditContext(_newTilmelding);
     }
 
@@ -247,17 +247,17 @@ else {
     {
         if (ekstraKid == false)
         {
-            _newTilmelding.Children.Add(kid1);
+            _newTilmelding.Volunteer.Children.Add(kid1);
         }
 
         else
         {
-            _newTilmelding.Children.Add(kid1);
-            _newTilmelding.Children.Add(kid2);
+            _newTilmelding.Volunteer.Children.Add(kid1);
+            _newTilmelding.Volunteer.Children.Add(kid2);
         }
         
         _newTilmelding.Id = Guid.NewGuid().ToString();
-        
+        _newTilmelding.Volunteer.Id = Guid.NewGuid().ToString();
         _newTilmelding.Status = "Ny";
         
         await Http.PostAsJsonAsync<Application>($"https://localhost:7026/api/application/create",_newTilmelding);
