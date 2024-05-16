@@ -137,11 +137,20 @@
 
     public async Task HandleValidSubmit()
     {
+        if (addguardien == true)
+        {
+            _newSignatur.Volunteer = null;
+        }
+        else
+        {
+            _newSignatur.Volunteer.Id = System.Guid.NewGuid().ToString();
+
+        }
         _newSignatur.Id = System.Guid.NewGuid().ToString();
-        _newSignatur.Volunteer.Id = Guid.NewGuid().ToString();
+        _newSignatur.YoungVolunteer.Signature = SignatureForVoulenteerAsBase64;
         await Http.PostAsJsonAsync<Signature>($"https://localhost:7026/api/signature/create", _newSignatur);
 
-        navigationManager.NavigateTo($"brugeroversigt");
+       // navigationManager.NavigateTo($"brugeroversigt");
     }
 
     public bool addguardien = false;

@@ -17,7 +17,7 @@ namespace Api.Controller
         }
 
 
-        [HttpPost("get-specific")]
+        [HttpPost("create")]
         public IActionResult CreateSignature(Signature signature)
         {
             _signatureRepository.CreateSignature(signature);
