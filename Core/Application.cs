@@ -8,7 +8,6 @@
         public string Priority1 { get; set; }
         public string Priority2 { get; set; }
         public Volunteer Volunteer { get; set; } // Antager at VolunteerModel klassen eksisterer 
-        public List<Child> Children { get; set; }
 
     }
 
