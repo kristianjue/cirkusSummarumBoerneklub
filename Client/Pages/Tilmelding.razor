@@ -247,16 +247,20 @@ else {
     {
         if (ekstraKid == false)
         {
+            kid1.Signature = SignatureForKid1AsBase64;
             _newTilmelding.Volunteer.Children.Add(kid1);
+            
         }
 
         else
         {
+            kid1.Signature = SignatureForKid1AsBase64;
+            kid2.Signature = SignatureForKid2AsBase64;
             _newTilmelding.Volunteer.Children.Add(kid1);
             _newTilmelding.Volunteer.Children.Add(kid2);
         }
         
-        _newTilmelding.Id = Guid.NewGuid().ToString();
+        _newTilmelding.Id = System.Guid.NewGuid().ToString();
         _newTilmelding.Volunteer.Id = Guid.NewGuid().ToString();
         _newTilmelding.Status = "Ny";
         
@@ -282,9 +286,11 @@ else {
     }
     
     public byte[] SignatureForKid1 { get; set; } = Array.Empty<byte>();
-
     public byte[] SignatureForKid2 { get; set; } = Array.Empty<byte>();
 
+    public string SignatureForKid1AsBase64 => System.Text.Encoding.UTF8.GetString(SignatureForKid1);
+    public string SignatureForKid2AsBase64 => System.Text.Encoding.UTF8.GetString(SignatureForKid2);
+    
 }
 
 
