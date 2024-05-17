@@ -1,7 +1,10 @@
-﻿namespace Core
+﻿using MongoDB.Bson;
+
+namespace Core
 {
     public class Application
     {
+      
         public string Id { get; set; }
         public string Status { get; set; }
         public string Location { get; set; }
