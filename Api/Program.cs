@@ -21,7 +21,7 @@ public class Program
         builder.Services.AddSingleton<ILoginRepository, LoginRepository>();
         builder.Services.AddSingleton<IAdminRepository, AdminRespository>();
         builder.Services.AddSingleton<IApplicationRepository, ApplicationRepository>();
-        
+        builder.Services.AddSingleton<ISignatureRepository, SignatureRepository>();
         
 
         builder.Services.AddCors(options =>
