@@ -140,11 +140,19 @@
 
 @code {
     [Parameter] public string applicationId { get; set; }
-    private Application _existingApplication = new();
+    private Application _existingApplication = new Application 
+    { 
+        Volunteer = new Volunteer 
+        { 
+            Children = new List<Child> { new Child() } 
+        } 
+    };    
     private EditContext aEditContext;
-
+    
+    
     protected override async Task OnInitializedAsync()
     {
+        aEditContext = new EditContext(_existingApplication);
         await LoadApplicationData();
         aEditContext = new EditContext(_existingApplication);
     }
