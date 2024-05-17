@@ -143,10 +143,14 @@
     private Application _existingApplication = new();
     private EditContext aEditContext;
 
+  
+
     protected override async Task OnInitializedAsync()
     {
+        aEditContext = new EditContext(_existingApplication);
         await LoadApplicationData();
         aEditContext = new EditContext(_existingApplication);
+
     }
 
     private async Task LoadApplicationData()
