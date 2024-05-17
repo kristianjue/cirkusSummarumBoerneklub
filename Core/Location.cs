@@ -1,6 +1,6 @@
 namespace Core;
 
-public class System
+public class SystemSettings
 {
     public List<Location> Locations { get; set; }
     
