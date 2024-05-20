@@ -57,17 +57,37 @@ public class ApplicationController : ControllerBase
 
     [HttpPut]
     [Route("update/{applicationId}")]
-    public ActionResult<Application> UpdateApplication([FromBody] Application application)
+    public ActionResult<Application> UpdateApplication(string applicationId, [FromBody] Application application)
     {
         try
         {
-            _applicationRepository.UpdateApplication(application);
-            return Ok(application);
+            var existingApplication = _applicationRepository.GetApplicationById(applicationId);
+            if (existingApplication == null)
+            {
+                return NotFound();
+            }
+
+            // Ensure that the application ID in the URL matches the application ID in the request body
+            if (application.Id != applicationId)
+            {
+                return BadRequest("Application ID mismatch");
+            }
+
+            // Update the application details
+            existingApplication.Status = application.Status;
+            existingApplication.Location = application.Location;
+            existingApplication.Priority1 = application.Priority1;
+            existingApplication.Priority2 = application.Priority2;
+            existingApplication.Volunteer = application.Volunteer;
+
+            _applicationRepository.UpdateApplication(existingApplication);
+            return Ok(existingApplication);
         }
         catch (Exception ex)
         {
             return BadRequest(ex.Message);
         }
     }
-    
+
+
 }

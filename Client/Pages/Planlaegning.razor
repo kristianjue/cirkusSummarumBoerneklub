@@ -191,6 +191,10 @@
                 {
                     Console.WriteLine($"Error saving application {app.Id}: {response.ReasonPhrase}");
                 }
+                else
+                {
+                    Console.WriteLine($"Successfully saved application {app.Id}");
+                }
             }
             catch (Exception ex)
             {

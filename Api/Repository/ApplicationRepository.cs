@@ -34,17 +34,17 @@ public class ApplicationRepository : IApplicationRepository
 
     public void UpdateApplication(Application application)
     {
-var filter = Builders<Application>.Filter.Eq(application => application.Id, application.Id);
+        var filter = Builders<Application>.Filter.Eq(a => a.Id, application.Id);
         var update = Builders<Application>.Update
-            .Set(application => application.Status, application.Status)
-            .Set(application => application.Location, application.Location)
-            .Set(application => application.Priority1, application.Priority1)
-            .Set(application => application.Priority2, application.Priority2)
-            .Set(application => application.Volunteer, application.Volunteer);
-
+            .Set(a => a.Status, application.Status)
+            .Set(a => a.Location, application.Location)
+            .Set(a => a.Priority1, application.Priority1)
+            .Set(a => a.Priority2, application.Priority2)
+            .Set(a => a.Volunteer, application.Volunteer);
 
         ApplicationCollection.UpdateOne(filter, update);
     }
+
 
     public void DeleteApplication(string id)
     {
