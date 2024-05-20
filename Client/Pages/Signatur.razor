@@ -1,128 +1,166 @@
 ﻿@page "/signatur"
+@inject NavigationManager navigationManager
+@inject HttpClient Http
+@using Core
 
 <PageTitle>Signatur</PageTitle>
 
 <div style="text-align: center; margin-bottom: 50px">
-<h1>Signatur for 16-18 årige</h1>
-<p>Hvis dit barn på mellem 16 og 18 år ønsker at være frivillig, skal en forældre underskrive denne formular for at give dem tilladelse til at deltage. Du kan som forældre selv være værge hvis du også er frivillig og ellers kan en anden med tilknytning til barnet være værge.</p>
+    <h1>Signatur for 16-18 årige</h1>
+    <p>Hvis dit barn på mellem 16 og 18 år ønsker at være frivillig, skal en forældre underskrive denne formular for at give dem tilladelse til at deltage. Du kan som forældre selv være værge hvis du også er frivillig og ellers kan en anden med tilknytning til barnet være værge.</p>
 </div>  
-@if (addguardien == false)
-{
-<h3>Forældre:</h3>
 
-<div class="row" style="margin-bottom: 30px">
-    <div class="col-md-3 mb-3">
-        <label for="fullName">Fulde navn</label>
-        <input type="text" class="form-control" id="fullName">
-    </div>
-    <div class="col-md-3 mb-3">
-        <label for="phoneNumber">Telefonnummer</label>
-        <input type="text" class="form-control" id="phoneNumber">
-    </div>
-    <div class="col-md-6 mb-3">
-        <label for="email">Email</label>
-        <input type="email" class="form-control" id="email">
-    </div>     
-    <div class="col-12 mb-3" >                                                               
-         <input type="checkbox" name="confirm3" @onclick="showguardien"/>   
-         <label for="confirm">Jeg er selv værge.</label>                                      
-    </div>                                                                                   
-</div>                                                                                
-}
-else
-{
-    <h3>Forældre:</h3>                                                                              
-                                                                                                
-    <div class="row" style="margin-bottom: 30px">                                                   
-        <div class="col-md-3 mb-3">                                                                 
-            <label for="fullName">Fulde navn</label>                                                
-            <input type="text" class="form-control" id="fullName">                                  
-        </div>                                                                                      
-        <div class="col-md-3 mb-3">                                                                
-            <label for="voluntaryNumber">Kræv nummer</label>                                       
-            <input type="text" class="form-control" id="voluntaryNumber">                          
-        </div>                                                                                     
-        <div class="col-md-6 mb-3">                                                                 
-            <label for="email">Email</label>                                                        
-            <input type="email" class="form-control" id="email">                                    
-        </div>                                                                                      
-        <div class="col-12 mb-3" >                                                                  
-            <input type="checkbox" name="confirm3" checked="checked" @onclick="showguardien"/>     
-            <label for="confirm">Jeg er selv værge.</label>                                        
-        </div>                                                                                      
-    </div>                                                                                            
-}
+<EditForm EditContext="@aEditContext" class="row p-3" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator/>
+    <ValidationSummary/>
 
-@if (addguardien == false)
-{
-    <h3>Værge:</h3>                                                                                 
-    <div class="row" style="margin-bottom: 30px">                                                      
-        <div class="col-md-3 mb-3">                                                                    
-            <label for="fullName">Fulde navn</label>                                                   
-            <input type="text" class="form-control" id="fullName">                                     
-        </div>                                                                                         
-        <div class="col-md-3 mb-3">                                                                    
-            <label for="voluntaryNumber">Kræv nummer</label>                                           
-            <input type="text" class="form-control" id="voluntaryNumber">                              
-        </div>                                                                                         
-        <div class="col-md-6 mb-3">                                                                    
-            <label for="email">Email</label>                                                           
-            <input type="email" class="form-control" id="email">                                       
-        </div>                                                                                                                 
-    </div>                                                                                                
-}         
+    @if (addguardien == false)
+    {
+        <h3>Forældre:</h3>
+        <div class="row" style="margin-bottom: 30px">
+            <div class="col-md-3 mb-3">
+                <label for="fullName">Fulde navn</label>
+                <InputText id="fullName" @bind-Value="_newSignatur.Name" class="form-control"/>
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="phoneNumber">Telefonnummer</label>
+                <InputNumber id="phoneNumber" @bind-Value="_newSignatur.PhoneNumber" class="form-control"/>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="email">Email</label>
+                <InputText id="email" @bind-Value="_newSignatur.Email" class="form-control"/>
+            </div>
+            <div class="col-12 mb-3">
+                <input type="checkbox" name="confirm3" @onclick="showguardien"/>
+                <label for="confirm">Jeg er selv værge.</label>
+            </div>
+        </div>
+    }
+    else
+    {
+        <h3>Forældre:</h3>
+        <div class="row" style="margin-bottom: 30px">
+            <div class="col-md-3 mb-3">
+                <label for="fullName">Fulde navn</label>
+                <InputText id="fullName" @bind-Value="_newSignatur.Name" class="form-control"/>
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="voluntaryNumber">Kræv nummer</label>
+                <InputNumber id="phoneNumber" @bind-Value="_newSignatur.KrævNumber" class="form-control"/>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="email">Email</label>
+                <InputText id="email" @bind-Value="_newSignatur.Email" class="form-control"/>
+            </div>
+            <div class="col-12 mb-3">
+                <input type="checkbox" name="confirm3" checked="checked" @onclick="showguardien"/>
+                <label for="confirm">Jeg er selv værge.</label>
+            </div>
+        </div>
+    }
 
-<h3>Frivillig:</h3>
-<div class="row" style="margin-bottom: 30px">
-    <div class="col-md-3 mb-3">
-        <label for="voluntaryName">Frivilligs navn</label>
-        <input type="text" class="form-control" id="voluntaryName">
-    </div>
-    <div class="col-md-3 mb-3">
-        <label for="voluntaryNumber">Kræv nummer</label>
-        <input type="text" class="form-control" id="voluntaryNumber">
-    </div>
-    <div class="col-md-6 mb-3">
-        <label for="email">Email</label>
-        <input type="email" class="form-control" id="email">
-    </div>
-</div>
+    @if (addguardien == false)
+    {
+        <h3>Værge:</h3>
+        <div class="row" style="margin-bottom: 30px">
+            <div class="col-md-3 mb-3">
+                <label for="fullName">Fulde navn</label>
+                <InputText id="fullName" @bind-Value="_newSignatur.Volunteer.Name" class="form-control"/>
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="voluntaryNumber">Kræv nummer</label>
+                <InputNumber id="phoneNumber" @bind-Value="_newSignatur.Volunteer.KrævNumber" class="form-control"/>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="email">Email</label>
+                <InputText id="email" @bind-Value="_newSignatur.Volunteer.Email" class="form-control"/>
+            </div>
+        </div>
+    }
 
-<div class="row" style="margin-top: 10px; text-align: center">
-    <div class="col-12 mb-3" >
-        <input type="checkbox" name="confirm1"/>
-        <label for="confirm">Jeg er indforstået med, og giver tilladelse til, at mit barn opholder sig og deltager i frivilligheden på Cirkus Summarum.</label>
+    <h3>Frivillig:</h3>
+    <div class="row" style="margin-bottom: 30px">
+        <div class="col-md-3 mb-3">
+            <label for="voluntaryName">Frivilligs navn</label>
+            <InputText id="fullName" @bind-Value="_newSignatur.YoungVolunteer.Name" class="form-control"/>
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="voluntaryNumber">Kræv nummer</label>
+            <InputNumber id="phoneNumber" @bind-Value="_newSignatur.YoungVolunteer.KrævNumber" class="form-control"/>
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="email">Email</label>
+            <InputText id="email" @bind-Value="_newSignatur.YoungVolunteer.Email" class="form-control"/>
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="youngVolunteerAge">Alder</label>
+            <InputSelect id="youngVolunteerAge" @bind-Value="_newSignatur.YoungVolunteer.Age" class="form-control">
+                <option value="16">16 år</option>
+                <option value="17">17 år</option>
+            </InputSelect>
+        </div>
     </div>
-</div>
 
-    
-<div class="row">
-    <div class="col-3"></div>
-    <div class="col-6">
-        <h4 style="text-align: center;margin-bottom: 10px;margin-top: 10px">Underskrift</h4>
-        <SignaturePad @bind-Value="SignatureForVoulenteer" style="width: 100%;background-color: #F7F7F7"/>
+    <div class="row" style="margin-top: 10px; text-align: center">
+        <div class="col-12 mb-3">
+            <input type="checkbox" name="confirm1"/>
+            <label for="confirm">Jeg er indforstået med, og giver tilladelse til, at mit barn opholder sig og deltager i frivilligheden på Cirkus Summarum.</label>
+        </div>
     </div>
-</div>
 
-<div class="row" style="margin-bottom: 50px; text-align: center">
-    <div class="col-12 mb-3" >
-        <button type="submit" class="btn btn-success" style="margin-top: 50px">Send kontrakt</button>
+    <div class="row">
+        <div class="col-3"></div>
+        <div class="col-6">
+            <h4 style="text-align: center;margin-bottom: 10px;margin-top: 10px">Underskrift</h4>
+            <SignaturePad @bind-Value="SignatureForVoulenteer" style="width: 100%;background-color: #F7F7F7"/>
+        </div>
     </div>
-</div>
+
+    <div class="row" style="margin-bottom: 50px; text-align: center">
+        <div class="col-12 mb-3">
+            <button type="submit" class="btn btn-success" style="margin-top: 50px">Send kontrakt</button>
+        </div>
+    </div>
+</EditForm>
 
 @code {
+    private EditContext aEditContext;
 
-    public bool addguardien = false; 
-    
+    Signature _newSignatur = new();
+
+    protected override void OnInitialized()
+    {
+        _newSignatur.YoungVolunteer = new YoungVolunteer();
+        _newSignatur.Volunteer = new Volunteer();
+        aEditContext = new EditContext(_newSignatur);
+    }
+
+    public async Task HandleValidSubmit()
+    {
+        if (addguardien == true)
+        {
+            _newSignatur.Volunteer = null;
+        }
+        else
+        {
+            _newSignatur.Volunteer.Id = System.Guid.NewGuid().ToString();
+
+        }
+        _newSignatur.Id = System.Guid.NewGuid().ToString();
+        _newSignatur.YoungVolunteer.Signature = SignatureForVoulenteerAsBase64;
+        await Http.PostAsJsonAsync<Signature>($"https://localhost:7026/api/signature/create", _newSignatur);
+
+       // navigationManager.NavigateTo($"brugeroversigt");
+    }
+
+    public bool addguardien = false;
+
     public void showguardien()
     {
         addguardien = !addguardien;
     }
-    
+
     public byte[] SignatureForVoulenteer { get; set; } = Array.Empty<byte>();
 
-
+    public string SignatureForVoulenteerAsBase64 => System.Text.Encoding.UTF8.GetString(SignatureForVoulenteer);
 }
-
-
-

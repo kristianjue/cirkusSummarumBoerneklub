@@ -1,0 +1,65 @@
+@page "/Systemindstillinger"
+@inject NavigationManager navigationManager
+@inject HttpClient Http
+@using Core
+
+<PageTitle>Systemindstillinger</PageTitle>
+
+<h1>Systemindstillinger</h1>
+
+<EditForm EditContext="@aEditContext" class="row p-3" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    
+    <h3>Tilføj by</h3>
+    @foreach(Location location in _newSystem.Locations)
+    {
+    <div class="row" style="margin-bottom: 30px">
+        <div class="col-md-6 mb-3">
+            <label for="city">By</label>
+            <InputText id="city" class="form-control" />
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="period">Periode</label>
+            <InputText id="period" class="form-control" />
+        </div>
+    </div>
+    }
+
+    <div class="row" style="margin-bottom: 30px">
+        <div style="margin-bottom: 50px">
+            <button type="button" class="btn btn-primary" @onclick="addLocation" style="margin-top: 10px">Tilføj lokation</button>
+        </div> 
+        <div style="margin-bottom: 50px">
+            <button type="button" class="btn btn-danger" @onclick="removeLocation" style="margin-top: 10px">Fjern lokation</button>
+        </div> 
+    </div>
+</EditForm>
+
+@code {
+    private EditContext aEditContext;
+    SystemSettings _newSystem = new();
+
+    public async Task HandleValidSubmit()
+    {
+        await Http.PostAsJsonAsync<SystemSettings>($"https://localhost:7026/api/application/create", _newSystem);
+        navigationManager.NavigateTo($"brugeroversigt");
+    }
+
+    public bool ekstraLocation = false;
+
+    public void addLocation()
+    {
+        // Logic to add a location
+        _newSystem.Locations.Add(new Location());
+    }
+
+    public void removeLocation()
+    {
+        // Logic to remove a location, e.g., removing the last one added
+        if (_newSystem.Locations.Any())
+        {
+            _newSystem.Locations.RemoveAt(_newSystem.Locations.Count - 1);
+        }
+    }
+}

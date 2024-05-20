@@ -64,12 +64,14 @@ public class ApplicationController : ControllerBase
             var existingApplication = _applicationRepository.GetApplicationById(applicationId);
             if (existingApplication == null)
             {
+                Console.WriteLine($"Application not found: {applicationId}");
                 return NotFound();
             }
 
             // Ensure that the application ID in the URL matches the application ID in the request body
             if (application.Id != applicationId)
             {
+                Console.WriteLine("Application ID mismatch");
                 return BadRequest("Application ID mismatch");
             }
 
@@ -81,13 +83,16 @@ public class ApplicationController : ControllerBase
             existingApplication.Volunteer = application.Volunteer;
 
             _applicationRepository.UpdateApplication(existingApplication);
+            Console.WriteLine($"Successfully updated application: {applicationId}");
             return Ok(existingApplication);
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"Exception updating application: {ex.Message}");
             return BadRequest(ex.Message);
         }
     }
+
 
 
 }

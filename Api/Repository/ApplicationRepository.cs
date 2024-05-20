@@ -42,8 +42,18 @@ public class ApplicationRepository : IApplicationRepository
             .Set(a => a.Priority2, application.Priority2)
             .Set(a => a.Volunteer, application.Volunteer);
 
-        ApplicationCollection.UpdateOne(filter, update);
+        var result = ApplicationCollection.UpdateOne(filter, update);
+
+        if (result.ModifiedCount == 0)
+        {
+            Console.WriteLine($"No documents were updated for application Id={application.Id}");
+        }
+        else
+        {
+            Console.WriteLine($"Successfully updated application Id={application.Id}");
+        }
     }
+
 
 
     public void DeleteApplication(string id)
