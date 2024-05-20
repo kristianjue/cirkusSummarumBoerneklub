@@ -186,10 +186,17 @@
         {
             try
             {
+                var jsonString = System.Text.Json.JsonSerializer.Serialize(app);
+                Console.WriteLine($"Saving application: {jsonString}");
+
                 var response = await Http.PutAsJsonAsync($"https://localhost:7026/api/application/update/{app.Id}", app);
                 if (!response.IsSuccessStatusCode)
                 {
                     Console.WriteLine($"Error saving application {app.Id}: {response.ReasonPhrase}");
+                }
+                else
+                {
+                    Console.WriteLine($"Successfully saved application {app.Id}");
                 }
             }
             catch (Exception ex)
@@ -199,6 +206,8 @@
         }
         Navigation.NavigateTo("/planlaegning", forceLoad: true); // Reload the page to get fresh data
     }
+
+
 }
 
 <style>
