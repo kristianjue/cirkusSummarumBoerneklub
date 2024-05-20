@@ -34,17 +34,27 @@ public class ApplicationRepository : IApplicationRepository
 
     public void UpdateApplication(Application application)
     {
-var filter = Builders<Application>.Filter.Eq(application => application.Id, application.Id);
+        var filter = Builders<Application>.Filter.Eq(a => a.Id, application.Id);
         var update = Builders<Application>.Update
-            .Set(application => application.Status, application.Status)
-            .Set(application => application.Location, application.Location)
-            .Set(application => application.Priority1, application.Priority1)
-            .Set(application => application.Priority2, application.Priority2)
-            .Set(application => application.Volunteer, application.Volunteer);
+            .Set(a => a.Status, application.Status)
+            .Set(a => a.Location, application.Location)
+            .Set(a => a.Priority1, application.Priority1)
+            .Set(a => a.Priority2, application.Priority2)
+            .Set(a => a.Volunteer, application.Volunteer);
 
+        var result = ApplicationCollection.UpdateOne(filter, update);
 
-        ApplicationCollection.UpdateOne(filter, update);
+        if (result.ModifiedCount == 0)
+        {
+            Console.WriteLine($"No documents were updated for application Id={application.Id}");
+        }
+        else
+        {
+            Console.WriteLine($"Successfully updated application Id={application.Id}");
+        }
     }
+
+
 
     public void DeleteApplication(string id)
     {
