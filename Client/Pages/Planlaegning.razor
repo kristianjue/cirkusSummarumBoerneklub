@@ -118,15 +118,14 @@
 </div>
 
 @code {
-    private List<Application> applications;
+    private List<Application> applications = new List<Application>();
     private string selectedLocation = "Aarhus";
 
     protected override async Task OnInitializedAsync()
     {
         await LoadApplications();
-        
     }
- 
+
     private async Task LoadApplications()
     {
         try
@@ -191,10 +190,6 @@
                 if (!response.IsSuccessStatusCode)
                 {
                     Console.WriteLine($"Error saving application {app.Id}: {response.ReasonPhrase}");
-                }
-                else
-                {
-                    Console.WriteLine($"Successfully saved application {app.Id}");
                 }
             }
             catch (Exception ex)
