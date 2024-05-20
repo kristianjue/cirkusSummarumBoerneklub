@@ -118,14 +118,15 @@
 </div>
 
 @code {
-    private List<Application> applications = new List<Application>();
+    private List<Application> applications;
     private string selectedLocation = "Aarhus";
 
     protected override async Task OnInitializedAsync()
     {
         await LoadApplications();
+        
     }
-
+    private string selectedLocation = "Ballerup";
     private async Task LoadApplications()
     {
         try
