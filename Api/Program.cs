@@ -3,6 +3,7 @@ using Api.Repositories;
 using Api.Repository;
 using Core;
 using MongoDB.Driver;
+using QuestPDF.Infrastructure;
 
 
 namespace ServerAPI;
@@ -22,7 +23,8 @@ public class Program
         builder.Services.AddSingleton<IAdminRepository, AdminRespository>();
         builder.Services.AddSingleton<IApplicationRepository, ApplicationRepository>();
         builder.Services.AddSingleton<ISignatureRepository, SignatureRepository>();
-        
+        QuestPDF.Settings.License = LicenseType.Community;
+
 
         builder.Services.AddCors(options =>
         {

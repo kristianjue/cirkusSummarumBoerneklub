@@ -49,5 +49,6 @@ namespace Api.Controller
             _signatureRepository.DeleteSignature(id);
             return Ok();
         }
+        
     }
 }
