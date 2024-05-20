@@ -31,12 +31,12 @@
                 @foreach (var app in applications.Where(a => string.IsNullOrEmpty(a.Status) || a.Status == "Ny"))
                 {
                     <div class="application">
-                        @app.Id
+                        @app.Id <br /> @app.Volunteer.Name <br /> @app.Volunteer.Email <br /> @app.Priority1 + @app.Priority2 <br /> @app.Volunteer.Children.Count børn
                         <select @onchange="(e) => UpdateApplicationStatus(app, e.Value.ToString())" class="form-select">
                             <option value="">Vælg uge</option>
                             @foreach (var week in new[] { "Uge 27: Ons-Søn", "Uge 27: Ons-Fre", "Uge 27: Lør-Søn", "Uge 28: Ons-Søn", "Uge 28: Ons-Fre", "Uge 28: Lør-Søn", "Venteliste", "Afvist" })
                             {
-                                <option value="@week">@week</option>
+                                <option style=" color:@GetWeekColor(week)" value="@week">@week</option>
                             }
                         </select>
                     </div>
@@ -47,14 +47,14 @@
             @foreach (var week in new[] { "Uge 27", "Uge 28" })
             {
                 <div class="section">
-                    <h3>@week</h3>
+                    <h3 style=" color:@GetWeekColor(week)">@week (@GetChildrenCount(week) / 20)</h3>
                     <div class="sub-section">
                         <h4>Ons-Søn</h4>
                         @foreach (var app in applications.Where(a => a.Status == $"{week}: Ons-Søn"))
                         {
                             <div class="application">
                                 @app.Id
-                                <button class="btn btn-danger" @onclick="() => RemoveApplication(app)">Slet</button>
+                                <button class="btn btn-danger" @onclick="() => RemoveApplication(app)">Fortryd</button>
                             </div>
                         }
                     </div>
@@ -207,6 +207,28 @@
         Navigation.NavigateTo("/planlaegning", forceLoad: true); // Reload the page to get fresh data
     }
 
+    private int GetChildrenCount(string week)
+    {
+        return applications.Where(a => a.Status.StartsWith(week)).Sum(a => a.Volunteer.Children.Count);
+    }
+
+    private string GetWeekColor(string week)
+    {
+        int childrenCount = GetChildrenCount(week);
+        if (childrenCount == 0)
+        {
+            return "black"; // No children assigned yet
+        }
+        if (childrenCount <= 10)
+        {
+            return "green"; // Safe range
+        }
+        if (childrenCount <= 19)
+        {
+            return "orange"; // Warning range
+        }
+        return "red"; // Full or over capacity
+    }
 
 }
 
