@@ -11,7 +11,7 @@ namespace Core
         public int PhoneNumber { get; set;}
         public string Password { get; set; }
         public int KrævNumber { get; set; }
-
+        
         public string Image { get; set; }
     }
 }
