@@ -150,7 +150,7 @@
         _newSignatur.YoungVolunteer.Signature = SignatureForVoulenteerAsBase64;
         await Http.PostAsJsonAsync<Signature>($"https://localhost:7026/api/signature/create", _newSignatur);
 
-       // navigationManager.NavigateTo($"brugeroversigt");
+        navigationManager.NavigateTo("/SignaturBekræftelse");
     }
 
     public bool addguardien = false;

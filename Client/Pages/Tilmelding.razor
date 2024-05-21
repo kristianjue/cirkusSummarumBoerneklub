@@ -266,7 +266,7 @@ else {
         
         await Http.PostAsJsonAsync<Application>($"https://localhost:7026/api/application/create",_newTilmelding);
         
-        navigationManager.NavigateTo($"brugeroversigt");
+        navigationManager.NavigateTo("/AnsøgningsBekræftelse");
     }
     
     public Child kid1 = new Child();
