@@ -173,7 +173,7 @@
     {
         try
         {
-            var response = await Http.PostAsJsonAsync($"https://localhost:7026/api/application/update/{applicationId}", _existingApplication);
+            var response = await Http.PutAsJsonAsync($"https://localhost:7026/api/application/update/{applicationId}", _existingApplication);
             if (response.IsSuccessStatusCode)
             {
                 navigationManager.NavigateTo("/oversigt");
