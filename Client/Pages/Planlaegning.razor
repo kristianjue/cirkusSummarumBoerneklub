@@ -31,7 +31,7 @@
                 @foreach (var app in applications.Where(a => string.IsNullOrEmpty(a.Status) || a.Status == "Ny"))
                 {
                     <div class="application">
-                        @app.Id <br /> @app.Volunteer.Name <br /> @app.Volunteer.Email <br /> @app.Priority1 + @app.Priority2 <br /> @app.Volunteer.Children.Count børn
+                        @app.Volunteer.Name <br /> @app.Volunteer.Email <br /> @app.Priority1 + @app.Priority2 <br /> @app.Volunteer.Children.Count børn
                         <select @onchange="(e) => UpdateApplicationStatus(app, e.Value.ToString())" class="form-select">
                             <option value="">Vælg uge</option>
                             @foreach (var week in new[] { "Uge 27: Ons-Søn", "Uge 27: Ons-Fre", "Uge 27: Lør-Søn", "Uge 28: Ons-Søn", "Uge 28: Ons-Fre", "Uge 28: Lør-Søn", "Venteliste", "Afvist" })
@@ -54,7 +54,7 @@
                         @foreach (var app in applications.Where(a => a.Status == $"{week}: Ons-Søn"))
                         {
                             <div class="application">
-                                @app.Id
+                                @app.Volunteer.Name <br /> @app.Volunteer.Children.Count børn
                                 <button class="btn btn-danger" @onclick="() => RemoveApplication(app)">Fortryd</button>
                             </div>
                         }
@@ -64,7 +64,7 @@
                         @foreach (var app in applications.Where(a => a.Status == $"{week}: Ons-Fre"))
                         {
                             <div class="application">
-                                @app.Id
+                                @app.Volunteer.Name <br /> @app.Volunteer.Children.Count børn
                                 <button class="btn btn-danger" @onclick="() => RemoveApplication(app)">Fortryd</button>
                             </div>
                         }
@@ -74,7 +74,7 @@
                         @foreach (var app in applications.Where(a => a.Status == $"{week}: Lør-Søn"))
                         {
                             <div class="application">
-                                @app.Id
+                                @app.Volunteer.Name <br /> @app.Volunteer.Children.Count børn
                                 <button class="btn btn-danger" @onclick="() => RemoveApplication(app)">Fortryd</button>
                             </div>
                         }
@@ -91,7 +91,7 @@
                 @foreach (var app in applications.Where(a => a.Status == "Venteliste"))
                 {
                     <div class="application">
-                        @app.Id
+                        @app.Volunteer.Name <br /> @app.Volunteer.Children.Count børn
                         <button class="btn btn-danger" @onclick="() => RemoveApplication(app)">Fortryd</button>
                     </div>
                 }
@@ -104,7 +104,7 @@
                 @foreach (var app in applications.Where(a => a.Status == "Afvist"))
                 {
                     <div class="application">
-                        @app.Id
+                        @app.Volunteer.Name <br /> @app.Volunteer.Children.Count børn
                         <button class="btn btn-danger" @onclick="() => RemoveApplication(app)">Fortryd</button>
                     </div>
                 }
