@@ -1,0 +1,201 @@
+﻿@page "/edit-application/{applicationId}"
+@using Core
+@inject NavigationManager navigationManager
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Rediger Ansøgning</PageTitle>
+
+<h1>Rediger Ansøgning</h1>
+
+<h3>Forældre:</h3>
+
+<EditForm EditContext="@aEditContext" class="row p-3" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="row" style="margin-bottom: 30px">
+        <div class="col-md-6 mb-3">
+            <label for="fullName">Fulde navn</label>
+            <InputText id="fullName" @bind-Value="_existingApplication.Volunteer.Name" class="form-control" />
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="email">Email</label>
+            <InputText id="email" @bind-Value="_existingApplication.Volunteer.Email" class="form-control" />
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="phoneNumber">Telefonnummer</label>
+            <InputNumber id="phoneNumber" @bind-Value="_existingApplication.Volunteer.PhoneNumber" class="form-control" />
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="memberNumber">Krævnummer</label>
+            <InputNumber id="memberNumber" @bind-Value="_existingApplication.Volunteer.KrævNumber" class="form-control" />
+        </div>
+    </div>
+
+    @foreach (var child in _existingApplication.Volunteer.Children)
+    {
+        <h3>Barn @(child == _existingApplication.Volunteer.Children.First() ? 1 : 2):</h3>
+        <div class="row" style="margin-bottom: 30px">
+            <div class="col-md-3 mb-3">
+                <label for="kidName">Barnets navn</label>
+                <InputText id="kidName" @bind-Value="child.Name" class="form-control" />
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="kidAge">Alder</label>
+                <InputSelect id="kidAge" @bind-Value="child.Age" class="form-control">
+                    <option value="5">5 år</option>
+                    <option value="6">6 år</option>
+                    <option value="7">7 år</option>
+                    <option value="8">8 år</option>
+                    <option value="9">9 år</option>
+                    <option value="10">10 år</option>
+                    <option value="11">11 år</option>
+                    <option value="12">12 år</option>
+                    <option value="13">13 år</option>
+                    <option value="14">14 år</option>
+                    <option value="15">15 år</option>
+                </InputSelect>
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="kidSize">T-shirt størrelse</label>
+                <InputSelect id="kidSize" @bind-Value="child.Size" class="form-control">
+                    <option value="XXS">XXS</option>
+                    <option value="XS">XS</option>
+                    <option value="S">S</option>
+                    <option value="M">M</option>
+                    <option value="L">L</option>
+                    <option value="XL">XL</option>
+                </InputSelect>
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="beenThereBefore">Har været med før?</label>
+                <InputSelect id="beenThereBefore" @bind-Value="child.beenThereBefore" class="form-control">
+                    <option value="Nej">Nej</option>
+                    <option value="Ja">Ja</option>
+                </InputSelect>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="comment">Kommentar</label>
+                <InputTextArea id="comment" @bind-Value="child.comment" class="form-control" placeholder="Diagnoser, allergener samt evt. hensyn"></InputTextArea>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="interests">Interesser</label>
+                <InputTextArea id="interests" @bind-Value="child.interests" class="form-control" placeholder="F.eks. sport, musik, læsning..."></InputTextArea>
+            </div>
+            <div class="col-12 text-end">
+                <button type="button" class="btn btn-danger" @onclick="() => RemoveChild(child)">Fjern barn</button>
+            </div>
+        </div>
+    }
+
+    <div class="row" style="margin-bottom: 50px; text-align: center">
+        <div class="col-12">
+            <button type="button" class="btn btn-primary" @onclick="AddChild" style="margin-top: 10px">Tilføj barn</button>
+        </div>
+    </div>
+
+    <h3>Pasnings Ønske:</h3>
+    <div class="row" style="margin-bottom: 50px">
+        <div class="col-md-4 mb-3">
+            <label for="location">By</label>
+            <InputSelect id="location" @bind-Value="_existingApplication.Location" class="form-control">
+                <option value="Aarhus">Aarhus</option>
+                <option value="Ballerup">Ballerup</option>
+            </InputSelect>
+        </div>
+        <div class="col-md-4 mb-3">
+            <label for="priority1">1. prioritet</label>
+            <InputSelect id="priority1" @bind-Value="_existingApplication.Priority1" class="form-control">
+                <option value="u27ons-søn">Uge 27: Onsdag-søndag</option>
+                <option value="u27ons-fre">Uge 27: Onsdag-fredag</option>
+                <option value="u27lør-søn">Uge 27: Lørdag-søndag</option>
+                <option value="u28ons-søn">Uge 28: Onsdag-søndag</option>
+                <option value="u28ons-fre">Uge 28: Onsdag-fredag</option>
+                <option value="u28lør-søn">Uge 28: Lørdag-søndag</option>
+            </InputSelect>
+        </div>
+        <div class="col-md-4 mb-3">
+            <label for="priority2">2. prioritet</label>
+            <InputSelect id="priority2" @bind-Value="_existingApplication.Priority2" class="form-control">
+                <option value="ingen2.">Jeg ønsker ikke en 2. prioritet</option>
+                <option value="u27ons-søn">Uge 27: Onsdag-søndag</option>
+                <option value="u27ons-fre">Uge 27: Onsdag-fredag</option>
+                <option value="u27lør-søn">Uge 27: Lørdag-søndag</option>
+                <option value="u28ons-søn">Uge 28: Onsdag-søndag</option>
+                <option value="u28ons-fre">Uge 28: Onsdag-fredag</option>
+                <option value="u28lør-søn">Uge 28: Lørdag-søndag</option>
+            </InputSelect>
+        </div>
+    </div>
+
+    <div class="row" style="margin-bottom: 50px; text-align: center">
+        <div class="col-12 mb-3">
+            <input type="checkbox" name="confirm2" />
+            <label for="confirm">Jeg bekræfter at jeg er tilmeldt den/de uger jeg ansøger om pasning.</label>
+            <br />
+            <button type="submit" class="btn btn-success" style="margin-top: 10px">Opdater ansøgning</button>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter] public string applicationId { get; set; }
+    private Application _existingApplication = new Application 
+    { 
+        Volunteer = new Volunteer 
+        { 
+            Children = new List<Child> { new Child() } 
+        } 
+    };    
+    private EditContext aEditContext;
+    
+    
+    protected override async Task OnInitializedAsync()
+    {
+        aEditContext = new EditContext(_existingApplication);
+        await LoadApplicationData();
+        aEditContext = new EditContext(_existingApplication);
+    }
+
+    private async Task LoadApplicationData()
+    {
+        try
+        {
+            _existingApplication = await Http.GetFromJsonAsync<Application>($"https://localhost:7026/api/application/get/{applicationId}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching application data: {ex.Message}");
+        }
+    }
+
+    public async Task HandleValidSubmit()
+    {
+        try
+        {
+            var response = await Http.PutAsJsonAsync($"https://localhost:7026/api/application/update/{applicationId}", _existingApplication);
+            if (response.IsSuccessStatusCode)
+            {
+                navigationManager.NavigateTo("/oversigt");
+            }
+            else
+            {
+                Console.WriteLine($"Error updating application: {response.ReasonPhrase}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating application: {ex.Message}");
+        }
+    }
+
+    public void AddChild()
+    {
+        _existingApplication.Volunteer.Children.Add(new Child());
+    }
+
+    public void RemoveChild(Child child)
+    {
+        _existingApplication.Volunteer.Children.Remove(child);
+    }
+}

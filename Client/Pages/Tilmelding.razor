@@ -239,7 +239,7 @@ else {
     protected override void OnInitialized()
     {
         _newTilmelding.Volunteer = new Volunteer();
-        _newTilmelding.Children = new List<Child>();
+        _newTilmelding.Volunteer.Children = new List<Child>();
         aEditContext = new EditContext(_newTilmelding);
     }
 
@@ -247,17 +247,21 @@ else {
     {
         if (ekstraKid == false)
         {
-            _newTilmelding.Children.Add(kid1);
+            kid1.Signature = SignatureForKid1AsBase64;
+            _newTilmelding.Volunteer.Children.Add(kid1);
+            
         }
 
         else
         {
-            _newTilmelding.Children.Add(kid1);
-            _newTilmelding.Children.Add(kid2);
+            kid1.Signature = SignatureForKid1AsBase64;
+            kid2.Signature = SignatureForKid2AsBase64;
+            _newTilmelding.Volunteer.Children.Add(kid1);
+            _newTilmelding.Volunteer.Children.Add(kid2);
         }
         
-        _newTilmelding.Id = Guid.NewGuid().ToString();
-        
+        _newTilmelding.Id = System.Guid.NewGuid().ToString();
+        _newTilmelding.Volunteer.Id = Guid.NewGuid().ToString();
         _newTilmelding.Status = "Ny";
         
         await Http.PostAsJsonAsync<Application>($"https://localhost:7026/api/application/create",_newTilmelding);
@@ -282,9 +286,11 @@ else {
     }
     
     public byte[] SignatureForKid1 { get; set; } = Array.Empty<byte>();
-
     public byte[] SignatureForKid2 { get; set; } = Array.Empty<byte>();
 
+    public string SignatureForKid1AsBase64 => System.Text.Encoding.UTF8.GetString(SignatureForKid1);
+    public string SignatureForKid2AsBase64 => System.Text.Encoding.UTF8.GetString(SignatureForKid2);
+    
 }
 
 
