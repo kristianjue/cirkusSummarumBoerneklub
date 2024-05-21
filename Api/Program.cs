@@ -1,4 +1,5 @@
 using Api.Interfaces;
+using Api.Logic;
 using Api.Repositories;
 using Api.Repository;
 using Core;
@@ -24,7 +25,10 @@ public class Program
         builder.Services.AddSingleton<IApplicationRepository, ApplicationRepository>();
         builder.Services.AddSingleton<ISignatureRepository, SignatureRepository>();
         QuestPDF.Settings.License = LicenseType.Community;
-
+        
+        builder.Services.AddScoped<PdfForSignature>();
+        
+        
 
         builder.Services.AddCors(options =>
         {
@@ -51,4 +55,5 @@ public class Program
 
         app.Run();
     }
+   
 }

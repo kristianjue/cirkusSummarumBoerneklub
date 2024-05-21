@@ -10,7 +10,7 @@
     <div class="col-3">
         <div class="float-end">
             <button class="btn btn-secondary">Send mail</button>
-            <button class="btn btn-secondary">Hent pdf</button>
+            <button class="btn btn-secondary" @onclick="GetAllPdf">Hent pdf</button>
         </div>
     </div>
 </div>
@@ -90,7 +90,7 @@
                     </div>
                     <div class="col-3">
                         <div class="float-end" style="margin-top: 17px">
-                            <button class="btn btn-dark">Pdf</button>
+                            <button class="btn btn-dark" @onclick="() => GetPdf(application.Id)">Pdf</button>
                             <button class="btn btn-danger" @onclick="() => EditApplication(application.Id)">Rediger</button>
                         </div>
                     </div>
@@ -137,6 +137,16 @@
     private void EditApplication(string applicationId)
     {
         NavigationManager.NavigateTo($"/edit-application/{applicationId}");
+    }
+    
+    public void GetPdf(string applicationId)
+    {
+        NavigationManager.NavigateTo($"https://localhost:7026/api/pdf/get/{applicationId}");
+    }
+    
+    public void GetAllPdf()
+    {
+        NavigationManager.NavigateTo($"https://localhost:7026/api/pdf/get-all");
     }
 }
 
