@@ -9,5 +9,6 @@
         public int KrævNumber { get; set; }
         public List<Child>? Children { get; set; }
        
+        public YoungVolunteer? YoungVolunteer { get; set; }
     }
 }
