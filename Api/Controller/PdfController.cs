@@ -50,7 +50,6 @@ public class PdfController : ControllerBase
             await Task.Delay(10);
         }
         
-        
         // Use the injected service to create a document
         var document = _pdfForSignature.CreateDocumentForAllApplication(applications);
 

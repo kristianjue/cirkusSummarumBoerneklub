@@ -61,6 +61,14 @@
     private EditContext aEditContext;
     SystemSettings _newSystemSet = new();
 
+    protected override void OnInitialized()
+    {
+        aEditContext = new EditContext(_newSystemSet);
+        _newSystemSet.Locations.Add(new Location());
+        _newSystemSet.Locations[0].Periods.Add(new Period());
+    }
+    
+    
     public async Task HandleValidSubmit()
     {
         await Http.PostAsJsonAsync<SystemSettings>($"https://localhost:7026/api/application/create", _newSystemSet);
