@@ -1,0 +1,172 @@
+﻿@page "/edit-systemsettings/{Id}"
+@inject HttpClient Http
+@inject NavigationManager navigationManager
+@using Core
+@using Microsoft.AspNetCore.Components.Forms
+
+<PageTitle>Edit System Settings</PageTitle>
+
+<h1 class="text-center">Edit System Settings</h1>
+
+@if (_existingSystemSettings == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <EditForm EditContext="@aEditContext" class="container mt-4" OnValidSubmit="@HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary class="alert alert-danger" />
+
+        <h3 class="mb-4">Edit Lokation</h3>
+        <div class="form-check mb-3">
+            <InputCheckbox id="openForRegistration" @bind-Value="_existingSystemSettings.OpenForRegistration" class="form-check-input" />
+            <label class="form-check-label" for="openForRegistration">Åben for registration</label>
+        </div>
+        @foreach (var location in _existingSystemSettings.Locations)
+        {
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="city" class="form-label">By</label>
+                            <InputText id="city" @bind-Value="location.City" class="form-control" />
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <button type="button" class="btn btn-danger mt-4" @onclick="() => RemoveLocation(location)">Fjern Lokation</button>
+                        </div>
+                    </div>
+                    <h5 class="card-title">Uger</h5>
+                    @foreach (var week in location.Weeks)
+                    {
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <label for="weekNumber" class="form-label">Uge</label>
+                                <InputNumber id="weekNumber" @bind-Value="week.WeekNumber" class="form-control" />
+                            </div>
+                            @foreach (var period in week.Periods)
+                            {
+                                <div class="row mb-3">
+                                    <div class="col-md-3">
+                                        <label for="periodName" class="form-label">Periode Navn</label>
+                                        <InputText id="periodName" @bind-Value="period.PeriodName" class="form-control" />
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="startDate" class="form-label">Start Dato</label>
+                                        <InputDate id="startDate" @bind-Value="period.StartDate" class="form-control" />
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="endDate" class="form-label">Slut Dato</label>
+                                        <InputDate id="endDate" @bind-Value="period.EndDate" class="form-control" />
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="capacity" class="form-label">Kapacitet</label>
+                                        <InputNumber id="capacity" @bind-Value="period.Capacity" class="form-control" />
+                                    </div>
+                                    <div class="col-md-12 text-end">
+                                        <button type="button" class="btn btn-danger mt-2" @onclick="() => RemovePeriod(location, week, period)">Fjern Periode</button>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        <div class="text-end mb-3">
+                            <button type="button" class="btn btn-primary" @onclick="() => AddPeriod(location, week)">Tilføj Periode</button>
+                        </div>
+                    }
+                    <div class="text-end mb-3">
+                        <button type="button" class="btn btn-primary" @onclick="() => AddWeek(location)">Tilføj Uge</button>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div class="text-center mb-4">
+            <button type="button" class="btn btn-primary" @onclick="AddLocation">Tilføj Lokation</button>
+        </div>
+
+        <div class="text-center">
+            <button type="submit" class="btn btn-success">Gem</button>
+        </div>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public string Id { get; set; }
+    private EditContext aEditContext;
+    private SystemSettings _existingSystemSettings;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSystemSettingsData();
+    }
+
+    private async Task LoadSystemSettingsData()
+    {
+        try
+        {
+            _existingSystemSettings = await Http.GetFromJsonAsync<SystemSettings>($"https://localhost:7026/api/systemsettings/get/{Id}");
+            aEditContext = new EditContext(_existingSystemSettings);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching system settings data: {ex.Message}");
+        }
+    }
+
+    public async Task HandleValidSubmit()
+    {
+        try
+        {
+            var response = await Http.PutAsJsonAsync($"https://localhost:7026/api/systemsettings/update/{Id}", _existingSystemSettings);
+            if (response.IsSuccessStatusCode)
+            {
+                navigationManager.NavigateTo("/eventoversigt");
+            }
+            else
+            {
+                Console.WriteLine($"Error updating system settings: {response.ReasonPhrase}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating system settings: {ex.Message}");
+        }
+    }
+
+    private void AddPeriod(Location location, Week week)
+    {
+        if (week.Periods == null)
+        {
+            week.Periods = new List<Period>();
+        }
+        week.Periods.Add(new Period());
+    }
+
+    private void RemovePeriod(Location location, Week week, Period period)
+    {
+        week.Periods.Remove(period);
+        if (week.Periods.Count == 0)
+        {
+            location.Weeks.Remove(week);
+        }
+    }
+
+    private void AddWeek(Location location)
+    {
+        location.Weeks.Add(new Week { Periods = new List<Period> { new Period() } });
+    }
+
+    private void AddLocation()
+    {
+        if (_existingSystemSettings.Locations == null)
+        {
+            _existingSystemSettings.Locations = new List<Location>();
+        }
+        _existingSystemSettings.Locations.Add(new Location { Weeks = new List<Week> { new Week { Periods = new List<Period> { new Period() } } } });
+    }
+
+    private void RemoveLocation(Location location)
+    {
+        _existingSystemSettings.Locations.Remove(location);
+    }
+}
