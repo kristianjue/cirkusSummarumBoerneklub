@@ -1,61 +1,61 @@
 using Core;
 using MongoDB.Driver;
+using System.Collections.Generic;
+using Api.Interfaces;
 
-namespace Api.Repository;
-
-public class SystemSettingRepository
+namespace Api.Repository
 {
-    private IMongoDatabase database;
-    private IMongoCollection<SystemSettings> SystemSettingCollection;
-    private string connectionString = "mongodb+srv://system:system@cirkussummarum.to00ch9.mongodb.net/";
-}
-
-public SystemSettingRepository(IMongoClient mongoClient)
-{
-    database = mongoClient.GetDatabase("CirkusSummarum");
-    SystemSettingCollection = database.GetCollection<SystemSettings>("SystemSettings");
-}
-
-public void CreateSystemSetting(SystemSettings systemSetting)
-{
-    SystemSettingCollection.InsertOne(systemSetting);
-}
-
-public List<SystemSettings> GetAllSystemSettings()
-{
-    return SystemSettingCollection.Find(FilterDefinition<SystemSettings>.Empty).ToList();
-}
-
-public SystemSettings GetSystemSettingById(string id)
-{
-    var filter = Builders<SystemSettings>.Filter.Eq(systemSetting => systemSetting.Id, id);
-    return SystemSettingCollection.Find(filter).SingleOrDefault();
-}
-
-public void UpdateSystemSetting(SystemSettings systemSetting)
-{
-    var filter = Builders<SystemSettings>.Filter.Eq(a => a.Id, systemSetting.Id);
-    var update = Builders<SystemSettings>.Update
-        .Set(a => a.Status, systemSetting.Status)
-        .Set(a => a.Location, systemSetting.Location)
-        .Set(a => a.Priority1, systemSetting.Priority1)
-        .Set(a => a.Priority2, systemSetting.Priority2)
-        .Set(a => a.Volunteer, systemSetting.Volunteer);
-
-    var result = SystemSettingCollection.UpdateOne(filter, update);
-
-    if (result.ModifiedCount == 0)
+    public class SystemSettingsRepository : ISystemSettingsRepository
     {
-        Console.WriteLine($"No documents were updated for systemSetting Id={systemSetting.Id}");
-    }
-    else
-    {
-        Console.WriteLine($"Successfully updated systemSetting Id={systemSetting.Id}");
-    }
-}
+        private readonly IMongoDatabase _database;
+        private readonly IMongoCollection<SystemSettings> _settingsCollection;
+        private readonly string _connectionString = "mongodb+srv://system:system@cirkussummarum.to00ch9.mongodb.net/";
 
-public void DeleteSystemSetting(string id)
-{
-    var filter = Builders<SystemSettings>.Filter.Eq(systemSetting => systemSetting.Id, id);
-    SystemSettingCollection.DeleteOne(filter);
+        public SystemSettingsRepository(IMongoClient mongoClient)
+        {
+            _database = mongoClient.GetDatabase("CirkusSummarum");
+            _settingsCollection = _database.GetCollection<SystemSettings>("SystemSettings");
+        }
+
+        public void CreateSystemSettings(SystemSettings settings)
+        {
+            _settingsCollection.InsertOne(settings);
+        }
+
+        public List<SystemSettings> GetAllSystemSettings()
+        {
+            return _settingsCollection.Find(FilterDefinition<SystemSettings>.Empty).ToList();
+        }
+
+        public SystemSettings GetSystemSettingsById(string id)
+        {
+            var filter = Builders<SystemSettings>.Filter.Eq(settings => settings.Id, id);
+            return _settingsCollection.Find(filter).SingleOrDefault();
+        }
+
+        public void UpdateSystemSettings(SystemSettings settings)
+        {
+            var filter = Builders<SystemSettings>.Filter.Eq(s => s.Id, settings.Id);
+            var update = Builders<SystemSettings>.Update
+                .Set(s => s.Locations, settings.Locations)
+                .Set(s => s.OpenForRegistration, settings.OpenForRegistration);
+
+            var result = _settingsCollection.UpdateOne(filter, update);
+
+            if (result.ModifiedCount == 0)
+            {
+                Console.WriteLine($"No documents were updated for settings Id={settings.Id}");
+            }
+            else
+            {
+                Console.WriteLine($"Successfully updated settings Id={settings.Id}");
+            }
+        }
+
+        public void DeleteSystemSettings(string id)
+        {
+            var filter = Builders<SystemSettings>.Filter.Eq(settings => settings.Id, id);
+            _settingsCollection.DeleteOne(filter);
+        }
+    }
 }

@@ -1,0 +1,76 @@
+﻿@page "/eventoversigt"
+@inject HttpClient Http
+@using Core
+
+<PageTitle>System Settings Overview</PageTitle>
+
+<h1 class="text-center">System Settings Overview</h1>
+
+@if (systemSettingsList == null)
+{
+    <p>Loading...</p>
+}
+else if (!systemSettingsList.Any())
+{
+    <p>No events found.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>City</th>
+                <th>Open For Registration</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var settings in systemSettingsList)
+            {
+                <tr>
+                    <td>@settings.Id</td>
+                    <td>@settings.Locations.FirstOrDefault()?.City</td>
+                    <td>@(settings.OpenForRegistration ? "Yes" : "No")</td>
+                    <td>
+                        <a class="btn btn-primary" href="/edit-systemsettings/@settings.Id">Edit</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<SystemSettings> systemSettingsList;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            systemSettingsList = await Http.GetFromJsonAsync<List<SystemSettings>>("https://localhost:7026/api/systemsettings/getall");
+            Console.WriteLine($"System Settings Loaded: {System.Text.Json.JsonSerializer.Serialize(systemSettingsList)}");
+
+            // Additional check to see if data is empty
+            if (systemSettingsList == null || !systemSettingsList.Any())
+            {
+                Console.WriteLine("No system settings found.");
+            }
+            else
+            {
+                foreach (var settings in systemSettingsList)
+                {
+                    Console.WriteLine($"System Setting: Id={settings.Id}, OpenForRegistration={settings.OpenForRegistration}");
+                    foreach (var location in settings.Locations)
+                    {
+                        Console.WriteLine($"Location: City={location.City}");
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading system settings: {ex.Message}");
+        }
+    }
+}
