@@ -145,6 +145,10 @@ else
     private void RemovePeriod(Location location, Week week, Period period)
     {
         week.Periods.Remove(period);
+        if (week.Periods.Count == 0)
+        {
+            location.Weeks.Remove(week);
+        }
     }
 
     private void AddWeek(Location location)
