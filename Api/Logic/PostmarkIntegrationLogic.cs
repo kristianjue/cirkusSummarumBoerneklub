@@ -4,7 +4,7 @@ using PostmarkDotNet.Model;
 
 namespace Api.Logic
 {
-    public class Mail
+    public class Email
     {
         public async void ApplicationSent(Application application)
         {
@@ -42,17 +42,26 @@ namespace Api.Logic
             };
 
             var client = new PostmarkClient("87c8a126-119b-4ba7-9874-230ebdccc21a");
-            var response = await client.SendMessageAsync(message);
-
-            if (response.Status == PostmarkStatus.Success)
+            await client.SendMessageAsync(message);
+            
+        }
+        
+        public async Task SendCustomEmail(EmailRequest emailRequest)
+        {
+            var message = new TemplatedPostmarkMessage()
             {
-                Console.WriteLine("Email send successfully");
-            }
-            else
-            {
-                Console.WriteLine("Email failed");
-            }
+                To = "kristian@juelsgaard.dk",
+                From = "kristian@juelsgaard.dk",
+                TrackOpens = true,
+                TemplateId = 36014854,
+                TemplateModel = new Dictionary<string,object> {
+                    {"emailSubject", emailRequest.Subject},
+                    {"HTMLbody", emailRequest.Body}
+                } 
+            };
 
+            var client = new PostmarkClient("87c8a126-119b-4ba7-9874-230ebdccc21a");
+            await client.SendMessageAsync(message);
         }
     }
 }
