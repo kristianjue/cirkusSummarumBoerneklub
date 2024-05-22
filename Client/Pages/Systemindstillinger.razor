@@ -3,6 +3,9 @@
 @inject HttpClient Http
 @using Core
 @using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.VisualBasic
+@using System.Globalization
+@using ZstdSharp.Unsafe
 
 <PageTitle>Systemindstillinger</PageTitle>
 
@@ -13,51 +16,57 @@
     <ValidationSummary class="alert alert-danger" />
 
     <h3 class="mb-4">Tilføj lokation</h3>
-    <div class="form-check">
-        <InputCheckbox id="openForRegistration" @bind-Value="_newSystemSet.OpenForRegistration" class="form-check-input" />
-        <label class="form-check-label" for="openForRegistration">Åben for registration</label>
-    </div>
     @foreach (Location location in _newSystemSet.Locations)
     {
         <div class="card mb-4">
+            <div class="form-check" style="margin-top: 15px; margin-left: 15px ">
+                <InputCheckbox id="openForRegistration" @bind-Value="_newSystemSet.OpenForRegistration" class="form-check-input" />
+                <label class="form-check-label" for="openForRegistration">Åben for ansøgning</label>
+            </div>
             <div class="card-body">
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label for="city" class="form-label">By</label>
-                        <InputText id="city" @bind-Value="location.City" class="form-control" />
+                        <InputText id="city" @bind-Value="location.City" class="form-control"/>
                     </div>
                     <div class="col-md-6 text-end">
                         <button type="button" class="btn btn-danger mt-4" @onclick="() => RemoveLocation(location)">Fjern Lokation</button>
                     </div>
                 </div>
                 <h5 class="card-title">Perioder</h5>
-                @foreach (Period period in location.Periods)
+                @foreach (Week week in location.Weeks)
                 {
-                    <div class="row mb-3">
-                        <div class="col-md-3">
-                            <label for="periodName" class="form-label">Periode Navn</label>
-                            <InputText id="periodName" @bind-Value="period.PeriodName" class="form-control" />
-                        </div>
-                        <div class="col-md-3">
-                            <label for="startDate" class="form-label">Start Dato</label>
-                            <InputDate id="startDate" @bind-Value="period.StartDate" class="form-control" />
-                        </div>
-                        <div class="col-md-3">
-                            <label for="endDate" class="form-label">Slut Dato</label>
-                            <InputDate id="endDate" @bind-Value="period.EndDate" class="form-control" />
-                        </div>
-                        <div class="col-md-3">
-                            <label for="capacity" class="form-label">Kapacitet</label>
-                            <InputNumber id="capacity" @bind-Value="period.Capacity" class="form-control" />
-                        </div>
-                        <div class="col-md-12 text-end">
-                            <button type="button" class="btn btn-danger mt-2" @onclick="() => RemovePeriod(location, period)">Fjern Periode</button>
-                        </div>
+                    <div class="col-md-3">
+                        <label for="weekNumber" class="form-label">Uge</label>
+                        <InputNumber id="weekNumber" @bind-Value="week.WeekNumber" class="form-control"/>
                     </div>
+                    @foreach (Period period in week.Periods)
+                    {
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <label for="periodName" class="form-label">Periode Navn</label>
+                                <InputText id="periodName" @bind-Value="period.PeriodName" class="form-control"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="startDate" class="form-label">Start Dato</label>
+                                <InputDate id="startDate" @bind-Value="period.StartDate" class="form-control"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="endDate" class="form-label">Slut Dato</label>
+                                <InputDate id="endDate" @bind-Value="period.EndDate" class="form-control"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="capacity" class="form-label">Kapacitet</label>
+                                <InputNumber id="capacity" @bind-Value="period.Capacity" class="form-control"/>
+                            </div>
+                            <div class="col-md-12 text-end">
+                                <button type="button" class="btn btn-danger mt-2" @onclick="() => RemovePeriod(location, week, period)">Fjern Periode</button>
+                            </div>
+                        </div>
+                }
                 }
                 <div class="text-end">
-                    <button type="button" class="btn btn-primary" @onclick="() => AddPeriod(location)">Tilføj Periode</button>
-                </div>
+                <button type="button" class="btn btn-primary" @onclick="() => AddPeriod(location)">Tilføj Periode</button>                </div>
             </div>
         </div>
     }
@@ -78,7 +87,7 @@
     protected override void OnInitialized()
     {
         aEditContext = new EditContext(_newSystemSet);
-        _newSystemSet.Locations.Add(new Location { Periods = new List<Period> { new Period() } });
+        _newSystemSet.Locations.Add(new Location { Weeks = new List<Week> { new Week() } });
     }
 
     public async Task HandleValidSubmit()
@@ -107,21 +116,24 @@
 
     private void AddPeriod(Location location)
     {
-        if (location.Periods == null)
+        if (location.Weeks == null)
         {
-            location.Periods = new List<Period>();
+            location.Weeks = new List<Week>();
         }
-        location.Periods.Add(new Period());
+        location.Weeks.Add(new Week { Periods = new List<Period> { new Period() } });
     }
 
-    private void RemovePeriod(Location location, Period period)
+    private void RemovePeriod(Location location, Week week, Period period)
     {
-        location.Periods.Remove(period);
+        if (week.Periods != null)
+        {
+            week.Periods.Remove(period);
+        }
     }
 
     private void AddLocation()
     {
-        _newSystemSet.Locations.Add(new Location { Periods = new List<Period> { new Period() } });
+        _newSystemSet.Locations.Add(new Location { City = "", Weeks = new List<Week>() });
     }
 
     private void RemoveLocation(Location location)

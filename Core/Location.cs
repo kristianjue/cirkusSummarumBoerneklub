@@ -14,8 +14,24 @@ public class Location
 {
     public string City { get; set; }
     
+    public List<Week> Weeks { get; set; }
+    
+    public Location()
+    {
+        Weeks = new List<Week>();
+    }
+    
+}
+public class Week
+{
+    public int WeekNumber { get; set; }
+    
     public List<Period> Periods { get; set; }
     
+    public Week()
+    {
+        Periods = new List<Period>();
+    }
 }
 public class Period
 {

@@ -19,21 +19,20 @@ else
     <table class="table table-striped">
         <thead>
             <tr>
-                <th>Id</th>
-                <th>City</th>
-                <th>Open For Registration</th>
-                <th>Actions</th>
+                <th>By</th>
+                <th>Åben for ansøgning</th>
+                <th>Uge</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
             @foreach (var settings in systemSettingsList)
             {
                 <tr>
-                    <td>@settings.Id</td>
                     <td>@settings.Locations.FirstOrDefault()?.City</td>
-                    <td>@(settings.OpenForRegistration ? "Yes" : "No")</td>
+                    <td>@(settings.OpenForRegistration ? "Ja" : "Nej")</td>
                     <td>
-                        <a class="btn btn-primary" href="/edit-systemsettings/@settings.Id">Edit</a>
+                        <a class="btn btn-primary" href="/edit-systemsettings/@settings.Id">Rediger</a>
                     </td>
                 </tr>
             }

@@ -33,36 +33,38 @@ else
                             <InputText id="city" @bind-Value="location.City" class="form-control" />
                         </div>
                         <div class="col-md-6 text-end">
-                            <button type="button" class="btn btn-danger mt-4" @onclick="() => RemoveLocation(location)">Fjern Lokation</button>
-                        </div>
+                        <button type="button" class="btn btn-danger mt-4" @onclick="() => RemoveLocation(location)">Fjern Lokation</button>                        </div>
                     </div>
                     <h5 class="card-title">Perioder</h5>
-                    @foreach (Period period in location.Periods)
+                    @foreach (Week week in location.Weeks)
                     {
-                        <div class="row mb-3">
-                            <div class="col-md-3">
-                                <label for="periodName" class="form-label">Periode Navn</label>
-                                <InputText id="periodName" @bind-Value="period.PeriodName" class="form-control" />
+                        @foreach(Period period in week.Periods)
+                        {
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <label for="periodName" class="form-label">Periode Navn</label>
+                                    <InputText id="periodName" @bind-Value="period.PeriodName" class="form-control" />
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="startDate" class="form-label">Start Dato</label>
+                                    <InputDate id="startDate" @bind-Value="period.StartDate" class="form-control" />
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="endDate" class="form-label">Slut Dato</label>
+                                    <InputDate id="endDate" @bind-Value="period.EndDate" class="form-control" />
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="capacity" class="form-label">Kapacitet</label>
+                                    <InputNumber id="capacity" @bind-Value="period.Capacity" class="form-control" />
+                                </div>
+                                <div class="col-md-12 text-end">
+                                    <button type="button" class="btn btn-danger mt-2" @onclick="() => RemovePeriod(location, week, period)">Fjern Periode</button>
+                                </div>
                             </div>
-                            <div class="col-md-3">
-                                <label for="startDate" class="form-label">Start Dato</label>
-                                <InputDate id="startDate" @bind-Value="period.StartDate" class="form-control" />
-                            </div>
-                            <div class="col-md-3">
-                                <label for="endDate" class="form-label">Slut Dato</label>
-                                <InputDate id="endDate" @bind-Value="period.EndDate" class="form-control" />
-                            </div>
-                            <div class="col-md-3">
-                                <label for="capacity" class="form-label">Kapacitet</label>
-                                <InputNumber id="capacity" @bind-Value="period.Capacity" class="form-control" />
-                            </div>
-                            <div class="col-md-12 text-end">
-                                <button type="button" class="btn btn-danger mt-2" @onclick="() => RemovePeriod(location, period)">Fjern Periode</button>
-                            </div>
-                        </div>
+                        }
                     }
                     <div class="text-end">
-                        <button type="button" class="btn btn-primary" @onclick="() => AddPeriod(location)">Tilføj Periode</button>
+                    <button type="button" class="btn btn-primary" @onclick="() => AddPeriod(location)">Tilføj Periode</button>
                     </div>
                 </div>
             </div>
@@ -123,25 +125,33 @@ else
 
     private void AddPeriod(Location location)
     {
-        if (location.Periods == null)
+        if (location.Weeks == null)
         {
-            location.Periods = new List<Period>();
+            location.Weeks = new List<Week>();
         }
-        location.Periods.Add(new Period());
+        location.Weeks.Add(new Week { Periods = new List<Period> { new Period() } });
     }
 
-    private void RemovePeriod(Location location, Period period)
+    private void RemovePeriod(Location location, Week week, Period period)
     {
-        location.Periods.Remove(period);
+        if (week.Periods != null)
+        {
+            week.Periods.Remove(period);
+        }
     }
 
     private void AddLocation()
     {
-        _existingSystemSettings.Locations.Add(new Location { Periods = new List<Period> { new Period() } });
+        if (_existingSystemSettings.Locations == null)
+        {
+            _existingSystemSettings.Locations = new List<Location>();
+        }
+        _existingSystemSettings.Locations.Add(new Location { Weeks = new List<Week> { new Week { Periods = new List<Period> { new Period() } } } });
     }
 
     private void RemoveLocation(Location location)
     {
         _existingSystemSettings.Locations.Remove(location);
     }
+}
 }
