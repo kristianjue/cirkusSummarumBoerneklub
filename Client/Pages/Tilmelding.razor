@@ -9,16 +9,16 @@
 <h1>Børneklub tilmelding</h1>
 <p>Her kan du tilmelde børn til børnepasning. Du skal være tilmeldt de uger, hvor du søger pasning. Hvis du kan deltage i uge 28 eller 29, skal du tilmelde begge uger og derefter vælge 1. og 2. prioritet. Kan du kun deltage i én uge, vælger du ingen anden prioritet.</p>
 </div>
-<h3>Forældre:</h3>
 
 <EditForm EditContext="@aEditContext" class="row p-3" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
     <ValidationSummary />
-<div class="row" style="margin-bottom: 30px">
-    <div class="col-md-6 mb-3">
-        <label for="fullName">Fulde navn</label>
-        <InputText id="fullName" @bind-Value="_newTilmelding.Volunteer.Name" class="form-control" />
-    </div>
+    <h3>Forældre:</h3>
+    <div class="row" style="margin-bottom: 30px">
+        <div class="col-md-6 mb-3">
+            <label for="fullName">Fulde navn</label>
+            <InputText id="fullName" @bind-Value="_newTilmelding.Volunteer.Name" class="form-control" />
+        </div>
     <div class="col-md-6 mb-3">
         <label for="email">Email</label>
         <InputText id="email" @bind-Value="_newTilmelding.Volunteer.Email" class="form-control" />
@@ -186,18 +186,18 @@ else {
     </div> 
 }
 
-<h3>Pasnings Ønske:</h3>
-<div class="row" style="margin-bottom: 50px">
-    <div class="col-md-4 mb-3">
+<h3>Pasnings Ønske - 1. prioritet</h3>
+<div class="row" style="margin-bottom: 30px">
+    <div class="col-md-6 mb-3">
         <label for="location">By</label>
         <InputSelect id="location" @bind-Value="_newTilmelding.Location" class="form-control" >
             <option value="Aarhus">Aarhus</option>
             <option value="Ballerup">Ballerup</option>
         </InputSelect>
     </div>
-    <div class="col-md-4 mb-3">
-        <label for="priority1">1. prioritet</label>
-        <InputSelect id="priority1" @bind-Value="_newTilmelding.Priority1" class="form-control" >
+    <div class="col-md-6 mb-3">
+        <label for="Priority1">Periode</label>
+        <InputSelect id="Priority1" @bind-Value="_newTilmelding.Priority1" class="form-control" >
             <option value="u27ons-søn">Uge 27: Onsdag-søndag</option>
             <option value="u27ons-fre">Uge 27: Onsdag-fredag</option>
             <option value="u27lør-søn">Uge 27: Lørdag-søndag</option>
@@ -206,9 +206,19 @@ else {
             <option value="u28lør-søn">Uge 28: Lørdag-søndag</option>
         </InputSelect>
     </div>
-    <div class="col-md-4 mb-3">
-        <label for="priority2">2. prioritet</label>
-        <InputSelect id="priority2" @bind-Value="_newTilmelding.Priority2" class="form-control" >
+</div>    
+<h3>Pasnings Ønske - 2. prioritet</h3>
+<div class="row" style="margin-bottom: 50px">
+    <div class="col-md-6 mb-3">
+        <label for="location">By</label>
+        <InputSelect id="location" @bind-Value="_newTilmelding.Location" class="form-control" >
+            <option value="Aarhus">Aarhus</option>
+            <option value="Ballerup">Ballerup</option>
+        </InputSelect>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label for="Priority2">Periode</label>
+        <InputSelect id="Priority2" @bind-Value="_newTilmelding.Priority2" class="form-control" >
             <option value="ingen2.">Jeg ønsker ikke en 2. prioritet</option>
             <option value="u27ons-søn">Uge 27: Onsdag-søndag</option>
             <option value="u27ons-fre">Uge 27: Onsdag-fredag</option>
