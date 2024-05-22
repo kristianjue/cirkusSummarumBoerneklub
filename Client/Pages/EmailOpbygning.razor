@@ -1,0 +1,53 @@
+@using Blazored.TextEditor
+@using System.Net
+@inject HttpClient Http
+
+@page "/EmailOpbygning"
+<h3>Send email</h3>
+
+<InputText class="form-control" @bind-Value="emailSubject" placeholder="Indtast emne på email" style="margin-bottom: 20px" />
+
+
+<BlazoredTextEditor  EditorCssStyle="height:400px;" Placeholder="Skriv din mail her" @ref="@QuillHtml">
+    <ToolbarContent>
+        <select class="ql-header">
+            <option selected=""></option>
+            <option value="1"></option>
+            <option value="2"></option>
+            <option value="3"></option>
+            <option value="4"></option>
+            <option value="5"></option>
+        </select>
+        <span class="ql-formats">
+            <button class="ql-bold"></button>
+            <button class="ql-italic"></button>
+            <button class="ql-underline"></button>
+            <button class="ql-strike"></button>
+        </span>
+        <span class="ql-formats">
+            <button class="ql-link"></button>
+        </span>
+    </ToolbarContent>
+</BlazoredTextEditor>
+
+<div style="margin-top: 20px">
+<button class="btn btn-success" @onclick="async () => await SendEmail()">Send testmail til mig</button>
+</div>
+
+@code {
+    
+    private string emailSubject = string.Empty;
+    
+    BlazoredTextEditor QuillHtml;
+    string EmailContent;
+    
+    public async Task SendEmail()
+    {
+        EmailContent = await this.QuillHtml.GetHTML();
+        var SpecifcEmail = new EmailRequest();
+        SpecifcEmail.Subject = emailSubject;
+        SpecifcEmail.Body = EmailContent;
+        await Http.PostAsJsonAsync<EmailRequest>("https://localhost:7026/api/email/custom-email",SpecifcEmail);
+    }
+
+}
