@@ -23,6 +23,7 @@ public class ApplicationController : ControllerBase
         try
         {
             _applicationRepository.CreateApplication(application);
+            new Api.Logic.Mail().ApplicationSent(application);
             return Ok(application);
         }
         catch (Exception ex)

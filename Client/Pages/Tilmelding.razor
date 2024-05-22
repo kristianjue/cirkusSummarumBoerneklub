@@ -2,6 +2,7 @@
 @inject NavigationManager navigationManager
 @inject HttpClient Http
 @using Core
+@using System.Net
 
 <PageTitle>Børneklub tilmelding</PageTitle>
 
@@ -263,9 +264,12 @@ else {
         _newTilmelding.Volunteer.Id = Guid.NewGuid().ToString();
         _newTilmelding.Status = "Ny";
         
-        await Http.PostAsJsonAsync<Application>($"https://localhost:7026/api/application/create",_newTilmelding);
+       var apiRequest =  await Http.PostAsJsonAsync<Application>($"https://localhost:7026/api/application/create",_newTilmelding);
+       
+       if(apiRequest.StatusCode == HttpStatusCode.OK)
+       {navigationManager.NavigateTo($"brugeroversigt");}
+       
         
-        navigationManager.NavigateTo($"brugeroversigt");
     }
     
     public Child kid1 = new Child();

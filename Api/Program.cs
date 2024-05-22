@@ -27,8 +27,6 @@ public class Program
         QuestPDF.Settings.License = LicenseType.Community;
         
         builder.Services.AddScoped<PdfForSignature>();
-        
-        
 
         builder.Services.AddCors(options =>
         {
