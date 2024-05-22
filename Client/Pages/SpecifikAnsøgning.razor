@@ -88,11 +88,14 @@
         </div>
     }
 
-    <div class="row" style="margin-bottom: 50px; text-align: center">
-        <div class="col-12">
-            <button type="button" class="btn btn-primary" @onclick="AddChild" style="margin-top: 10px">Tilføj barn</button>
+    @if (_existingApplication.Volunteer.Children.Count < 2)
+    {
+        <div class="row" style="margin-bottom: 50px; text-align: center">
+            <div class="col-12">
+                <button type="button" class="btn btn-primary" @onclick="AddChild" style="margin-top: 10px">Tilføj barn</button>
+            </div>
         </div>
-    </div>
+    }
 
     <h3>Pasnings Ønske:</h3>
     <div class="row" style="margin-bottom: 50px">
@@ -138,16 +141,15 @@
 
 @code {
     [Parameter] public string applicationId { get; set; }
-    private Application _existingApplication = new Application 
-    { 
-        Volunteer = new Volunteer 
-        { 
-            Children = new List<Child> { new Child() } 
-        } 
-    };    
+    private Application _existingApplication = new Application
+        {
+            Volunteer = new Volunteer
+            {
+                Children = new List<Child> { new Child() }
+            }
+        };
     private EditContext aEditContext;
-    
-    
+
     protected override async Task OnInitializedAsync()
     {
         aEditContext = new EditContext(_existingApplication);
@@ -189,7 +191,10 @@
 
     public void AddChild()
     {
-        _existingApplication.Volunteer.Children.Add(new Child());
+        if (_existingApplication.Volunteer.Children.Count < 2)
+        {
+            _existingApplication.Volunteer.Children.Add(new Child());
+        }
     }
 
     public void RemoveChild(Child child)
