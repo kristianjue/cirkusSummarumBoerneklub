@@ -191,7 +191,7 @@
     <div class="row" style="margin-bottom: 30px">
         <div class="col-md-6 mb-3">
             <label for="city">By</label>
-            <InputSelect id="city" @bind-Value="_newTilmelding.City.Name" class="form-control" @onchange="OnCityChanged">
+            <InputSelect id="city" @bind-Value="_selectedCity1" class="form-control" @onchange="OnCityChanged">
                 @if (_cities != null)
                 {
                     @foreach (var city in _cities)
@@ -204,17 +204,13 @@
         <div class="col-md-6 mb-3">
             <label for="Priority1">Periode</label>
             <InputSelect id="Priority1" @bind-Value="_newTilmelding.Priority1" class="form-control">
-                @if (_filteredPeriods != null)
+                @if (_filteredCityFirst != null)
                 {
-                    @foreach (var city in _filteredCityFirst)
+                    @foreach (var week in _filteredCityFirst.SelectMany(city => city.Weeks))
                     {
-                        @foreach(var week in city.Weeks)
+                        @foreach (var period in week.Periods)
                         {
-                            @foreach(var period in week.Periods)
-                            {
-                                <option value="@period.PeriodName">@period.PeriodName</option>
-                            }
-                            
+                            <option value="@period.PeriodName">@period.PeriodName</option>
                         }
                     }
                 }
@@ -225,7 +221,7 @@
     <div class="row" style="margin-bottom: 50px">
         <div class="col-md-6 mb-3">
             <label for="SecondaryLocation">By</label>
-            <InputSelect id="SecondaryLocation" @bind-Value="_newTilmelding.SecondaryLocation" class="form-control" @onchange="OnSecondaryCityChanged">
+            <InputSelect id="SecondaryLocation" @bind-Value="_selectedCity2" class="form-control" @onchange="OnSecondaryCityChanged">
                 @if (_cities != null)
                 {
                     @foreach (var city in _cities)
@@ -238,17 +234,13 @@
         <div class="col-md-6 mb-3">
             <label for="Priority2">Periode</label>
             <InputSelect id="Priority2" @bind-Value="_newTilmelding.Priority2" class="form-control">
-                @if (_filteredSecondaryPeriods != null)
+                @if (_filteredCitySecond != null)
                 {
-                    @foreach (var city in _filteredCitySecond)
+                    @foreach (var week in _filteredCitySecond.SelectMany(city => city.Weeks))
                     {
-                        @foreach(var week in city.Weeks)
+                        @foreach (var period in week.Periods)
                         {
-                            @foreach(var period in week.Periods)
-                            {
-                                <option value="@period.PeriodName">@period.PeriodName</option>
-                            }
-                            
+                            <option value="@period.PeriodName">@period.PeriodName</option>
                         }
                     }
                 }
@@ -274,6 +266,9 @@
     private List<Period> _filteredPeriods = new();
     private List<Period> _filteredSecondaryPeriods = new();
 
+    private string _selectedCity1;
+    private string _selectedCity2;
+
     Application _newTilmelding = new();
 
     protected override async Task OnInitializedAsync()
@@ -287,19 +282,19 @@
 
     private async Task LoadCity()
     {
-            _cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getall");
+        _cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getall");
     }
 
     private void OnCityChanged(ChangeEventArgs e)
     {
-        var selectedCity = e.Value.ToString();
-        _filteredCityFirst = _cities.Where(p => p.Name == selectedCity).ToList();
+        _selectedCity1 = e.Value.ToString();
+        _filteredCityFirst = _cities.Where(p => p.Name == _selectedCity1).ToList();
     }
 
     private void OnSecondaryCityChanged(ChangeEventArgs e)
     {
-        var selectedCity = e.Value.ToString();
-        _filteredCitySecond = _cities.Where(p => p.Name == selectedCity).ToList();
+        _selectedCity2 = e.Value.ToString();
+        _filteredCitySecond = _cities.Where(p => p.Name == _selectedCity2).ToList();
     }
 
     public async Task HandleValidSubmit()
@@ -324,7 +319,6 @@
         await Http.PostAsJsonAsync<Application>($"https://localhost:7026/api/application/create", _newTilmelding);
 
         navigationManager.NavigateTo($"brugeroversigt");
-
     }
 
     public Child kid1 = new Child();

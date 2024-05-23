@@ -4,13 +4,13 @@
 @using System.Net.Http.Json
 @inject HttpClient Http
 @inject NavigationManager Navigation
-<!--
+
 <div class="admin-dashboard">
     <div class="row justify-content-end" style="margin-bottom: 20px">
         <div class="col-3">
             <h5><label for="city">Lokation</label></h5>
             <select name="city" class="form-select" @onchange="UpdateCity">
-                @foreach (var city in City?.Cities ?? new List<City>())
+                @foreach (var city in cities)
                 {
                     <option value="@city.Name">@city.Name</option>
                 }
@@ -24,7 +24,7 @@
             {
                 <p>Loading...</p>
             }
-            else if (applications.Count == 0)
+            else if (!applications.Any())
             {
                 <p>No applications found.</p>
             }
@@ -32,20 +32,13 @@
             {
                 @foreach (var app in applications.Where(a => string.IsNullOrEmpty(a.Status) || a.Status == "Ny"))
                 {
-                    
                     <div class="application">
                         @app.Volunteer.Name <br /> @app.Volunteer.Email <br /> @app.Priority1 + @app.Priority2 <br /> @app.Volunteer.Children.Count børn
                         <select @onchange="(e) => UpdateApplicationStatus(app, e.Value.ToString())" class="form-select">
                             <option value="">Vælg uge</option>
-                            @foreach (var city in City?.Cities ?? new List<City>())
+                            @foreach (var period in _filteredPeriods)
                             {
-                                @foreach (var week in city.Weeks)
-                                {
-                                    @foreach (var period in week.Periods)
-                                    {
-                                        <option style="@GetOptionStyle($"uge {week.WeekNumber}: {period.PeriodName}")" value="uge {week.WeekNumber}: {period.PeriodName}">uge {week.WeekNumber}: {period.PeriodName}</option>
-                                    }
-                                }
+                                <option value="@period.PeriodName">@period.PeriodName</option>
                             }
                             <option value="Venteliste">Venteliste</option>
                             <option value="Afvist">Afvist</option>
@@ -55,17 +48,15 @@
             }
         </div>
         <div class="week-sections">
-        
-
-                
+            @foreach (var city in cities)
             {
                 @foreach (var week in city.Weeks)
                 {
                     <div class="section">
-                        <h3 style=" color:@GetWeekColor(week.WeekNumber)">Uge @week.WeekNumber (@GetChildrenCount($"uge {week.WeekNumber}") / 20)</h3>
+                        <h3 style="color:@GetWeekColor(week.WeekName)">Uge @week.WeekName (@GetChildrenCount($"uge {week.WeekName}") / 20)</h3>
                         <div class="sub-section">
                             <h4>Ons-Søn</h4>
-                            @foreach (var app in applications.Where(a => a.Status == $"uge {week.WeekNumber}: Ons-Søn"))
+                            @foreach (var app in applications.Where(a => a.Status == $"uge {week.WeekName}: Ons-Søn"))
                             {
                                 <div class="application">
                                     @app.Volunteer.Name <br /> @app.Volunteer.Children.Count børn
@@ -75,7 +66,7 @@
                         </div>
                         <div class="sub-section">
                             <h4>Ons-Fre</h4>
-                            @foreach (var app in applications.Where(a => a.Status == $"uge {week.WeekNumber}: Ons-Fre"))
+                            @foreach (var app in applications.Where(a => a.Status == $"uge {week.WeekName}: Ons-Fre"))
                             {
                                 <div class="application">
                                     @app.Volunteer.Name <br /> @app.Volunteer.Children.Count børn
@@ -85,14 +76,14 @@
                         </div>
                         <div class="sub-section">
                             <h4>Lør-Søn</h4>
-                            @foreach (var app in applications.Where(a => a.Status == $"uge {week.WeekNumber}: Lør-Søn"))
+                            @foreach (var app in applications.Where(a => a.Status == $"uge {week.WeekName}: Lør-Søn"))
                             {
                                 <div class="application">
                                     @app.Volunteer.Name <br /> @app.Volunteer.Children.Count børn
                                     <button class="btn btn-danger" @onclick="() => RemoveApplication(app)">Fortryd</button>
                                 </div>
                             }
-                        }
+                        </div>
                     </div>
                 }
             }
@@ -135,66 +126,54 @@
 
 @code {
     private List<Application> applications = new List<Application>();
+    private List<City> cities = new List<City>();
+    private List<Period> _filteredPeriods = new List<Period>();
     private string selectedCity;
-    private City City;
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadCities();
         await LoadApplications();
-        City = await Http.GetFromJsonAsync<City>("https://localhost:7026/api/City/getall");
+    }
+
+    private async Task LoadCities()
+    {
+        cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getall");
     }
 
     private async Task LoadApplications()
     {
         try
         {
-            Console.WriteLine($"Loading applications for city: {selectedCity}");
             applications = await Http.GetFromJsonAsync<List<Application>>("https://localhost:7026/api/application/getall");
-            if (applications != null)
-            {
-                Console.WriteLine($"Total applications loaded: {applications.Count}");
-                foreach (var app in applications)
-                {
-                    Console.WriteLine($"Application: Id={app.Id}, Status={app.Status}, Location={app.Location}");
-                }
-
-                applications = applications.Where(a => a.Location == selectedCity).ToList();
-                Console.WriteLine($"Filtered applications for {selectedCity}: {applications.Count}");
-                foreach (var app in applications)
-                {
-                    Console.WriteLine($"Filtered Application: Id={app.Id}, Status={app.Status}, Location={app.Location}");
-                }
-            }
-            else
-            {
-                Console.WriteLine("No applications found.");
-            }
+            FilterApplicationsByCity();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading applications: {ex.Message}");
         }
-        StateHasChanged();
     }
 
     private async Task UpdateCity(ChangeEventArgs e)
     {
         selectedCity = e.Value.ToString();
-        Console.WriteLine($"City updated to: {selectedCity}");
+        var city = cities.FirstOrDefault(c => c.Name == selectedCity);
+        if (city != null)
+        {
+            _filteredPeriods = city.Weeks.SelectMany(w => w.Periods).ToList();
+        }
         await LoadApplications();
     }
 
     private void UpdateApplicationStatus(Application app, string newStatus)
     {
         app.Status = newStatus;
-        Console.WriteLine($"Application Id={app.Id} status updated to: {newStatus}");
         StateHasChanged();
     }
 
     private void RemoveApplication(Application app)
     {
         app.Status = ""; // Reset the status to remove from the current week and return to the application list
-        Console.WriteLine($"Application Id={app.Id} status reset to empty");
         StateHasChanged();
     }
 
@@ -204,9 +183,6 @@
         {
             try
             {
-                var jsonString = System.Text.Json.JsonSerializer.Serialize(app);
-                Console.WriteLine($"Saving application: {jsonString}");
-
                 var response = await Http.PutAsJsonAsync($"https://localhost:7026/api/application/update/{app.Id}", app);
                 if (!response.IsSuccessStatusCode)
                 {
@@ -230,9 +206,9 @@
         return applications.Where(a => a.Status.StartsWith(week)).Sum(a => a.Volunteer.Children.Count);
     }
 
-    private string GetWeekColor(int weekNumber)
+    private string GetWeekColor(string weekName)
     {
-        string week = $"uge {weekNumber}";
+        string week = $"uge {weekName}";
         int childrenCount = GetChildrenCount(week);
         if (childrenCount == 0)
         {
@@ -252,51 +228,12 @@
     private string GetOptionStyle(string weekOption)
     {
         string week = weekOption.Split(':')[0]; // Extract week part (e.g., "Uge 27")
-        return $"color: {GetWeekColor(int.Parse(week.Split(' ')[1]))};";
+        return $"color: {GetWeekColor(week)};";
+    }
+
+    private void FilterApplicationsByCity()
+    {
+        applications = applications.Where(a => a.City.Name == selectedCity).ToList();
+
     }
 }
-
-<style>
-    .admin-dashboard {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .top-sections {
-        display: flex;
-        justify-content: space-around;
-    }
-
-    .week-sections {
-        display: flex;
-        justify-content: space-around;
-        flex-grow: 1;
-    }
-
-    .bottom-sections {
-        display: flex;
-        justify-content: space-around;
-    }
-
-    .section, .sub-section {
-        flex: 1;
-        padding: 10px;
-        min-width: 150px;
-    }
-
-    .drop-zone, .sub-section {
-        border: 1px dashed gray;
-        min-height: 150px;
-        padding: 10px;
-        background-color: #f9f9f9;
-    }
-
-    .application {
-        padding: 5px;
-        border: 1px solid lightgray;
-        margin-bottom: 5px;
-        background-color: white;
-        cursor: default;
-    }
-</style>
--->
