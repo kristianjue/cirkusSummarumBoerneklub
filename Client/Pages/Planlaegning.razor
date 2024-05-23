@@ -9,10 +9,10 @@
     <div class="row justify-content-end" style="margin-bottom: 20px">
         <div class="col-3">
             <h5><label for="city">Lokation</label></h5>
-            <select name="city" class="form-select" @onchange="UpdateLocation">
-                @foreach (var loc in systemSettings?.Locations ?? new List<Location>())
+            <select name="city" class="form-select" @onchange="UpdateCity">
+                @foreach (var city in systemSettings?.Cities ?? new List<City>())
                 {
-                    <option value="@loc.City">@loc.City</option>
+                    <option value="@city.Name">@city.Name</option>
                 }
             </select>
         </div>
@@ -36,9 +36,9 @@
                         @app.Volunteer.Name <br /> @app.Volunteer.Email <br /> @app.Priority1 + @app.Priority2 <br /> @app.Volunteer.Children.Count børn
                         <select @onchange="(e) => UpdateApplicationStatus(app, e.Value.ToString())" class="form-select">
                             <option value="">Vælg uge</option>
-                            @foreach (var loc in systemSettings?.Locations ?? new List<Location>())
+                            @foreach (var city in systemSettings?.Cities ?? new List<City>())
                             {
-                                @foreach (var week in loc.Weeks)
+                                @foreach (var week in city.Weeks)
                                 {
                                     @foreach (var period in week.Periods)
                                     {
@@ -54,9 +54,9 @@
             }
         </div>
         <div class="week-sections">
-            @foreach (var loc in systemSettings?.Locations ?? new List<Location>())
+            @foreach (var city in systemSettings?.Cities ?? new List<City>())
             {
-                @foreach (var week in loc.Weeks)
+                @foreach (var week in city.Weeks)
                 {
                     <div class="section">
                         <h3 style=" color:@GetWeekColor(week.WeekNumber)">Uge @week.WeekNumber (@GetChildrenCount($"uge {week.WeekNumber}") / 20)</h3>
@@ -89,7 +89,7 @@
                                     <button class="btn btn-danger" @onclick="() => RemoveApplication(app)">Fortryd</button>
                                 </div>
                             }
-                        </div>
+                        }
                     </div>
                 }
             }
@@ -132,7 +132,7 @@
 
 @code {
     private List<Application> applications = new List<Application>();
-    private string selectedLocation;
+    private string selectedCity;
     private SystemSettings systemSettings;
 
     protected override async Task OnInitializedAsync()
@@ -145,7 +145,7 @@
     {
         try
         {
-            Console.WriteLine($"Loading applications for location: {selectedLocation}");
+            Console.WriteLine($"Loading applications for city: {selectedCity}");
             applications = await Http.GetFromJsonAsync<List<Application>>("https://localhost:7026/api/application/getall");
             if (applications != null)
             {
@@ -155,8 +155,8 @@
                     Console.WriteLine($"Application: Id={app.Id}, Status={app.Status}, Location={app.Location}");
                 }
 
-                applications = applications.Where(a => a.Location == selectedLocation).ToList();
-                Console.WriteLine($"Filtered applications for {selectedLocation}: {applications.Count}");
+                applications = applications.Where(a => a.Location == selectedCity).ToList();
+                Console.WriteLine($"Filtered applications for {selectedCity}: {applications.Count}");
                 foreach (var app in applications)
                 {
                     Console.WriteLine($"Filtered Application: Id={app.Id}, Status={app.Status}, Location={app.Location}");
@@ -174,10 +174,10 @@
         StateHasChanged();
     }
 
-    private async Task UpdateLocation(ChangeEventArgs e)
+    private async Task UpdateCity(ChangeEventArgs e)
     {
-        selectedLocation = e.Value.ToString();
-        Console.WriteLine($"Location updated to: {selectedLocation}");
+        selectedCity = e.Value.ToString();
+        Console.WriteLine($"City updated to: {selectedCity}");
         await LoadApplications();
     }
 

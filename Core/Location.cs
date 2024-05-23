@@ -1,49 +1,30 @@
-using MongoDB.Bson;
 namespace Core;
 
-public class SystemSettings
+
+public class City
 {
     public string Id { get; set; }
+    public string Name { get; set; }  // Renamed City property to Name for clarity.
 
-    public List<Location> Locations { get; set; }
+    public List<Week> Weeks { get; set; } // A city has multiple weeks.
 
     public bool OpenForRegistration { get; set; }
-
-}
-
-public class Location
-{
-    public string City { get; set; }
-
-    public List<Week> Weeks { get; set; }
-
-    public Location()
-    {
-        Weeks = new List<Week>();
-    }
-
 }
 
 public class Week
 {
-    public int WeekNumber { get; set; }
+    public string WeekName { get; set; } // Optional: To identify the week.
 
-    public List<Period> Periods { get; set; }
-
-    public Week()
-    {
-        Periods = new List<Period>();
-    }
+    public List<Period> Periods { get; set; } // A week contains multiple periods.
 }
 
 public class Period
 {
     public string PeriodName { get; set; }
 
-    public DateOnly StartDate { get; set; }
+    public DateTime StartDate { get; set; }
 
-    public DateOnly EndDate { get; set; }
+    public DateTime EndDate { get; set; }
 
     public int Capacity { get; set; }
-
 }
