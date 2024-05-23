@@ -28,21 +28,25 @@
             <div class="col-3">
                 <label for="city">By</label>
                 <select type="text" class="form-control" id="city">
-                    <option value="Alle byer">Alle byer</option>
-                    <option value="Aarhus">Aarhus</option>
-                    <option value="Ballerup">Ballerup</option>
+                    @foreach (var loc in systemSettings?.Locations ?? new List<Location>())
+                    {
+                        <option value="@loc.City">@loc.City</option>
+                    }
                 </select>
             </div>
             <div class="col-3">
                 <label for="period">Periode</label>
                 <select type="text" class="form-control" id="period">
-                    <option value="Alle perioder">Alle perioder</option>
-                    <option value="Uge 27: Onsdag-søndag">Uge 27: Onsdag-søndag</option>
-                    <option value="Uge 27: Onsdag-fredag">Uge 27: Onsdag-fredag</option>
-                    <option value="Uge 27: Lørdag-søndag">Uge 27: Lørdag-søndag</option>
-                    <option value="Uge 28: Onsdag-søndag">Uge 28: Onsdag-søndag</option>
-                    <option value="Uge 28: Onsdag-fredag">Uge 28: Onsdag-fredag</option>
-                    <option value="Uge 28: Lørdag-søndag">Uge 28: Lørdag-søndag</option>
+                    @foreach (var loc in systemSettings?.Locations ?? new List<Location>())
+                    {
+                        @foreach (var week in loc.Weeks)
+                        {
+                            @foreach (var period in week.Periods)
+                            {
+                                <option value="uge @week.WeekNumber: @period.PeriodName">Uge @week.WeekNumber: @period.PeriodName</option>
+                            }
+                        }
+                    }
                 </select>
             </div>
             <div class="col-3">
@@ -123,10 +127,12 @@
 @code {
     private List<Application> applications;
     private string searchText = "";
+    private SystemSettings systemSettings;
 
     protected override async Task OnInitializedAsync()
     {
         await GetAllApplications();
+        systemSettings = await Http.GetFromJsonAsync<SystemSettings>("https://localhost:7026/api/systemsettings/getall");
     }
 
     private async Task GetAllApplications()
@@ -138,15 +144,14 @@
     {
         NavigationManager.NavigateTo($"/edit-application/{applicationId}");
     }
-    
+
     public void GetPdf(string applicationId)
     {
         NavigationManager.NavigateTo($"https://localhost:7026/api/pdf/get/{applicationId}");
     }
-    
+
     public void GetAllPdf()
     {
         NavigationManager.NavigateTo($"https://localhost:7026/api/pdf/get-all");
     }
 }
-
