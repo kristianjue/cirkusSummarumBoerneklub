@@ -6,7 +6,7 @@ namespace Api.Logic
 {
     public class Email
     {
-        public async void ApplicationSent(Application application)
+        public static async void ApplicationSent(Application application)
         {
             
             //Hvis der kun er et barn, så skal informationOnKid2 være en tom string, ellers skal den være informationen på barn 2
@@ -46,7 +46,7 @@ namespace Api.Logic
             
         }
         
-        public async Task SendCustomEmail(EmailRequest emailRequest)
+        public  async Task SendCustomEmail(EmailRequest emailRequest)
         {
             var message = new TemplatedPostmarkMessage()
             {
