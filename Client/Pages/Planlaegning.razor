@@ -10,8 +10,10 @@
         <div class="col-3">
             <h5><label for="city">Lokation</label></h5>
             <select name="city" class="form-select" @onchange="UpdateLocation">
-                <option value="Aarhus">Aarhus</option>
-                <option value="Ballerup">Ballerup</option>
+                @foreach (var loc in systemSettings?.Locations ?? new List<Location>())
+                {
+                    <option value="@loc.City">@loc.City</option>
+                }
             </select>
         </div>
     </div>
@@ -34,52 +36,62 @@
                         @app.Volunteer.Name <br /> @app.Volunteer.Email <br /> @app.Priority1 + @app.Priority2 <br /> @app.Volunteer.Children.Count børn
                         <select @onchange="(e) => UpdateApplicationStatus(app, e.Value.ToString())" class="form-select">
                             <option value="">Vælg uge</option>
-                            @foreach (var week in new[] { "Uge 27: Ons-Søn", "Uge 27: Ons-Fre", "Uge 27: Lør-Søn", "Uge 28: Ons-Søn", "Uge 28: Ons-Fre", "Uge 28: Lør-Søn", "Venteliste", "Afvist" })
+                            @foreach (var loc in systemSettings?.Locations ?? new List<Location>())
                             {
-                                <option style="@GetOptionStyle(week)" value="@week">@week</option>
+                                @foreach (var week in loc.Weeks)
+                                {
+                                    @foreach (var period in week.Periods)
+                                    {
+                                        <option style="@GetOptionStyle($"uge {week.WeekNumber}: {period.PeriodName}")" value="uge {week.WeekNumber}: {period.PeriodName}">uge {week.WeekNumber}: {period.PeriodName}</option>
+                                    }
+                                }
                             }
+                            <option value="Venteliste">Venteliste</option>
+                            <option value="Afvist">Afvist</option>
                         </select>
-
                     </div>
                 }
             }
         </div>
         <div class="week-sections">
-            @foreach (var week in new[] { "Uge 27", "Uge 28" })
+            @foreach (var loc in systemSettings?.Locations ?? new List<Location>())
             {
-                <div class="section">
-                    <h3 style=" color:@GetWeekColor(week)">@week (@GetChildrenCount(week) / 20)</h3>
-                    <div class="sub-section">
-                        <h4>Ons-Søn</h4>
-                        @foreach (var app in applications.Where(a => a.Status == $"{week}: Ons-Søn"))
-                        {
-                            <div class="application">
-                                @app.Volunteer.Name <br /> @app.Volunteer.Children.Count børn
-                                <button class="btn btn-danger" @onclick="() => RemoveApplication(app)">Fortryd</button>
-                            </div>
-                        }
+                @foreach (var week in loc.Weeks)
+                {
+                    <div class="section">
+                        <h3 style=" color:@GetWeekColor(week.WeekNumber)">Uge @week.WeekNumber (@GetChildrenCount($"uge {week.WeekNumber}") / 20)</h3>
+                        <div class="sub-section">
+                            <h4>Ons-Søn</h4>
+                            @foreach (var app in applications.Where(a => a.Status == $"uge {week.WeekNumber}: Ons-Søn"))
+                            {
+                                <div class="application">
+                                    @app.Volunteer.Name <br /> @app.Volunteer.Children.Count børn
+                                    <button class="btn btn-danger" @onclick="() => RemoveApplication(app)">Fortryd</button>
+                                </div>
+                            }
+                        </div>
+                        <div class="sub-section">
+                            <h4>Ons-Fre</h4>
+                            @foreach (var app in applications.Where(a => a.Status == $"uge {week.WeekNumber}: Ons-Fre"))
+                            {
+                                <div class="application">
+                                    @app.Volunteer.Name <br /> @app.Volunteer.Children.Count børn
+                                    <button class="btn btn-danger" @onclick="() => RemoveApplication(app)">Fortryd</button>
+                                </div>
+                            }
+                        </div>
+                        <div class="sub-section">
+                            <h4>Lør-Søn</h4>
+                            @foreach (var app in applications.Where(a => a.Status == $"uge {week.WeekNumber}: Lør-Søn"))
+                            {
+                                <div class="application">
+                                    @app.Volunteer.Name <br /> @app.Volunteer.Children.Count børn
+                                    <button class="btn btn-danger" @onclick="() => RemoveApplication(app)">Fortryd</button>
+                                </div>
+                            }
+                        </div>
                     </div>
-                    <div class="sub-section">
-                        <h4>Ons-Fre</h4>
-                        @foreach (var app in applications.Where(a => a.Status == $"{week}: Ons-Fre"))
-                        {
-                            <div class="application">
-                                @app.Volunteer.Name <br /> @app.Volunteer.Children.Count børn
-                                <button class="btn btn-danger" @onclick="() => RemoveApplication(app)">Fortryd</button>
-                            </div>
-                        }
-                    </div>
-                    <div class="sub-section">
-                        <h4>Lør-Søn</h4>
-                        @foreach (var app in applications.Where(a => a.Status == $"{week}: Lør-Søn"))
-                        {
-                            <div class="application">
-                                @app.Volunteer.Name <br /> @app.Volunteer.Children.Count børn
-                                <button class="btn btn-danger" @onclick="() => RemoveApplication(app)">Fortryd</button>
-                            </div>
-                        }
-                    </div>
-                </div>
+                }
             }
         </div>
     </div>
@@ -120,11 +132,13 @@
 
 @code {
     private List<Application> applications = new List<Application>();
-    private string selectedLocation = "Aarhus";
+    private string selectedLocation;
+    private SystemSettings systemSettings;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadApplications();
+        systemSettings = await Http.GetFromJsonAsync<SystemSettings>("https://localhost:7026/api/systemsettings/getall");
     }
 
     private async Task LoadApplications()
@@ -213,9 +227,9 @@
         return applications.Where(a => a.Status.StartsWith(week)).Sum(a => a.Volunteer.Children.Count);
     }
 
-
-    private string GetWeekColor(string week)
+    private string GetWeekColor(int weekNumber)
     {
+        string week = $"uge {weekNumber}";
         int childrenCount = GetChildrenCount(week);
         if (childrenCount == 0)
         {
@@ -232,13 +246,11 @@
         return "red"; // Full or over capacity
     }
 
-
     private string GetOptionStyle(string weekOption)
     {
         string week = weekOption.Split(':')[0]; // Extract week part (e.g., "Uge 27")
-        return $"color: {GetWeekColor(week)};";
+        return $"color: {GetWeekColor(int.Parse(week.Split(' ')[1]))};";
     }
-
 }
 
 <style>
