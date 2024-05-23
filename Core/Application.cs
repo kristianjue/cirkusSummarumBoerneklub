@@ -6,7 +6,8 @@ namespace Core
     {
         public string Id { get; set; }
         public string Status { get; set; }
-        public string Location { get; set; }
+        
+        public City City { get; set; }
         public string SecondaryLocation { get; set; } // Tilføj denne linje
         public string Priority1 { get; set; }
         public string Priority2 { get; set; }

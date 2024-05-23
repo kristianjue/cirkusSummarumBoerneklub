@@ -24,7 +24,7 @@ public class Program
         builder.Services.AddSingleton<IAdminRepository, AdminRespository>();
         builder.Services.AddSingleton<IApplicationRepository, ApplicationRepository>();
         builder.Services.AddSingleton<ISignatureRepository, SignatureRepository>();
-        builder.Services.AddSingleton<ISystemSettingsRepository, SystemSettingsRepository>();
+        builder.Services.AddSingleton<ICityRepository, CityRepository>();
         QuestPDF.Settings.License = LicenseType.Community;
         
         builder.Services.AddScoped<PdfForSignature>();

@@ -1,9 +1,13 @@
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+
 namespace Core;
 
 
 public class City
 {
-    public string Id { get; set; }
+    [BsonId]
+    public ObjectId _Id { get; set; } 
     public string Name { get; set; }  // Renamed City property to Name for clarity.
 
     public List<Week> Weeks { get; set; } // A city has multiple weeks.

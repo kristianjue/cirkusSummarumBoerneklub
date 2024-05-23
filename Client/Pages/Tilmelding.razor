@@ -191,7 +191,7 @@
     <div class="row" style="margin-bottom: 30px">
         <div class="col-md-6 mb-3">
             <label for="city">By</label>
-            <InputSelect id="city" @bind-Value="_newTilmelding.Location" class="form-control" @onchange="OnCityChanged">
+            <InputSelect id="city" @bind-Value="_newTilmelding.City.Name" class="form-control" @onchange="OnCityChanged">
                 @if (_cities != null)
                 {
                     @foreach (var city in _cities)
@@ -206,9 +206,16 @@
             <InputSelect id="Priority1" @bind-Value="_newTilmelding.Priority1" class="form-control">
                 @if (_filteredPeriods != null)
                 {
-                    @foreach (var period in _filteredPeriods)
+                    @foreach (var city in _filteredCityFirst)
                     {
-                        <option value="@period.PeriodName">@period.PeriodName</option>
+                        @foreach(var week in city.Weeks)
+                        {
+                            @foreach(var period in week.Periods)
+                            {
+                                <option value="@period.PeriodName">@period.PeriodName</option>
+                            }
+                            
+                        }
                     }
                 }
             </InputSelect>
@@ -233,9 +240,16 @@
             <InputSelect id="Priority2" @bind-Value="_newTilmelding.Priority2" class="form-control">
                 @if (_filteredSecondaryPeriods != null)
                 {
-                    @foreach (var period in _filteredSecondaryPeriods)
+                    @foreach (var city in _filteredCitySecond)
                     {
-                        <option value="@period.PeriodName">@period.PeriodName</option>
+                        @foreach(var week in city.Weeks)
+                        {
+                            @foreach(var period in week.Periods)
+                            {
+                                <option value="@period.PeriodName">@period.PeriodName</option>
+                            }
+                            
+                        }
                     }
                 }
             </InputSelect>
@@ -255,7 +269,8 @@
 @code {
     private EditContext aEditContext;
     private List<City> _cities;
-    private List<Period> _periods;
+    private List<City> _filteredCityFirst;
+    private List<City> _filteredCitySecond;
     private List<Period> _filteredPeriods = new();
     private List<Period> _filteredSecondaryPeriods = new();
 
@@ -267,36 +282,24 @@
         _newTilmelding.Volunteer.Children = new List<Child>();
         aEditContext = new EditContext(_newTilmelding);
 
-        await LoadSystemSettings();
+        await LoadCity();
     }
 
-    private async Task LoadSystemSettings()
+    private async Task LoadCity()
     {
-        try
-        {
-            _cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/systemsettings/getall");
-            if (_cities != null && _cities.Count > 0)
-            {
-                _periods = _cities.SelectMany(c => c.Weeks.SelectMany(w => w.Periods)).ToList();
-                Console.WriteLine("SystemSettings loaded successfully.");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error fetching SystemSettings: {ex.Message}");
-        }
+            _cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getall");
     }
 
     private void OnCityChanged(ChangeEventArgs e)
     {
         var selectedCity = e.Value.ToString();
-        _filteredPeriods = _periods.Where(p => p.City.Name == selectedCity).ToList();
+        _filteredCityFirst = _cities.Where(p => p.Name == selectedCity).ToList();
     }
 
     private void OnSecondaryCityChanged(ChangeEventArgs e)
     {
         var selectedCity = e.Value.ToString();
-        _filteredSecondaryPeriods = _periods.Where(p => p.City.Name == selectedCity).ToList();
+        _filteredCitySecond = _cities.Where(p => p.Name == selectedCity).ToList();
     }
 
     public async Task HandleValidSubmit()

@@ -3,6 +3,7 @@
 @inject HttpClient Http
 @using Core
 @using Microsoft.AspNetCore.Components.Forms
+@using System.Security.Authentication
 
 <PageTitle>Systemindstillinger</PageTitle>
 
@@ -13,32 +14,32 @@
     <ValidationSummary class="alert alert-danger" />
 
     <h3 class="mb-4">Tilføj lokation</h3>
-    @foreach (var location in _newSystemSet.Locations)
+    @foreach (var city in cities)
     {
         <div class="card mb-4">
             <div class="card-body">
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label for="city" class="form-label">By</label>
-                        <InputText id="city" @bind-Value="location.City" class="form-control" />
+                        <InputText id="city" @bind-Value="city.Name" class="form-control" />
                     </div>
                     <div class="col-md-6 text-end">
-                        <button type="button" class="btn btn-danger mt-4" @onclick="() => RemoveLocation(location)">Fjern Lokation</button>
+                        <button type="button" class="btn btn-danger mt-4" @onclick="() => RemoveCity(city)">Fjern Lokation</button>
                     </div>
                 </div>
 
                 <div class="form-check mb-3">
-                    <InputCheckbox id="openForRegistration" @bind-Value="_newSystemSet.OpenForRegistration" class="form-check-input" />
+                    <InputCheckbox id="openForRegistration" @bind-Value="city.OpenForRegistration" class="form-check-input" />
                     <label class="form-check-label" for="openForRegistration">Åben for ansøgning</label>
                 </div>
 
                 <h5 class="card-title">Uger</h5>
-                @foreach (var week in location.Weeks)
+                @foreach (var week in city.Weeks)
                 {
                     <div class="row mb-3">
                         <div class="col-md-3">
                             <label for="weekNumber" class="form-label">Uge</label>
-                            <InputNumber id="weekNumber" @bind-Value="week.WeekNumber" class="form-control" />
+                            <InputText id="weekNumber" @bind-Value="week.WeekName" class="form-control" />
                         </div>
                         @foreach (var period in week.Periods)
                         {
@@ -60,24 +61,24 @@
                                     <InputNumber id="capacity" @bind-Value="period.Capacity" class="form-control" />
                                 </div>
                                 <div class="col-md-12 text-end">
-                                    <button type="button" class="btn btn-danger mt-2" @onclick="() => RemovePeriod(location, week, period)">Fjern Periode</button>
+                                    <button type="button" class="btn btn-danger mt-2" @onclick="() => RemovePeriod(city, week, period)">Fjern Periode</button>
                                 </div>
                             </div>
                         }
                     </div>
                     <div class="text-end mb-3">
-                        <button type="button" class="btn btn-primary" @onclick="() => AddPeriod(location, week)">Tilføj Periode</button>
+                        <button type="button" class="btn btn-primary" @onclick="() => AddPeriod(city, week)">Tilføj Periode</button>
                     </div>
                 }
                 <div class="text-end mb-3">
-                    <button type="button" class="btn btn-primary" @onclick="() => AddWeek(location)">Tilføj Uge</button>
+                    <button type="button" class="btn btn-primary" @onclick="() => AddWeek(city)">Tilføj Uge</button>
                 </div>
             </div>
         </div>
     }
 
     <div class="text-center mb-4">
-        <button type="button" class="btn btn-primary" @onclick="AddLocation">Tilføj Lokation</button>
+        <button type="button" class="btn btn-primary" @onclick="AddCity">Tilføj Lokation</button>
     </div>
 
     <div class="text-center">
@@ -87,36 +88,41 @@
 
 @code {
     private EditContext aEditContext;
-    SystemSettings _newSystemSet = new SystemSettings { Locations = new List<Location>() };
+
+    private List<City> cities = new List<City>();
 
     protected override void OnInitialized()
     {
-        aEditContext = new EditContext(_newSystemSet);
-        _newSystemSet.Locations.Add(new Location { Weeks = new List<Week> { new Week() } });
+        aEditContext = new EditContext(cities);
     }
-
+    
+    
     public async Task HandleValidSubmit()
     {
-        if (string.IsNullOrEmpty(_newSystemSet.Id))
+        foreach (var city in cities)
         {
-            _newSystemSet.Id = Guid.NewGuid().ToString();
-        }
+            // Ensure that the city field is not null or empty
+            if (string.IsNullOrEmpty(city.Name))
+            {
+                Console.WriteLine("The city field is required.");
+                return;
+            }
 
-        Console.WriteLine("SystemSettings Data: " + System.Text.Json.JsonSerializer.Serialize(_newSystemSet));
-
-        var response = await Http.PostAsJsonAsync("https://localhost:7026/api/systemsettings/create", _newSystemSet);
-        if (response.IsSuccessStatusCode)
-        {
-            navigationManager.NavigateTo("brugeroversigt");
+            var response = await Http.PostAsJsonAsync("https://localhost:7026/api/City/create", city);
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("System settings saved successfully");
+            }
+            else
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Failed to save system settings: {response.StatusCode} - {responseContent}");
+            }
         }
-        else
-        {
-            var responseContent = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"Failed to save system settings: {response.StatusCode} - {responseContent}");
-        }
+        navigationManager.NavigateTo("brugeroversigt");
     }
 
-    private void AddPeriod(Location location, Week week)
+    private void AddPeriod(City city, Week week)
     {
         if (week.Periods == null)
         {
@@ -125,27 +131,27 @@
         week.Periods.Add(new Period());
     }
 
-    private void RemovePeriod(Location location, Week week, Period period)
+    private void RemovePeriod(City city, Week week, Period period)
     {
         week.Periods.Remove(period);
         if (week.Periods.Count == 0)
         {
-            location.Weeks.Remove(week);
+            city.Weeks.Remove(week);
         }
     }
 
-    private void AddWeek(Location location)
+    private void AddWeek(City city)
     {
-        location.Weeks.Add(new Week { Periods = new List<Period> { new Period() } });
+        city.Weeks.Add(new Week { Periods = new List<Period> { new Period() } });
     }
 
-    private void AddLocation()
+    private void AddCity()
     {
-        _newSystemSet.Locations.Add(new Location { Weeks = new List<Week> { new Week { Periods = new List<Period> { new Period() } } } });
+        cities.Add(new City { Weeks = new List<Week> { new Week { Periods = new List<Period> { new Period() } } } });
     }
 
-    private void RemoveLocation(Location location)
+    private void RemoveCity(City city)
     {
-        _newSystemSet.Locations.Remove(location);
+        cities.Remove(city);
     }
 }

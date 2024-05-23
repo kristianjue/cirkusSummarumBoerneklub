@@ -4,13 +4,13 @@
 @using System.Net.Http.Json
 @inject HttpClient Http
 @inject NavigationManager Navigation
-
+<!--
 <div class="admin-dashboard">
     <div class="row justify-content-end" style="margin-bottom: 20px">
         <div class="col-3">
             <h5><label for="city">Lokation</label></h5>
             <select name="city" class="form-select" @onchange="UpdateCity">
-                @foreach (var city in systemSettings?.Cities ?? new List<City>())
+                @foreach (var city in City?.Cities ?? new List<City>())
                 {
                     <option value="@city.Name">@city.Name</option>
                 }
@@ -32,11 +32,12 @@
             {
                 @foreach (var app in applications.Where(a => string.IsNullOrEmpty(a.Status) || a.Status == "Ny"))
                 {
+                    
                     <div class="application">
                         @app.Volunteer.Name <br /> @app.Volunteer.Email <br /> @app.Priority1 + @app.Priority2 <br /> @app.Volunteer.Children.Count børn
                         <select @onchange="(e) => UpdateApplicationStatus(app, e.Value.ToString())" class="form-select">
                             <option value="">Vælg uge</option>
-                            @foreach (var city in systemSettings?.Cities ?? new List<City>())
+                            @foreach (var city in City?.Cities ?? new List<City>())
                             {
                                 @foreach (var week in city.Weeks)
                                 {
@@ -54,7 +55,9 @@
             }
         </div>
         <div class="week-sections">
-            @foreach (var city in systemSettings?.Cities ?? new List<City>())
+        
+
+                
             {
                 @foreach (var week in city.Weeks)
                 {
@@ -133,12 +136,12 @@
 @code {
     private List<Application> applications = new List<Application>();
     private string selectedCity;
-    private SystemSettings systemSettings;
+    private City City;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadApplications();
-        systemSettings = await Http.GetFromJsonAsync<SystemSettings>("https://localhost:7026/api/systemsettings/getall");
+        City = await Http.GetFromJsonAsync<City>("https://localhost:7026/api/City/getall");
     }
 
     private async Task LoadApplications()
@@ -296,3 +299,4 @@
         cursor: default;
     }
 </style>
+-->

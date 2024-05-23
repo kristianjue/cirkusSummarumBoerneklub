@@ -3,12 +3,12 @@ using System.Collections.Generic;
 
 namespace Api.Interfaces
 {
-    public interface ISystemSettingsRepository
+    public interface ICityRepository
     {
-        void CreateSystemSettings(SystemSettings settings);
-        List<SystemSettings> GetAllSystemSettings();
-        SystemSettings GetSystemSettingsById(string id);
-        void UpdateSystemSettings(SystemSettings settings);
-        void DeleteSystemSettings(string id);
+        void CreateCity(City settings);
+        List<City> GetAllCity();
+        City GetCityById(string id);
+        void UpdateCity(City settings);
+        void DeleteCity(string id);
     }
 }

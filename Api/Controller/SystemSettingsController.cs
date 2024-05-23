@@ -4,36 +4,37 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 
 [ApiController]
-[Route("api/systemsettings")]
-public class SystemSettingsController : ControllerBase
+[Route("api/City")]
+public class CityController : ControllerBase
 {
-    private readonly ISystemSettingsRepository _settingsRepository;
+    private readonly ICityRepository _settingsRepository;
 
-    public SystemSettingsController(ISystemSettingsRepository settingsRepository)
+    public CityController(ICityRepository settingsRepository)
     {
         _settingsRepository = settingsRepository;
     }
 
     [HttpPost]
     [Route("create")]
-    public ActionResult<SystemSettings> CreateSystemSettings([FromBody] SystemSettings settings)
+    public ActionResult<City> CreateCity([FromBody] City city)
     {
         try
         {
-            _settingsRepository.CreateSystemSettings(settings);
-            return Ok(settings);
+            _settingsRepository.CreateCity(city);
+            return Ok(city);
         }
         catch (Exception ex)
         {
             return BadRequest(ex.Message);
         }
     }
+    
 
     [HttpGet]
     [Route("getall")]
-    public ActionResult<List<SystemSettings>> GetAllSystemSettings()
+    public ActionResult<List<City>> GetAllCity()
     {
-        var settingsFromDb = _settingsRepository.GetAllSystemSettings();
+        var settingsFromDb = _settingsRepository.GetAllCity();
         if (settingsFromDb == null)
         {
             return NotFound();
@@ -42,10 +43,10 @@ public class SystemSettingsController : ControllerBase
     }
 
     [HttpGet]
-    [Route("get/{settingsId}")]
-    public ActionResult<SystemSettings> GetSystemSettingsById(string settingsId)
+    [Route("get/{cityId}")]
+    public ActionResult<City> GetCityById(string cityId)
     {
-        var settingsFromDb = _settingsRepository.GetSystemSettingsById(settingsId);
+        var settingsFromDb = _settingsRepository.GetCityById(cityId);
         if (settingsFromDb == null)
         {
             return NotFound();
@@ -55,11 +56,11 @@ public class SystemSettingsController : ControllerBase
 
     [HttpPut]
     [Route("update/{settingsId}")]
-    public ActionResult<SystemSettings> UpdateSystemSettings(string settingsId, [FromBody] SystemSettings settings)
+    public ActionResult<City> UpdateCity(string settingsId, [FromBody] City city)
     {
         try
         {
-            var existingSettings = _settingsRepository.GetSystemSettingsById(settingsId);
+            var existingSettings = _settingsRepository.GetCityById(settingsId);
             if (existingSettings == null)
             {
                 Console.WriteLine($"System settings not found: {settingsId}");
@@ -67,17 +68,17 @@ public class SystemSettingsController : ControllerBase
             }
 
             // Ensure that the settings ID in the URL matches the settings ID in the request body
-            if (settings.Id != settingsId)
+            if (city.Name != settingsId)
             {
                 Console.WriteLine("System settings ID mismatch");
                 return BadRequest("System settings ID mismatch");
             }
 
             // Update the system settings details
-            existingSettings.Locations = settings.Locations;
-            existingSettings.OpenForRegistration = settings.OpenForRegistration;
+            existingSettings.Weeks = city.Weeks;
+            existingSettings.OpenForRegistration = city.OpenForRegistration;
 
-            _settingsRepository.UpdateSystemSettings(existingSettings);
+            _settingsRepository.UpdateCity(existingSettings);
             Console.WriteLine($"Successfully updated system settings: {settingsId}");
             return Ok(existingSettings);
         }
@@ -90,11 +91,11 @@ public class SystemSettingsController : ControllerBase
 
     [HttpDelete]
     [Route("delete/{settingsId}")]
-    public ActionResult DeleteSystemSettings(string settingsId)
+    public ActionResult DeleteCity(string settingsId)
     {
         try
         {
-            _settingsRepository.DeleteSystemSettings(settingsId);
+            _settingsRepository.DeleteCity(settingsId);
             return Ok();
         }
         catch (Exception ex)

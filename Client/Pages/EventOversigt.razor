@@ -6,11 +6,11 @@
 
 <h1 class="text-center">System Settings Overview</h1>
 
-@if (systemSettingsList == null)
+@if (cities == null)
 {
     <p>Loading...</p>
 }
-else if (!systemSettingsList.Any())
+else if (!cities.Any())
 {
     <p>No events found.</p>
 }
@@ -26,13 +26,13 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var settings in systemSettingsList)
+            @foreach (var city in cities)
             {
                 <tr>
-                    <td>@settings.Locations.FirstOrDefault()?.City</td>
-                    <td>@(settings.OpenForRegistration ? "Ja" : "Nej")</td>
+                    <td>@city.Name</td>
+                    <td>@(city.OpenForRegistration ? "Ja" : "Nej")</td>
                     <td>
-                        <a class="btn btn-primary" href="/edit-systemsettings/@settings.Id">Rediger</a>
+                        <a class="btn btn-primary" href="/edit-City/@city.Name">Rediger</a>
                     </td>
                 </tr>
             }
@@ -41,31 +41,15 @@ else
 }
 
 @code {
-    private List<SystemSettings> systemSettingsList;
+    private List<City> cities;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            systemSettingsList = await Http.GetFromJsonAsync<List<SystemSettings>>("https://localhost:7026/api/systemsettings/getall");
-            Console.WriteLine($"System Settings Loaded: {System.Text.Json.JsonSerializer.Serialize(systemSettingsList)}");
-
-            // Additional check to see if data is empty
-            if (systemSettingsList == null || !systemSettingsList.Any())
-            {
-                Console.WriteLine("No system settings found.");
-            }
-            else
-            {
-                foreach (var settings in systemSettingsList)
-                {
-                    Console.WriteLine($"System Setting: Id={settings.Id}, OpenForRegistration={settings.OpenForRegistration}");
-                    foreach (var location in settings.Locations)
-                    {
-                        Console.WriteLine($"Location: City={location.City}");
-                    }
-                }
-            }
+            cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getall");
+            
+            
         }
         catch (Exception ex)
         {

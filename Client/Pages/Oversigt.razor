@@ -28,22 +28,22 @@
             <div class="col-3">
                 <label for="city">By</label>
                 <select type="text" class="form-control" id="city">
-                    @foreach (var loc in systemSettings?.Locations ?? new List<Location>())
+                    @foreach (var city in cities)
                     {
-                        <option value="@loc.City">@loc.City</option>
+                        <option value="@city.Name">@city.Name</option>
                     }
                 </select>
             </div>
             <div class="col-3">
                 <label for="period">Periode</label>
                 <select type="text" class="form-control" id="period">
-                    @foreach (var loc in systemSettings?.Locations ?? new List<Location>())
+                    @foreach (var city in cities)
                     {
-                        @foreach (var week in loc.Weeks)
+                        @foreach (var week in city.Weeks)
                         {
                             @foreach (var period in week.Periods)
                             {
-                                <option value="uge @week.WeekNumber: @period.PeriodName">Uge @week.WeekNumber: @period.PeriodName</option>
+                                <option value="uge @period.PeriodName: @period.PeriodName">Uge @week.WeekName: @period.PeriodName</option>
                             }
                         }
                     }
@@ -127,12 +127,12 @@
 @code {
     private List<Application> applications;
     private string searchText = "";
-    private SystemSettings systemSettings;
+    private List<City> cities;
 
     protected override async Task OnInitializedAsync()
     {
         await GetAllApplications();
-        systemSettings = await Http.GetFromJsonAsync<SystemSettings>("https://localhost:7026/api/systemsettings/getall");
+        cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getall");
     }
 
     private async Task GetAllApplications()
