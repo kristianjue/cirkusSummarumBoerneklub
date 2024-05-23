@@ -1,12 +1,14 @@
-﻿namespace Core
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Core
 {
     public class Child
     {
-        public string Name { get; set; }
-        public int Age { get; set; }
-        public string Size { get; set; }
-        public string Signature { get; set; }
-        public string beenThereBefore { get; set; }
+        [Required] public string Name { get; set; }
+        [Required]   public int Age { get; set; }
+        [Required]  public string Size { get; set; }
+        [Required]  public string Signature { get; set; }
+        [Required]  public string beenThereBefore { get; set; }
         
         public string comment { get; set; }
         
