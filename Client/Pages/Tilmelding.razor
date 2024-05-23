@@ -190,13 +190,13 @@
     <h3>Pasnings Ønske - 1. prioritet</h3>
     <div class="row" style="margin-bottom: 30px">
         <div class="col-md-6 mb-3">
-            <label for="location">By</label>
-            <InputSelect id="location" @bind-Value="_newTilmelding.Location" class="form-control" @onchange="OnLocationChanged">
-                @if (_locations != null)
+            <label for="city">By</label>
+            <InputSelect id="city" @bind-Value="_newTilmelding.Location" class="form-control" @onchange="OnCityChanged">
+                @if (_cities != null)
                 {
-                    @foreach (var location in _locations)
+                    @foreach (var city in _cities)
                     {
-                        <option value="@location.City">@location.City</option>
+                        <option value="@city.Name">@city.Name</option>
                     }
                 }
             </InputSelect>
@@ -218,12 +218,12 @@
     <div class="row" style="margin-bottom: 50px">
         <div class="col-md-6 mb-3">
             <label for="SecondaryLocation">By</label>
-            <InputSelect id="SecondaryLocation" @bind-Value="_newTilmelding.SecondaryLocation" class="form-control" @onchange="OnSecondaryLocationChanged">
-                @if (_locations != null)
+            <InputSelect id="SecondaryLocation" @bind-Value="_newTilmelding.SecondaryLocation" class="form-control" @onchange="OnSecondaryCityChanged">
+                @if (_cities != null)
                 {
-                    @foreach (var location in _locations)
+                    @foreach (var city in _cities)
                     {
-                        <option value="@location.City">@location.City</option>
+                        <option value="@city.Name">@city.Name</option>
                     }
                 }
             </InputSelect>
@@ -254,9 +254,8 @@
 
 @code {
     private EditContext aEditContext;
-    private List<SystemSettings> _systemSettingsList;
-    private List<Location> _locations;
-    private List<Week> _weeks;
+    private List<City> _cities;
+    private List<Period> _periods;
     private List<Period> _filteredPeriods = new();
     private List<Period> _filteredSecondaryPeriods = new();
 
@@ -275,11 +274,10 @@
     {
         try
         {
-            _systemSettingsList = await Http.GetFromJsonAsync<List<SystemSettings>>("https://localhost:7026/api/systemsettings/getall");
-            if (_systemSettingsList != null && _systemSettingsList.Count > 0)
+            _cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/systemsettings/getall");
+            if (_cities != null && _cities.Count > 0)
             {
-                _locations = _systemSettingsList.SelectMany(s => s.Locations).ToList();
-                _weeks = _locations.SelectMany(l => l.Weeks).ToList();
+                _periods = _cities.SelectMany(c => c.Weeks.SelectMany(w => w.Periods)).ToList();
                 Console.WriteLine("SystemSettings loaded successfully.");
             }
         }
@@ -289,24 +287,16 @@
         }
     }
 
-    private void OnLocationChanged(ChangeEventArgs e)
+    private void OnCityChanged(ChangeEventArgs e)
     {
-        var selectedLocation = e.Value.ToString();
-        var selectedCity = _locations.FirstOrDefault(l => l.City == selectedLocation);
-        if (selectedCity != null)
-        {
-            _filteredPeriods = selectedCity.Weeks.SelectMany(w => w.Periods).ToList();
-        }
+        var selectedCity = e.Value.ToString();
+        _filteredPeriods = _periods.Where(p => p.City.Name == selectedCity).ToList();
     }
 
-    private void OnSecondaryLocationChanged(ChangeEventArgs e)
+    private void OnSecondaryCityChanged(ChangeEventArgs e)
     {
-        var selectedLocation = e.Value.ToString();
-        var selectedCity = _locations.FirstOrDefault(l => l.City == selectedLocation);
-        if (selectedCity != null)
-        {
-            _filteredSecondaryPeriods = selectedCity.Weeks.SelectMany(w => w.Periods).ToList();
-        }
+        var selectedCity = e.Value.ToString();
+        _filteredSecondaryPeriods = _periods.Where(p => p.City.Name == selectedCity).ToList();
     }
 
     public async Task HandleValidSubmit()
