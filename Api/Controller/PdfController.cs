@@ -23,6 +23,7 @@ public class PdfController : ControllerBase
     [Route("get/{ApplicationId}")]
     public async Task<ActionResult> GeneratePdf(string ApplicationId)
     {
+        
         // Fetch or create the Signature object using the ApplicationId
         var application =  _applicationRepository.GetApplicationById(ApplicationId);
         
