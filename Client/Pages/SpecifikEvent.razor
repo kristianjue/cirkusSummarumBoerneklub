@@ -1,123 +1,128 @@
-﻿@page "/specifikevent"
-@inject NavigationManager navigationManager
+﻿@page "/specifikevent/{id}"
 @inject HttpClient Http
+@inject NavigationManager navigationManager
 @using Core
-@using System.Text.Json
+@using Microsoft.AspNetCore.Components.Forms
 
 <PageTitle>Specifik Event</PageTitle>
 
-<div style="text-align: center; margin-bottom: 50px">
-    <h1>Specifik Event</h1>
-    <p>Her kan du se detaljer for en specifik event.</p>
-</div>
+<h1 class="text-center">Specifik Event</h1>
 
+<EditForm EditContext="@aEditContext" class="container mt-4" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary class="alert alert-danger" />
+
+    <h3 class="mb-4">Edit Lokation</h3>
+    <div class="form-check">
+        <InputCheckbox id="openForRegistration" @bind-Value="city.OpenForRegistration" class="form-check-input" />
+        <label class="form-check-label" for="openForRegistration">Åben for registration</label>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="cityName" class="form-label">By</label>
+                    <InputText id="cityName" @bind-Value="city.Name" class="form-control" />
+                </div>
+            </div>
+            <h5 class="card-title">Uger</h5>
+            @foreach (Week week in city.Weeks)
+            {
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label for="weekName" class="form-label">Uge Navn</label>
+                        <InputText id="weekName" @bind-Value="week.WeekName" class="form-control" />
+                    </div>
+                    <h5 class="card-title">Perioder</h5>
+                    @foreach (Period period in week.Periods)
+                    {
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <label for="periodName" class="form-label">Periode Navn</label>
+                                <InputText id="periodName" @bind-Value="period.PeriodName" class="form-control" />
+                            </div>
+                            <div class="col-md-3">
+                                <label for="startDate" class="form-label">Start Dato</label>
+                                <InputDate id="startDate" @bind-Value="period.StartDate" class="form-control" />
+                            </div>
+                            <div class="col-md-3">
+                                <label for="endDate" class="form-label">Slut Dato</label>
+                                <InputDate id="endDate" @bind-Value="period.EndDate" class="form-control" />
+                            </div>
+                            <div class="col-md-3">
+                                <label for="capacity" class="form-label">Kapacitet</label>
+                                <InputNumber id="capacity" @bind-Value="period.Capacity" class="form-control" />
+                            </div>
+                            <div class="col-md-12 text-end">
+                                <button type="button" class="btn btn-danger mt-2" @onclick="() => RemovePeriod(week, period)">Fjern Periode</button>
+                            </div>
+                        </div>
+                    }
+                    <div class="text-end">
+                        <button type="button" class="btn btn-primary" @onclick="() => AddPeriod(week)">Tilføj Periode</button>
+                    </div>
+                </div>
+            }
+            <div class="text-end">
+                <button type="button" class="btn btn-primary" @onclick="() => AddWeek(city)">Tilføj Uge</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mb-4">
+        <button type="submit" class="btn btn-success">Gem</button>
+    </div>
+</EditForm>
 
 @code {
+    [Parameter] public string Id { get; set; }
     private EditContext aEditContext;
-    private List<City> _cities; 
-    private List<Period> _filteredPeriods = new();
-    private List<Period> _filteredSecondaryPeriods = new();
-
-    Application _newTilmelding = new();
+    private City city = new City { Weeks = new List<Week>() };
 
     protected override async Task OnInitializedAsync()
     {
-        _newTilmelding.Volunteer = new Volunteer();
-        _newTilmelding.Volunteer.Children = new List<Child>();
-        aEditContext = new EditContext(_newTilmelding);
-
-        await LoadCity();
-    }
-
-    private async Task LoadCity()
-    {
-        try
-        {
-            var CityList = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getall");
-            if (CityList != null && CityList.Count > 0)
-            {
-                _cities = CityList.SelectMany(s => s.Name).ToList();
-                Console.WriteLine("City loaded successfully.");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error fetching City: {ex.Message}");
-        }
-    }
-
-    private void OnLocationChanged(ChangeEventArgs e)
-    {
-        var selectedCity = e.Value.ToString();
-        var city = _cities.FirstOrDefault(c => c.Name == selectedCity);
-        if (city != null)
-        {
-            _filteredPeriods = city.Weeks.SelectMany(w => w.Periods).ToList();
-            Console.WriteLine($"Location changed to: {selectedCity}. Filtered periods count: {_filteredPeriods.Count}");
-        }
-        else
-        {
-            _filteredPeriods.Clear();
-        }
-    }
-
-    private void OnSecondaryLocationChanged(ChangeEventArgs e)
-    {
-        var selectedCity = e.Value.ToString();
-        var city = _cities.FirstOrDefault(c => c.Name == selectedCity);
-        if (city != null)
-        {
-            _filteredSecondaryPeriods = city.Weeks.SelectMany(w => w.Periods).ToList();
-            Console.WriteLine($"Secondary location changed to: {selectedCity}. Filtered secondary periods count: {_filteredSecondaryPeriods.Count}");
-        }
-        else
-        {
-            _filteredSecondaryPeriods.Clear();
-        }
+        aEditContext = new EditContext(city);
+        city = await Http.GetFromJsonAsync<City>($"https://localhost:7026/api/City/get/{Id}");
+        aEditContext = new EditContext(city);
     }
 
     public async Task HandleValidSubmit()
     {
-        if (ekstraKid == false)
+        var response = await Http.PutAsJsonAsync($"https://localhost:7026/api/City/update/{Id}", city);
+        if (response.IsSuccessStatusCode)
         {
-            kid1.Signature = SignatureForKid1AsBase64;
-            _newTilmelding.Volunteer.Children.Add(kid1);
+            navigationManager.NavigateTo("eventoversigt");
         }
         else
         {
-            kid1.Signature = SignatureForKid1AsBase64;
-            kid2.Signature = SignatureForKid2AsBase64;
-            _newTilmelding.Volunteer.Children.Add(kid1);
-            _newTilmelding.Volunteer.Children.Add(kid2);
+            // Handle error response
+            var responseContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Failed to update city: {response.StatusCode} - {responseContent}");
         }
-
-        _newTilmelding.Id = System.Guid.NewGuid().ToString();
-        _newTilmelding.Volunteer.Id = Guid.NewGuid().ToString();
-        _newTilmelding.Status = "Ny";
-
-        await Http.PostAsJsonAsync<Application>($"https://localhost:7026/api/application/create", _newTilmelding);
-
-        navigationManager.NavigateTo($"brugeroversigt");
     }
 
-    public Child kid1 = new Child();
-    public Child kid2 = new Child();
-
-    public bool ekstraKid = false;
-
-    public void addKid()
+    private void AddPeriod(Week week)
     {
-        ekstraKid = true;
+        if (week.Periods == null)
+        {
+            week.Periods = new List<Period>();
+        }
+        week.Periods.Add(new Period());
     }
 
-    public void removeKid()
+    private void RemovePeriod(Week week, Period period)
     {
-        ekstraKid = false;
+        week.Periods.Remove(period);
     }
 
-    public byte[] SignatureForKid1 { get; set; } = Array.Empty<byte>();
-    public byte[] SignatureForKid2 { get; set; } = Array.Empty<byte>();
+    private void AddWeek(City city)
+    {
+        city.Weeks.Add(new Week { Periods = new List<Period> { new Period() } });
+    }
 
-    public string SignatureForKid1AsBase64 => System.Text.Encoding.UTF8.GetString(SignatureForKid1);
-    public string SignatureForKid2AsBase64 => System.Text.Encoding.UTF8.GetString(SignatureForKid2);
+    private void RemoveWeek(Week week)
+    {
+        city.Weeks.Remove(week);
+    }
 }
