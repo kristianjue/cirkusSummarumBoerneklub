@@ -7,7 +7,7 @@ namespace Api.Interfaces
     {
         void CreateCity(City settings);
         List<City> GetAllCity();
-        City GetCityById(string id);
+        City GetCityByName(string name);
         void UpdateCity(City settings);
         void DeleteCity(string id);
     }

@@ -234,7 +234,6 @@
                             <option value="@city.Name">@city.Name</option>
                         }
                     }
-                    }
                 </InputSelect>
                 <button type="button" class="btn btn-primary" @onclick="OnSecondaryCityChanged">Vælg By</button>
             </div>
@@ -251,7 +250,6 @@
                     else
                     {
                         <option value="">No periods available</option>
-                    }
                     }
                 </InputSelect>
             </div>
@@ -292,6 +290,7 @@
     {
         _newTilmelding.Volunteer = new Volunteer();
         _newTilmelding.Volunteer.Children = new List<Child>();
+        _newTilmelding.Type = "Børneklubben"; // Sæt type ved initialisering
         aEditContext = new EditContext(_newTilmelding);
 
         await LoadCity();
@@ -377,9 +376,20 @@
         _newTilmelding.Volunteer.Id = Guid.NewGuid().ToString();
         _newTilmelding.Status = "Ny";
 
-        await Http.PostAsJsonAsync<Application>($"https://localhost:7026/api/application/create", _newTilmelding);
+        // Debugging statement
+        Console.WriteLine($"Priority1: {_newTilmelding.Priority1}");
 
-        navigationManager.NavigateTo($"brugeroversigt");
+        var response = await Http.PostAsJsonAsync<Application>($"https://localhost:7026/api/application/create", _newTilmelding);
+
+        if (response.IsSuccessStatusCode)
+        {
+            navigationManager.NavigateTo($"brugeroversigt");
+        }
+        else
+        {
+            var responseContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Failed to submit application: {response.StatusCode} - {responseContent}");
+        }
     }
 
     public Child kid1 = new Child();

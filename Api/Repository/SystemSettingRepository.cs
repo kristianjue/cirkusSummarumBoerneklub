@@ -27,9 +27,9 @@ namespace Api.Repository
             return _settingsCollection.Find(FilterDefinition<City>.Empty).ToList();
         }
 
-        public City GetCityById(string id)
+        public City GetCityByName(string name)
         {
-            var filter = Builders<City>.Filter.Eq(settings => settings.Name, id);
+            var filter = Builders<City>.Filter.Eq(settings => settings.Name, name);
             return _settingsCollection.Find(filter).SingleOrDefault();
         }
 
@@ -38,23 +38,24 @@ namespace Api.Repository
             var filter = Builders<City>.Filter.Eq(s => s.Name, settings.Name);
             var update = Builders<City>.Update
                 .Set(s => s.Name, settings.Name)
-                .Set(s => s.OpenForRegistration, settings.OpenForRegistration);
+                .Set(s => s.OpenForRegistration, settings.OpenForRegistration)
+                .Set(s => s.Weeks, settings.Weeks);
 
             var result = _settingsCollection.UpdateOne(filter, update);
 
             if (result.ModifiedCount == 0)
             {
-                Console.WriteLine($"No documents were updated for settings Id={settings.Name}");
+                Console.WriteLine($"No documents were updated for city Name={settings.Name}");
             }
             else
             {
-                Console.WriteLine($"Successfully updated settings Id={settings.Name}");
+                Console.WriteLine($"Successfully updated city Name={settings.Name}");
             }
         }
 
-        public void DeleteCity(string id)
+        public void DeleteCity(string name)
         {
-            var filter = Builders<City>.Filter.Eq(settings => settings.Name, id);
+            var filter = Builders<City>.Filter.Eq(settings => settings.Name, name);
             _settingsCollection.DeleteOne(filter);
         }
     }

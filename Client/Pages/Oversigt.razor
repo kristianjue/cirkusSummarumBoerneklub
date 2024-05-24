@@ -18,16 +18,17 @@
     <div class="col-6">
         <div class="row">
             <div class="col-3">
-                <label for="city">Type</label>
-                <select type="text" class="form-control" id="city">
-                    <option value="ingen2.">Alle typer</option>
+                <label for="type">Type</label>
+                <select type="text" class="form-control" id="type" @onchange="OnTypeChanged">
+                    <option value="">Alle typer</option>
                     <option value="Børneklubben">Børneklubben</option>
                     <option value="Ung frivillig">Ung frivillig</option>
                 </select>
             </div>
             <div class="col-3">
                 <label for="city">By</label>
-                <select type="text" class="form-control" id="city">
+                <select type="text" class="form-control" id="city" @onchange="OnCityChanged">
+                    <option value="">Vælg by</option>
                     @if (cities != null)
                     {
                         @foreach (var city in cities)
@@ -39,25 +40,20 @@
             </div>
             <div class="col-3">
                 <label for="period">Periode</label>
-                <select type="text" class="form-control" id="period">
-                    @if (cities != null)
+                <select type="text" class="form-control" id="period" @onchange="OnPeriodChanged">
+                    <option value="">Vælg periode</option>
+                    @if (filteredPeriods != null)
                     {
-                        @foreach (var city in cities)
+                        @foreach (var period in filteredPeriods)
                         {
-                            @foreach (var week in city.Weeks)
-                            {
-                                @foreach (var period in week.Periods)
-                                {
-                                    <option value="uge @period.PeriodName: @period.PeriodName">Uge @week.WeekName: @period.PeriodName</option>
-                                }
-                            }
+                            <option value="@period.PeriodName">@period.PeriodName</option>
                         }
                     }
                 </select>
             </div>
             <div class="col-3">
                 <label for="status">Status</label>
-                <select type="text" class="form-control" id="status">
+                <select type="text" class="form-control" id="status" @onchange="OnStatusChanged">
                     <option value="Alle ansøgninger">Alle ansøgninger</option>
                     <option value="Nye ansøgninger">Nye ansøgninger</option>
                     <option value="Godkendte ansøgninger">Godkendte ansøgninger</option>
@@ -70,19 +66,19 @@
     <div class="col-6">
         <div class="float-end">
             <label for="search">Søg</label>
-            <input type="text" class="form-control" id="search" @bind="searchText" />
+            <input type="text" class="form-control" id="search" @bind="searchText" @oninput="OnSearchChanged" />
         </div>
     </div>
 </div>
 
 <div class="row mt-4">
-    @if (applications == null)
+    @if (filteredApplications == null)
     {
         <p>Loading...</p>
     }
     else
     {
-        @foreach (var application in applications)
+        @foreach (var application in filteredApplications)
         {
             <div class="col-9 mx-auto mt-4">
                 <div class="row overview-guardian">
@@ -120,7 +116,7 @@
                             </div>
                             <div class="col-4">
                                 <p class="overview-label">Type:</p>
-                                <p>@application.Priority2</p>
+                                <p>@application.Type</p>
                             </div>
                         </div>
                     }
@@ -132,8 +128,14 @@
 
 @code {
     private List<Application> applications = new List<Application>();
+    private List<Application> filteredApplications = new List<Application>();
     private string searchText = "";
     private List<City> cities = new List<City>();
+    private List<Period> filteredPeriods = new List<Period>();
+
+    private string selectedCity;
+    private string selectedType;
+    private string selectedStatus;
 
     protected override async Task OnInitializedAsync()
     {
@@ -153,6 +155,7 @@
         try
         {
             applications = await Http.GetFromJsonAsync<List<Application>>("https://localhost:7026/api/application/getall");
+            filteredApplications = applications;
         }
         catch (Exception ex)
         {
@@ -173,5 +176,59 @@
     public void GetAllPdf()
     {
         NavigationManager.NavigateTo($"https://localhost:7026/api/pdf/get-all");
+    }
+
+    private void OnCityChanged(ChangeEventArgs e)
+    {
+        selectedCity = e.Value.ToString();
+        UpdateFilteredPeriods();
+        FilterApplications();
+    }
+
+    private void OnTypeChanged(ChangeEventArgs e)
+    {
+        selectedType = e.Value.ToString();
+        FilterApplications();
+    }
+
+    private void OnStatusChanged(ChangeEventArgs e)
+    {
+        selectedStatus = e.Value.ToString();
+        FilterApplications();
+    }
+
+    private void OnSearchChanged(ChangeEventArgs e)
+    {
+        searchText = e.Value.ToString();
+        FilterApplications();
+    }
+
+    private void OnPeriodChanged(ChangeEventArgs e)
+    {
+        // Handle period change if necessary
+    }
+
+    private void UpdateFilteredPeriods()
+    {
+        var city = cities.FirstOrDefault(c => c.Name == selectedCity);
+        if (city != null)
+        {
+            filteredPeriods = city.Weeks.SelectMany(week => week.Periods).ToList();
+        }
+        else
+        {
+            filteredPeriods.Clear();
+        }
+    }
+
+    private void FilterApplications()
+    {
+        filteredApplications = applications.Where(app =>
+            (string.IsNullOrEmpty(selectedCity) || app.City?.Name == selectedCity) &&
+            (string.IsNullOrEmpty(selectedType) || app.Type == selectedType) &&
+            (string.IsNullOrEmpty(selectedStatus) || app.Status == selectedStatus) &&
+            (string.IsNullOrEmpty(searchText) || app.Volunteer.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                                 app.Volunteer.Children.Any(child => child.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)))
+        ).ToList();
     }
 }
