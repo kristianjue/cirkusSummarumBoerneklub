@@ -196,7 +196,7 @@
                 {
                     @foreach (var city in _cities)
                     {
-                        <option value="@city._Id.ToString()">@city.Name</option>
+                        <option value="@city.Name">@city.Name</option>
                     }
                 }
             </InputSelect>
@@ -229,7 +229,7 @@
                 {
                     @foreach (var city in _cities)
                     {
-                        <option value="@city._Id.ToString()">@city.Name</option>
+                        <option value="@city.Name">@city.Name</option>
                     }
                 }
             </InputSelect>
@@ -291,7 +291,7 @@
 
     private void OnCityChanged()
     {
-        var selectedCity = _cities.FirstOrDefault(city => city._Id.ToString() == _selectedCityId1);
+        var selectedCity = _cities.FirstOrDefault(city => city.Name == _selectedCityId1);
         if (selectedCity != null)
         {
             _newTilmelding.City = selectedCity;
@@ -313,7 +313,7 @@
 
     private void OnSecondaryCityChanged()
     {
-        var selectedCity = _cities.FirstOrDefault(city => city._Id.ToString() == _selectedCityId2);
+        var selectedCity = _cities.FirstOrDefault(city => city.Name == _selectedCityId2);
         if (selectedCity != null)
         {
             _filteredPeriodsSecond = selectedCity.Weeks.SelectMany(week => week.Periods).ToList();
