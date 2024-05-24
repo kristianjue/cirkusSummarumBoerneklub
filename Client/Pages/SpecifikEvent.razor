@@ -11,15 +11,15 @@
     <p>Her kan du se detaljer for en specifik event.</p>
 </div>
 
-<!-- Din HTML kode her -->
+
 @code {
     private EditContext aEditContext;
-    private List<City> _cities; // Opdateret variabelnavn
+    private List<City> _cities; 
     private List<Period> _filteredPeriods = new();
     private List<Period> _filteredSecondaryPeriods = new();
 
     Application _newTilmelding = new();
-/*
+
     protected override async Task OnInitializedAsync()
     {
         _newTilmelding.Volunteer = new Volunteer();
@@ -36,7 +36,7 @@
             var CityList = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getall");
             if (CityList != null && CityList.Count > 0)
             {
-                _cities = CityList.SelectMany(s => s.Cities).ToList();
+                _cities = CityList.SelectMany(s => s.Name).ToList();
                 Console.WriteLine("City loaded successfully.");
             }
         }
@@ -45,7 +45,7 @@
             Console.WriteLine($"Error fetching City: {ex.Message}");
         }
     }
-*/
+
     private void OnLocationChanged(ChangeEventArgs e)
     {
         var selectedCity = e.Value.ToString();
