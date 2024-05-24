@@ -204,49 +204,55 @@
         <div class="col-md-6 mb-3">
             <label for="Priority1">Periode</label>
             <InputSelect id="Priority1" @bind-Value="_newTilmelding.Priority1" class="form-control">
-                @if (_filteredCityFirst != null)
+                @if (_filteredPeriodsFirst != null)
                 {
-                    @foreach (var week in _filteredCityFirst.SelectMany(city => city.Weeks))
+                    @foreach (var period in _filteredPeriodsFirst)
                     {
-                        @foreach (var period in week.Periods)
-                        {
-                            <option value="@period.PeriodName">@period.PeriodName</option>
-                        }
+                        <option value="@period.PeriodName">@period.PeriodName</option>
                     }
                 }
             </InputSelect>
         </div>
     </div>
-    <h3>Pasnings Ønske - 2. prioritet</h3>
-    <div class="row" style="margin-bottom: 50px">
-        <div class="col-md-6 mb-3">
-            <label for="SecondaryLocation">By</label>
-            <InputSelect id="SecondaryLocation" @bind-Value="_selectedCity2" class="form-control" @onchange="OnSecondaryCityChanged">
-                @if (_cities != null)
-                {
-                    @foreach (var city in _cities)
+    @if (_showSecondPriority)
+    {
+        <h3>Pasnings Ønske - 2. prioritet</h3>
+        <div class="row" style="margin-bottom: 50px">
+            <div class="col-md-6 mb-3">
+                <label for="SecondaryLocation">By</label>
+                <InputSelect id="SecondaryLocation" @bind-Value="_selectedCity2" class="form-control" @onchange="OnSecondaryCityChanged">
+                    @if (_cities != null)
                     {
-                        <option value="@city.Name">@city.Name</option>
+                        @foreach (var city in _cities)
+                        {
+                            <option value="@city.Name">@city.Name</option>
+                        }
                     }
-                }
-            </InputSelect>
-        </div>
-        <div class="col-md-6 mb-3">
-            <label for="Priority2">Periode</label>
-            <InputSelect id="Priority2" @bind-Value="_newTilmelding.Priority2" class="form-control">
-                @if (_filteredCitySecond != null)
-                {
-                    @foreach (var week in _filteredCitySecond.SelectMany(city => city.Weeks))
+                </InputSelect>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="Priority2">Periode</label>
+                <InputSelect id="Priority2" @bind-Value="_newTilmelding.Priority2" class="form-control">
+                    @if (_filteredPeriodsSecond != null)
                     {
-                        @foreach (var period in week.Periods)
+                        @foreach (var period in _filteredPeriodsSecond)
                         {
                             <option value="@period.PeriodName">@period.PeriodName</option>
                         }
                     }
-                }
-            </InputSelect>
+                </InputSelect>
+            </div>
+            <div class="col-12 text-center">
+                <button type="button" class="btn btn-danger" @onclick="HideSecondPriority">Fjern 2. prioritet</button>
+            </div>
         </div>
-    </div>
+    }
+    else
+    {
+        <div style="margin-bottom: 50px">
+            <button type="button" class="btn btn-secondary" @onclick="ShowSecondPriority">Tilføj 2. prioritet</button>
+        </div>
+    }
 
     <div class="row" style="margin-bottom: 50px; text-align: center">
         <div class="col-12 mb-3">
@@ -261,13 +267,11 @@
 @code {
     private EditContext aEditContext;
     private List<City> _cities;
-    private List<City> _filteredCityFirst;
-    private List<City> _filteredCitySecond;
-    private List<Period> _filteredPeriods = new();
-    private List<Period> _filteredSecondaryPeriods = new();
-
     private string _selectedCity1;
     private string _selectedCity2;
+    private List<Period> _filteredPeriodsFirst = new();
+    private List<Period> _filteredPeriodsSecond = new();
+    private bool _showSecondPriority = false;
 
     Application _newTilmelding = new();
 
@@ -288,13 +292,26 @@
     private void OnCityChanged(ChangeEventArgs e)
     {
         _selectedCity1 = e.Value.ToString();
-        _filteredCityFirst = _cities.Where(p => p.Name == _selectedCity1).ToList();
+        _filteredPeriodsFirst = _cities.FirstOrDefault(city => city.Name == _selectedCity1)?.Weeks.SelectMany(week => week.Periods).ToList();
     }
 
     private void OnSecondaryCityChanged(ChangeEventArgs e)
     {
         _selectedCity2 = e.Value.ToString();
-        _filteredCitySecond = _cities.Where(p => p.Name == _selectedCity2).ToList();
+        _filteredPeriodsSecond = _cities.FirstOrDefault(city => city.Name == _selectedCity2)?.Weeks.SelectMany(week => week.Periods).ToList();
+    }
+
+    private void ShowSecondPriority()
+    {
+        _showSecondPriority = true;
+    }
+
+    private void HideSecondPriority()
+    {
+        _showSecondPriority = false;
+        _newTilmelding.Priority2 = null;
+        _selectedCity2 = null;
+        _filteredPeriodsSecond.Clear();
     }
 
     public async Task HandleValidSubmit()
