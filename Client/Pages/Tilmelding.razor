@@ -111,7 +111,7 @@
     @if (ekstraKid == false)
     {
         <div style="margin-bottom: 50px">
-            <button type="submit" class="btn btn-primary" @onclick="addKid" style="margin-top: 10px">Tilføj barn</button>
+            <button type="button" class="btn btn-primary" @onclick="addKid" style="margin-top: 10px">Tilføj barn</button>
         </div>
     }
 
@@ -183,15 +183,15 @@
         </div>
 
         <div style="margin-bottom: 50px">
-            <button type="submit" class="btn btn-danger" @onclick="removeKid" style="margin-top: 10px">Fjern barn</button>
+            <button type="button" class="btn btn-danger" @onclick="removeKid" style="margin-top: 10px">Fjern barn</button>
         </div>
     }
 
     <h3>Pasnings Ønske - 1. prioritet</h3>
     <div class="row" style="margin-bottom: 30px">
         <div class="col-md-6 mb-3">
-            <label for="city">By</label>
-            <InputSelect id="city" @bind-Value="_newTilmelding.City.Name" class="form-control" @onchange="OnCityChanged">
+            <label for="city1">By</label>
+            <InputSelect id="city1" @bind-Value="_selectedCityId1" class="form-control">
                 @if (_cities != null)
                 {
                     @foreach (var city in _cities)
@@ -200,61 +200,72 @@
                     }
                 }
             </InputSelect>
+            <button type="button" class="btn btn-primary" @onclick="OnCityChanged">Vælg By</button>
         </div>
         <div class="col-md-6 mb-3">
             <label for="Priority1">Periode</label>
             <InputSelect id="Priority1" @bind-Value="_newTilmelding.Priority1" class="form-control">
-                @if (_filteredPeriods != null)
+                @if (_filteredPeriodsFirst != null && _filteredPeriodsFirst.Any())
                 {
-                    @foreach (var city in _filteredCityFirst)
+                    @foreach (var period in _filteredPeriodsFirst)
                     {
-                        @foreach(var week in city.Weeks)
-                        {
-                            @foreach(var period in week.Periods)
-                            {
-                                <option value="@period.PeriodName">@period.PeriodName</option>
-                            }
-                            
-                        }
+                        <option value="@period.PeriodName">@period.PeriodName</option>
                     }
+                }
+                else
+                {
+                    <option value="">No periods available</option>
                 }
             </InputSelect>
         </div>
     </div>
-    <h3>Pasnings Ønske - 2. prioritet</h3>
-    <div class="row" style="margin-bottom: 50px">
-        <div class="col-md-6 mb-3">
-            <label for="SecondaryLocation">By</label>
-            <InputSelect id="SecondaryLocation" @bind-Value="_newTilmelding.SecondaryLocation" class="form-control" @onchange="OnSecondaryCityChanged">
-                @if (_cities != null)
-                {
-                    @foreach (var city in _cities)
+
+    @if (_showSecondPriority)
+    {
+        <h3>Pasnings Ønske - 2. prioritet</h3>
+        <div class="row" style="margin-bottom: 30px">
+            <div class="col-md-6 mb-3">
+                <label for="city2">By</label>
+                <InputSelect id="city2" @bind-Value="_selectedCityId2" class="form-control">
+                    @if (_cities != null)
                     {
-                        <option value="@city.Name">@city.Name</option>
-                    }
-                }
-            </InputSelect>
-        </div>
-        <div class="col-md-6 mb-3">
-            <label for="Priority2">Periode</label>
-            <InputSelect id="Priority2" @bind-Value="_newTilmelding.Priority2" class="form-control">
-                @if (_filteredSecondaryPeriods != null)
-                {
-                    @foreach (var city in _filteredCitySecond)
-                    {
-                        @foreach(var week in city.Weeks)
+                        @foreach (var city in _cities)
                         {
-                            @foreach(var period in week.Periods)
-                            {
-                                <option value="@period.PeriodName">@period.PeriodName</option>
-                            }
-                            
+                            <option value="@city.Name">@city.Name</option>
                         }
                     }
-                }
-            </InputSelect>
+                    }
+                </InputSelect>
+                <button type="button" class="btn btn-primary" @onclick="OnSecondaryCityChanged">Vælg By</button>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="Priority2">Periode</label>
+                <InputSelect id="Priority2" @bind-Value="_newTilmelding.Priority2" class="form-control">
+                    @if (_filteredPeriodsSecond != null && _filteredPeriodsSecond.Any())
+                    {
+                        @foreach (var period in _filteredPeriodsSecond)
+                        {
+                            <option value="@period.PeriodName">@period.PeriodName</option>
+                        }
+                    }
+                    else
+                    {
+                        <option value="">No periods available</option>
+                    }
+                    }
+                </InputSelect>
+            </div>
+            <div class="col-12 text-center">
+                <button type="button" class="btn btn-danger" @onclick="HideSecondPriority">Fjern 2. prioritet</button>
+            </div>
         </div>
-    </div>
+    }
+    else
+    {
+        <div style="margin-bottom: 50px">
+            <button type="button" class="btn btn-secondary" @onclick="ShowSecondPriority">Tilføj 2. prioritet</button>
+        </div>
+    }
 
     <div class="row" style="margin-bottom: 50px; text-align: center">
         <div class="col-12 mb-3">
@@ -269,10 +280,11 @@
 @code {
     private EditContext aEditContext;
     private List<City> _cities;
-    private List<City> _filteredCityFirst;
-    private List<City> _filteredCitySecond;
-    private List<Period> _filteredPeriods = new();
-    private List<Period> _filteredSecondaryPeriods = new();
+    private string _selectedCityId1;
+    private string _selectedCityId2;
+    private List<Period> _filteredPeriodsFirst = new();
+    private List<Period> _filteredPeriodsSecond = new();
+    private bool _showSecondPriority = false;
 
     Application _newTilmelding = new();
 
@@ -287,19 +299,63 @@
 
     private async Task LoadCity()
     {
-            _cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getall");
+        _cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getall");
     }
 
-    private void OnCityChanged(ChangeEventArgs e)
+    private void OnCityChanged()
     {
-        var selectedCity = e.Value.ToString();
-        _filteredCityFirst = _cities.Where(p => p.Name == selectedCity).ToList();
+        var selectedCity = _cities.FirstOrDefault(city => city.Name == _selectedCityId1);
+        if (selectedCity != null)
+        {
+            _newTilmelding.City = selectedCity;
+            _filteredPeriodsFirst = selectedCity.Weeks.SelectMany(week => week.Periods).ToList();
+            if (_filteredPeriodsFirst.Any())
+            {
+                Console.WriteLine($"{_filteredPeriodsFirst.Count} periods found for city {_selectedCityId1}");
+            }
+            else
+            {
+                Console.WriteLine("No periods found for the selected city");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Selected city not found in the list");
+        }
     }
 
-    private void OnSecondaryCityChanged(ChangeEventArgs e)
+    private void OnSecondaryCityChanged()
     {
-        var selectedCity = e.Value.ToString();
-        _filteredCitySecond = _cities.Where(p => p.Name == selectedCity).ToList();
+        var selectedCity = _cities.FirstOrDefault(city => city.Name == _selectedCityId2);
+        if (selectedCity != null)
+        {
+            _filteredPeriodsSecond = selectedCity.Weeks.SelectMany(week => week.Periods).ToList();
+            if (_filteredPeriodsSecond.Any())
+            {
+                Console.WriteLine($"{_filteredPeriodsSecond.Count} periods found for city {_selectedCityId2}");
+            }
+            else
+            {
+                Console.WriteLine("No periods found for the selected city");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Selected city not found in the list");
+        }
+    }
+
+    private void ShowSecondPriority()
+    {
+        _showSecondPriority = true;
+    }
+
+    private void HideSecondPriority()
+    {
+        _showSecondPriority = false;
+        _newTilmelding.Priority2 = null;
+        _selectedCityId2 = null;
+        _filteredPeriodsSecond.Clear();
     }
 
     public async Task HandleValidSubmit()
@@ -324,7 +380,6 @@
         await Http.PostAsJsonAsync<Application>($"https://localhost:7026/api/application/create", _newTilmelding);
 
         navigationManager.NavigateTo($"brugeroversigt");
-
     }
 
     public Child kid1 = new Child();

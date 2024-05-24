@@ -28,22 +28,28 @@
             <div class="col-3">
                 <label for="city">By</label>
                 <select type="text" class="form-control" id="city">
-                    @foreach (var city in cities)
+                    @if (cities != null)
                     {
-                        <option value="@city.Name">@city.Name</option>
+                        @foreach (var city in cities)
+                        {
+                            <option value="@city.Name">@city.Name</option>
+                        }
                     }
                 </select>
             </div>
             <div class="col-3">
                 <label for="period">Periode</label>
                 <select type="text" class="form-control" id="period">
-                    @foreach (var city in cities)
+                    @if (cities != null)
                     {
-                        @foreach (var week in city.Weeks)
+                        @foreach (var city in cities)
                         {
-                            @foreach (var period in week.Periods)
+                            @foreach (var week in city.Weeks)
                             {
-                                <option value="uge @period.PeriodName: @period.PeriodName">Uge @week.WeekName: @period.PeriodName</option>
+                                @foreach (var period in week.Periods)
+                                {
+                                    <option value="uge @period.PeriodName: @period.PeriodName">Uge @week.WeekName: @period.PeriodName</option>
+                                }
                             }
                         }
                     }
@@ -125,19 +131,33 @@
 </div>
 
 @code {
-    private List<Application> applications;
+    private List<Application> applications = new List<Application>();
     private string searchText = "";
-    private List<City> cities;
+    private List<City> cities = new List<City>();
 
     protected override async Task OnInitializedAsync()
     {
-        await GetAllApplications();
-        cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getall");
+        try
+        {
+            await GetAllApplications();
+            cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getall");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading data: {ex.Message}");
+        }
     }
 
     private async Task GetAllApplications()
     {
-        applications = await Http.GetFromJsonAsync<List<Application>>("https://localhost:7026/api/application/getall");
+        try
+        {
+            applications = await Http.GetFromJsonAsync<List<Application>>("https://localhost:7026/api/application/getall");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading applications: {ex.Message}");
+        }
     }
 
     private void EditApplication(string applicationId)
