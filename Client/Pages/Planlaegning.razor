@@ -48,43 +48,30 @@
             }
         </div>
         <div class="week-sections">
-            @foreach (var city in cities)
+            @if (!string.IsNullOrEmpty(selectedCity))
             {
-                @foreach (var week in city.Weeks)
+                var city = cities.FirstOrDefault(c => c.Name == selectedCity);
+                if (city != null)
                 {
-                    <div class="section">
-                        <h3 style="color:@GetWeekColor(week.WeekName)">Uge @week.WeekName (@GetChildrenCount($"uge {week.WeekName}") / 20)</h3>
-                        <div class="sub-section">
-                            <h4>Ons-Søn</h4>
-                            @foreach (var app in applications.Where(a => a.Status == $"uge {week.WeekName}: Ons-Søn"))
+                    @foreach (var week in city.Weeks)
+                    {
+                        <div class="section">
+                            <h3 style="color:@GetWeekColor(week.WeekName)">Uge @week.WeekName (@GetChildrenCount($"uge {week.WeekName}") / 20)</h3>
+                            @foreach (var period in week.Periods)
                             {
-                                <div class="application">
-                                    @app.Volunteer.Name <br /> @app.Volunteer.Children.Count børn
-                                    <button class="btn btn-danger" @onclick="() => RemoveApplication(app)">Fortryd</button>
+                                <div class="sub-section">
+                                    <h4>@period.PeriodName</h4>
+                                    @foreach (var app in applications.Where(a => a.Status == $"uge {week.WeekName}: {period.PeriodName}"))
+                                    {
+                                        <div class="application">
+                                            @app.Volunteer.Name <br /> @app.Volunteer.Children.Count børn
+                                            <button class="btn btn-danger" @onclick="() => RemoveApplication(app)">Fortryd</button>
+                                        </div>
+                                    }
                                 </div>
                             }
                         </div>
-                        <div class="sub-section">
-                            <h4>Ons-Fre</h4>
-                            @foreach (var app in applications.Where(a => a.Status == $"uge {week.WeekName}: Ons-Fre"))
-                            {
-                                <div class="application">
-                                    @app.Volunteer.Name <br /> @app.Volunteer.Children.Count børn
-                                    <button class="btn btn-danger" @onclick="() => RemoveApplication(app)">Fortryd</button>
-                                </div>
-                            }
-                        </div>
-                        <div class="sub-section">
-                            <h4>Lør-Søn</h4>
-                            @foreach (var app in applications.Where(a => a.Status == $"uge {week.WeekName}: Lør-Søn"))
-                            {
-                                <div class="application">
-                                    @app.Volunteer.Name <br /> @app.Volunteer.Children.Count børn
-                                    <button class="btn btn-danger" @onclick="() => RemoveApplication(app)">Fortryd</button>
-                                </div>
-                            }
-                        </div>
-                    </div>
+                    }
                 }
             }
         </div>
@@ -157,12 +144,25 @@
     private async Task UpdateCity(ChangeEventArgs e)
     {
         selectedCity = e.Value.ToString();
+        await RefreshFilteredPeriods();
+        await LoadApplications();
+    }
+
+    private async Task RefreshFilteredPeriods()
+    {
         var city = cities.FirstOrDefault(c => c.Name == selectedCity);
         if (city != null)
         {
-            _filteredPeriods = city.Weeks.SelectMany(w => w.Periods).ToList();
+            // Reload the city to get updated periods
+            var updatedCity = await Http.GetFromJsonAsync<City>($"https://localhost:7026/api/City/get/{city.Name}");
+            if (updatedCity != null)
+            {
+                var index = cities.IndexOf(city);
+                cities[index] = updatedCity;
+                _filteredPeriods = updatedCity.Weeks.SelectMany(w => w.Periods).ToList();
+                StateHasChanged();
+            }
         }
-        await LoadApplications();
     }
 
     private void UpdateApplicationStatus(Application app, string newStatus)
@@ -234,10 +234,8 @@
     private void FilterApplicationsByCity()
     {
         applications = applications.Where(a => a.City.Name == selectedCity).ToList();
-
     }
 }
-
 
 <style>
     .admin-dashboard {

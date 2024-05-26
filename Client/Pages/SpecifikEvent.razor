@@ -1,4 +1,4 @@
-﻿@page "/specifikevent/{id}"
+﻿@page "/specifikevent/{name}"
 @inject HttpClient Http
 @inject NavigationManager navigationManager
 @using Core
@@ -27,17 +27,17 @@
                 </div>
             </div>
             <h5 class="card-title">Uger</h5>
-            @foreach (Week week in city.Weeks)
+            @foreach (var week in city.Weeks)
             {
-                <div class="row mb-3">
+                <div class="row mb-3" @key="week">
                     <div class="col-md-3">
                         <label for="weekName" class="form-label">Uge Navn</label>
                         <InputText id="weekName" @bind-Value="week.WeekName" class="form-control" />
                     </div>
                     <h5 class="card-title">Perioder</h5>
-                    @foreach (Period period in week.Periods)
+                    @foreach (var period in week.Periods)
                     {
-                        <div class="row mb-3">
+                        <div class="row mb-3" @key="period">
                             <div class="col-md-3">
                                 <label for="periodName" class="form-label">Periode Navn</label>
                                 <InputText id="periodName" @bind-Value="period.PeriodName" class="form-control" />
@@ -76,27 +76,26 @@
 </EditForm>
 
 @code {
-    [Parameter] public string Id { get; set; }
+    [Parameter] public string Name { get; set; }
     private EditContext aEditContext;
     private City city = new City { Weeks = new List<Week>() };
 
     protected override async Task OnInitializedAsync()
     {
         aEditContext = new EditContext(city);
-        city = await Http.GetFromJsonAsync<City>($"https://localhost:7026/api/City/get/{Id}");
+        city = await Http.GetFromJsonAsync<City>($"https://localhost:7026/api/City/get/{Name}");
         aEditContext = new EditContext(city);
     }
 
     public async Task HandleValidSubmit()
     {
-        var response = await Http.PutAsJsonAsync($"https://localhost:7026/api/City/update/{Id}", city);
+        var response = await Http.PutAsJsonAsync($"https://localhost:7026/api/City/update/{city.Name}", city);
         if (response.IsSuccessStatusCode)
         {
             navigationManager.NavigateTo("eventoversigt");
         }
         else
         {
-            // Handle error response
             var responseContent = await response.Content.ReadAsStringAsync();
             Console.WriteLine($"Failed to update city: {response.StatusCode} - {responseContent}");
         }

@@ -82,9 +82,12 @@
                 <label for="interests">Interesser</label>
                 <InputTextArea id="interests" @bind-Value="child.interests" class="form-control" placeholder="F.eks. sport, musik, læsning..."></InputTextArea>
             </div>
+        @if (_existingApplication.Volunteer.Children.Count >= 2)
+        {
             <div class="col-12 text-end">
                 <button type="button" class="btn btn-danger" @onclick="() => RemoveChild(child)">Fjern barn</button>
             </div>
+        }
         </div>
     }
 
@@ -97,39 +100,85 @@
         </div>
     }
 
-    <h3>Pasnings Ønske:</h3>
-    <div class="row" style="margin-bottom: 50px">
-        <div class="col-md-4 mb-3">
-            <label for="location">By</label>
-            <InputSelect id="location" @bind-Value="_existingApplication.City" class="form-control">
-                <option value="Aarhus">Aarhus</option>
-                <option value="Ballerup">Ballerup</option>
+    <h3>Pasnings Ønske - 1. prioritet</h3>
+    <div class="row" style="margin-bottom: 30px">
+        <div class="col-md-6 mb-3">
+            <label for="city1">By</label>
+            <InputSelect id="city1" @bind-Value="_selectedCityId1" class="form-control">
+                @if (_cities != null)
+                {
+                    @foreach (var city in _cities)
+                    {
+                        <option value="@city.Name">@city.Name</option>
+                    }
+                }
             </InputSelect>
+            <button type="button" class="btn btn-primary" @onclick="OnCityChanged">Vælg By</button>
         </div>
-        <div class="col-md-4 mb-3">
-            <label for="priority1">1. prioritet</label>
-            <InputSelect id="priority1" @bind-Value="_existingApplication.Priority1" class="form-control">
-                <option value="u27ons-søn">Uge 27: Onsdag-søndag</option>
-                <option value="u27ons-fre">Uge 27: Onsdag-fredag</option>
-                <option value="u27lør-søn">Uge 27: Lørdag-søndag</option>
-                <option value="u28ons-søn">Uge 28: Onsdag-søndag</option>
-                <option value="u28ons-fre">Uge 28: Onsdag-fredag</option>
-                <option value="u28lør-søn">Uge 28: Lørdag-søndag</option>
-            </InputSelect>
-        </div>
-        <div class="col-md-4 mb-3">
-            <label for="priority2">2. prioritet</label>
-            <InputSelect id="priority2" @bind-Value="_existingApplication.Priority2" class="form-control">
-                <option value="ingen2.">Jeg ønsker ikke en 2. prioritet</option>
-                <option value="u27ons-søn">Uge 27: Onsdag-søndag</option>
-                <option value="u27ons-fre">Uge 27: Onsdag-fredag</option>
-                <option value="u27lør-søn">Uge 27: Lørdag-søndag</option>
-                <option value="u28ons-søn">Uge 28: Onsdag-søndag</option>
-                <option value="u28ons-fre">Uge 28: Onsdag-fredag</option>
-                <option value="u28lør-søn">Uge 28: Lørdag-søndag</option>
+        <div class="col-md-6 mb-3">
+            <label for="Priority1">Periode</label>
+            <InputSelect id="Priority1" @bind-Value="_existingApplication.Priority1" class="form-control">
+                @if (_filteredPeriodsFirst != null && _filteredPeriodsFirst.Any())
+                {
+                    @foreach (var period in _filteredPeriodsFirst)
+                    {
+                        <option value="@period.PeriodName">@period.PeriodName</option>
+                    }
+                }
+                else
+                {
+                    <option value="">No periods available</option>
+                }
             </InputSelect>
         </div>
     </div>
+
+    @if (_showSecondPriority)
+    {
+        <h3>Pasnings Ønske - 2. prioritet</h3>
+        <div class="row" style="margin-bottom: 30px">
+            <div class="col-md-6 mb-3">
+                <label for="city2">By</label>
+                <InputSelect id="city2" @bind-Value="_selectedCityId2" class="form-control">
+                    @if (_cities != null)
+                    {
+                        @foreach (var city in _cities)
+                        {
+                            <option value="@city.Name">@city.Name</option>
+                        }
+                    }
+                }
+                </InputSelect>
+                <button type="button" class="btn btn-primary" @onclick="OnSecondaryCityChanged">Vælg By</button>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="Priority2">Periode</label>
+                <InputSelect id="Priority2" @bind-Value="_existingApplication.Priority2" class="form-control">
+                    @if (_filteredPeriodsSecond != null && _filteredPeriodsSecond.Any())
+                    {
+                        @foreach (var period in _filteredPeriodsSecond)
+                        {
+                            <option value="@period.PeriodName">@period.PeriodName</option>
+                        }
+                    }
+                    else
+                    {
+                        <option value="">No periods available</option>
+                    }
+                    }
+                </InputSelect>
+            </div>
+            <div class="col-12 text-center">
+                <button type="button" class="btn btn-danger" @onclick="HideSecondPriority">Fjern 2. prioritet</button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div style="margin-bottom: 50px">
+            <button type="button" class="btn btn-secondary" @onclick="ShowSecondPriority">Tilføj 2. prioritet</button>
+        </div>
+    }
 
     <div class="row" style="margin-bottom: 50px; text-align: center">
         <div class="col-12 mb-3">
@@ -149,12 +198,31 @@
             }
         };
     private EditContext aEditContext;
+    private List<City> _cities = new List<City>();
+    private string _selectedCityId1;
+    private string _selectedCityId2;
+    private List<Period> _filteredPeriodsFirst = new();
+    private List<Period> _filteredPeriodsSecond = new();
+    private bool _showSecondPriority = false;
 
     protected override async Task OnInitializedAsync()
     {
         aEditContext = new EditContext(_existingApplication);
+        await LoadCities();
         await LoadApplicationData();
         aEditContext = new EditContext(_existingApplication);
+    }
+
+    private async Task LoadCities()
+    {
+        try
+        {
+            _cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getall");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading cities: {ex.Message}");
+        }
     }
 
     private async Task LoadApplicationData()
@@ -162,6 +230,11 @@
         try
         {
             _existingApplication = await Http.GetFromJsonAsync<Application>($"https://localhost:7026/api/application/get/{applicationId}");
+            _selectedCityId1 = _existingApplication.City?.Name;
+            if (!string.IsNullOrEmpty(_selectedCityId1))
+            {
+                OnCityChanged();
+            }
         }
         catch (Exception ex)
         {
@@ -169,23 +242,59 @@
         }
     }
 
+    private void OnCityChanged()
+    {
+        var selectedCity = _cities.FirstOrDefault(city => city.Name == _selectedCityId1);
+        if (selectedCity != null)
+        {
+            _existingApplication.City = selectedCity;
+            _filteredPeriodsFirst = selectedCity.Weeks.SelectMany(week => week.Periods).ToList();
+            _filteredPeriodsSecond = _filteredPeriodsFirst;
+        }
+        else
+        {
+            _filteredPeriodsFirst.Clear();
+            _filteredPeriodsSecond.Clear();
+        }
+    }
+
+    private void OnSecondaryCityChanged()
+    {
+        var selectedCity = _cities.FirstOrDefault(city => city.Name == _selectedCityId2);
+        if (selectedCity != null)
+        {
+            _filteredPeriodsSecond = selectedCity.Weeks.SelectMany(week => week.Periods).ToList();
+        }
+        else
+        {
+            _filteredPeriodsSecond.Clear();
+        }
+    }
+
+    private void ShowSecondPriority()
+    {
+        _showSecondPriority = true;
+    }
+
+    private void HideSecondPriority()
+    {
+        _showSecondPriority = false;
+        _existingApplication.Priority2 = null;
+        _selectedCityId2 = null;
+        _filteredPeriodsSecond.Clear();
+    }
+
     public async Task HandleValidSubmit()
     {
-        try
+        var response = await Http.PutAsJsonAsync($"https://localhost:7026/api/application/update/{applicationId}", _existingApplication);
+        if (response.IsSuccessStatusCode)
         {
-            var response = await Http.PutAsJsonAsync($"https://localhost:7026/api/application/update/{applicationId}", _existingApplication);
-            if (response.IsSuccessStatusCode)
-            {
-                navigationManager.NavigateTo("/oversigt");
-            }
-            else
-            {
-                Console.WriteLine($"Error updating application: {response.ReasonPhrase}");
-            }
+            navigationManager.NavigateTo("/oversigt");
         }
-        catch (Exception ex)
+        else
         {
-            Console.WriteLine($"Error updating application: {ex.Message}");
+            var responseContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Failed to update application: {response.StatusCode} - {responseContent}");
         }
     }
 
@@ -202,3 +311,4 @@
         _existingApplication.Volunteer.Children.Remove(child);
     }
 }
+

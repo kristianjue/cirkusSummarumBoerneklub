@@ -27,11 +27,11 @@
         </div>
         <div class="col-md-6 mb-3">
             <label for="phoneNumber">Telefonnummer</label>
-            <InputNumber id="phoneNumber" @bind-Value="_newTilmelding.Volunteer.PhoneNumber" class="form-control" />
+            <InputNumber min="0" id="phoneNumber" @bind-Value="_newTilmelding.Volunteer.PhoneNumber" class="form-control"  />
         </div>
         <div class="col-md-6 mb-3">
             <label for="memberNumber">Krævnummer</label>
-            <InputNumber id="memberNumber" @bind-Value="_newTilmelding.Volunteer.KrævNumber" class="form-control" />
+            <InputNumber min="0" id="memberNumber" @bind-Value="_newTilmelding.Volunteer.KrævNumber" class="form-control" />
         </div>
     </div>
 
@@ -52,6 +52,7 @@
         <div class="col-md-3 mb-3">
             <label for="kidAge">Alder</label>
             <InputSelect id="kidAge" @bind-Value="kid1.Age" class="form-control">
+                @if(kid1.Age == null){<option value="" disabled></option>}
                 <option value="5">5 år</option>
                 <option value="6">6 år</option>
                 <option value="7">7 år</option>
@@ -68,17 +69,20 @@
         <div class="col-md-3 mb-3">
             <label for="kidSize">T-shirt størrelse</label>
             <InputSelect id="kidSize" @bind-Value="kid1.Size" class="form-control">
-                <option value="XXS">XXS</option>
+                @if(kid1.Size == null){<option value="" disabled selected="selected"></option>}
+                <option value="110-116">110-116</option>
+                <option value="122-128">122-128</option>
+                <option value="134-140">134-140</option>
+                <option value="146-152">146-152</option>
+                <option value="158-164">158-164</option>
                 <option value="XS">XS</option>
                 <option value="S">S</option>
-                <option value="M">M</option>
-                <option value="L">L</option>
-                <option value="XL">XL</option>
             </InputSelect>
         </div>
         <div class="col-md-3 mb-3">
             <label for="beenThereBefore">Har været med før?</label>
-            <InputSelect id="beenThereBefore" @bind-Value="kid1.beenThereBefore" class="form-control">
+            <InputSelect @bind-Value="kid1.beenThereBefore" class="form-control">
+                @if(kid1.beenThereBefore == null){<option value="" disabled selected="selected"></option>}
                 <option value="Nej">Nej</option>
                 <option value="Ja">Ja</option>
             </InputSelect>
@@ -126,6 +130,7 @@
             <div class="col-md-3 mb-3">
                 <label for="kidAge">Alder</label>
                 <InputSelect id="kidAge" @bind-Value="kid2.Age" class="form-control">
+                    @if(kid2.Age == null){<option value="" disabled selected="selected"></option>}
                     <option value="5">5 år</option>
                     <option value="6">6 år</option>
                     <option value="7">7 år</option>
@@ -142,6 +147,7 @@
             <div class="col-md-3 mb-3">
                 <label for="kidSize">T-shirt størrelse</label>
                 <InputSelect id="kidSize" @bind-Value="kid2.Size" class="form-control">
+                    @if(kid2.Size == null){<option value="" disabled selected="selected"></option>}
                     <option value="XXS">XXS</option>
                     <option value="XS">XS</option>
                     <option value="S">S</option>
@@ -153,6 +159,7 @@
             <div class="col-md-3 mb-3">
                 <label for="beenThereBefore">Har været med før?</label>
                 <InputSelect id="beenThereBefore" @bind-Value="kid2.beenThereBefore" class="form-control">
+                    @if(kid2.beenThereBefore == null){<option value="" disabled selected="selected"></option>}
                     <option value="Nej">Nej</option>
                     <option value="Ja">Ja</option>
                 </InputSelect>
@@ -192,6 +199,7 @@
         <div class="col-md-6 mb-3">
             <label for="city1">By</label>
             <InputSelect id="city1" @bind-Value="_selectedCityId1" class="form-control">
+                @if(_selectedCityId1 == null){<option value="" disabled selected></option>}
                 @if (_cities != null)
                 {
                     @foreach (var city in _cities)
@@ -227,13 +235,14 @@
             <div class="col-md-6 mb-3">
                 <label for="city2">By</label>
                 <InputSelect id="city2" @bind-Value="_selectedCityId2" class="form-control">
+                    @if(_selectedCityId2 == null){<option value="" disabled selected></option>}
+
                     @if (_cities != null)
                     {
                         @foreach (var city in _cities)
                         {
                             <option value="@city.Name">@city.Name</option>
                         }
-                    }
                     }
                 </InputSelect>
                 <button type="button" class="btn btn-primary" @onclick="OnSecondaryCityChanged">Vælg By</button>
@@ -251,7 +260,6 @@
                     else
                     {
                         <option value="">No periods available</option>
-                    }
                     }
                 </InputSelect>
             </div>
@@ -292,6 +300,7 @@
     {
         _newTilmelding.Volunteer = new Volunteer();
         _newTilmelding.Volunteer.Children = new List<Child>();
+        _newTilmelding.Type = "Børneklubben"; // Sæt type ved initialisering
         aEditContext = new EditContext(_newTilmelding);
 
         await LoadCity();
@@ -358,7 +367,7 @@
         _filteredPeriodsSecond.Clear();
     }
 
-    public async Task HandleValidSubmit()
+    private async Task HandleValidSubmit()
     {
         if (ekstraKid == false)
         {
@@ -377,22 +386,33 @@
         _newTilmelding.Volunteer.Id = Guid.NewGuid().ToString();
         _newTilmelding.Status = "Ny";
 
-        await Http.PostAsJsonAsync<Application>($"https://localhost:7026/api/application/create", _newTilmelding);
+        // Debugging statement
+        Console.WriteLine($"Priority1: {_newTilmelding.Priority1}");
 
-        navigationManager.NavigateTo($"brugeroversigt");
+        var response = await Http.PostAsJsonAsync<Application>($"https://localhost:7026/api/application/create", _newTilmelding);
+
+        if (response.IsSuccessStatusCode)
+        {
+            navigationManager.NavigateTo($"brugeroversigt");
+        }
+        else
+        {
+            var responseContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Failed to submit application: {response.StatusCode} - {responseContent}");
+        }
     }
 
     public Child kid1 = new Child();
     public Child kid2 = new Child();
 
-    public bool ekstraKid = false;
+    private bool ekstraKid = false;
 
-    public void addKid()
+    private void addKid()
     {
         ekstraKid = true;
     }
 
-    public void removeKid()
+    private void removeKid()
     {
         ekstraKid = false;
     }
@@ -400,6 +420,6 @@
     public byte[] SignatureForKid1 { get; set; } = Array.Empty<byte>();
     public byte[] SignatureForKid2 { get; set; } = Array.Empty<byte>();
 
-    public string SignatureForKid1AsBase64 => System.Text.Encoding.UTF8.GetString(SignatureForKid1);
-    public string SignatureForKid2AsBase64 => System.Text.Encoding.UTF8.GetString(SignatureForKid2);
+    private string SignatureForKid1AsBase64 => System.Text.Encoding.UTF8.GetString(SignatureForKid1);
+    private string SignatureForKid2AsBase64 => System.Text.Encoding.UTF8.GetString(SignatureForKid2);
 }

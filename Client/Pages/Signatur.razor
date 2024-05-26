@@ -24,7 +24,7 @@
             </div>
             <div class="col-md-3 mb-3">
                 <label for="phoneNumber">Telefonnummer</label>
-                <InputNumber id="phoneNumber" @bind-Value="_newSignatur.PhoneNumber" class="form-control"/>
+                <InputNumber min="0" id="phoneNumber" @bind-Value="_newSignatur.PhoneNumber" class="form-control"/>
             </div>
             <div class="col-md-6 mb-3">
                 <label for="email">Email</label>
@@ -46,7 +46,7 @@
             </div>
             <div class="col-md-3 mb-3">
                 <label for="voluntaryNumber">Kræv nummer</label>
-                <InputNumber id="phoneNumber" @bind-Value="_newSignatur.KrævNumber" class="form-control"/>
+                <InputNumber min="0" id="phoneNumber" @bind-Value="_newSignatur.KrævNumber" class="form-control"/>
             </div>
             <div class="col-md-6 mb-3">
                 <label for="email">Email</label>
@@ -69,7 +69,7 @@
             </div>
             <div class="col-md-3 mb-3">
                 <label for="voluntaryNumber">Kræv nummer</label>
-                <InputNumber id="phoneNumber" @bind-Value="_newSignatur.Volunteer.KrævNumber" class="form-control"/>
+                <InputNumber min="0" id="voluntaryNumber" @bind-Value="_newSignatur.Volunteer.KrævNumber" class="form-control"/>
             </div>
             <div class="col-md-6 mb-3">
                 <label for="email">Email</label>
@@ -86,7 +86,7 @@
         </div>
         <div class="col-md-3 mb-3">
             <label for="voluntaryNumber">Kræv nummer</label>
-            <InputNumber id="phoneNumber" @bind-Value="_newSignatur.YoungVolunteer.KrævNumber" class="form-control"/>
+            <InputNumber min="0" id="voluntaryNumber" @bind-Value="_newSignatur.YoungVolunteer.KrævNumber" class="form-control"/>
         </div>
         <div class="col-md-3 mb-3">
             <label for="email">Email</label>
@@ -95,6 +95,7 @@
         <div class="col-md-3 mb-3">
             <label for="youngVolunteerAge">Alder</label>
             <InputSelect id="youngVolunteerAge" @bind-Value="_newSignatur.YoungVolunteer.Age" class="form-control">
+                @if(_newSignatur.YoungVolunteer.Age == null){<option value="" disabled></option>}
                 <option value="16">16 år</option>
                 <option value="17">17 år</option>
             </InputSelect>
@@ -103,7 +104,7 @@
 
     <div class="row" style="margin-top: 10px; text-align: center">
         <div class="col-12 mb-3">
-            <input type="checkbox" name="confirm1"/>
+            <Input type="checkbox" name="confirm"/>
             <label for="confirm">Jeg er indforstået med, og giver tilladelse til, at mit barn opholder sig og deltager i frivilligheden på Cirkus Summarum.</label>
         </div>
     </div>
@@ -163,4 +164,5 @@
     public byte[] SignatureForVoulenteer { get; set; } = Array.Empty<byte>();
 
     public string SignatureForVoulenteerAsBase64 => System.Text.Encoding.UTF8.GetString(SignatureForVoulenteer);
+
 }
