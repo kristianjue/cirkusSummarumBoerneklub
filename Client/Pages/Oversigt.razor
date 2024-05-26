@@ -81,24 +81,26 @@
         @foreach (var application in filteredApplications)
         {
             <div class="col-9 mx-auto mt-4">
-                <div class="row overview-guardian">
-                    <div class="col-3">
+                <div class="row overview-guardian d-flex align-items-center">
+                    <div class="col-2">
                         <p class="overview-label">Værges navn:</p>
                         <p>@application.Volunteer.Name</p>
                     </div>
-                    <div class="col-3">
+                    <div class="col-2">
                         <p class="overview-label">Periode:</p>
                         <p>@application.Priority1</p>
                     </div>
-                    <div class="col-3">
+                    <div class="col-2">
                         <p class="overview-label">Status:</p>
                         <p>@application.Status</p>
                     </div>
-                    <div class="col-3">
-                        <div class="float-end" style="margin-top: 17px">
-                            <button class="btn btn-dark" @onclick="() => GetPdf(application.Id)">Pdf</button>
-                            <button class="btn btn-danger" @onclick="() => EditApplication(application.Id)">Rediger</button>
-                        </div>
+                    <div class="col-2">
+                        <p class="overview-label">By:</p>
+                        <p>@application.City.Name</p>
+                    </div>
+                    <div class="col-4 d-flex justify-content-end">
+                        <button class="btn btn-dark me-2" @onclick="() => GetPdf(application.Id)">Pdf</button>
+                        <button class="btn btn-danger" @onclick="() => EditApplication(application.Id)">Rediger</button>
                     </div>
                 </div>
                 @if (application.Volunteer.Children != null)
