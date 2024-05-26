@@ -23,9 +23,12 @@
                         <label for="city" class="form-label">By</label>
                         <InputText id="city" @bind-Value="city.Name" class="form-control" />
                     </div>
-                    <div class="col-md-6 text-end">
-                        <button type="button" class="btn btn-danger mt-4" @onclick="() => RemoveCity(city)">Fjern Lokation</button>
-                    </div>
+                    @if (cities.Count > 1)
+                    {
+                        <div class="col-md-6 text-end">
+                            <button type="button" class="btn btn-danger mt-4" @onclick="() => RemoveCity(city)">Fjern Lokation</button>
+                        </div>
+                    }
                 </div>
 
                 <div class="form-check mb-3">
@@ -60,9 +63,11 @@
                                     <label for="capacity" class="form-label">Kapacitet</label>
                                     <InputNumber id="capacity" @bind-Value="period.Capacity" class="form-control" />
                                 </div>
+                                
                                 <div class="col-md-12 text-end">
                                     <button type="button" class="btn btn-danger mt-2" @onclick="() => RemovePeriod(city, week, period)">Fjern Periode</button>
                                 </div>
+                                
                             </div>
                         }
                     </div>
@@ -94,9 +99,9 @@
     protected override void OnInitialized()
     {
         aEditContext = new EditContext(cities);
+        AddCity(); // Add a new city when the component is initialized
     }
-    
-    
+
     public async Task HandleValidSubmit()
     {
         foreach (var city in cities)
