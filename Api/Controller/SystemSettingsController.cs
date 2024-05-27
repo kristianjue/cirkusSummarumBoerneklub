@@ -40,6 +40,18 @@ public class CityController : ControllerBase
         }
         return Ok(settingsFromDb);
     }
+    
+    [HttpGet]
+    [Route("getallactive")]
+    public ActionResult<List<City>> GetAllActiveCity()
+    {
+        var settingsFromDb = _settingsRepository.GetAllActiveCity();
+        if (settingsFromDb == null)
+        {
+            return NotFound();
+        }
+        return Ok(settingsFromDb);
+    }
 
     [HttpGet]
     [Route("get/{cityName}")]
