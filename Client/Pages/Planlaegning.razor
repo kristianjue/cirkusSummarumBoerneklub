@@ -62,7 +62,7 @@
                             {
                                 <div class="sub-section">
                                     <h4>@period.PeriodName</h4>
-                                    @foreach (var app in applications.Where(a => a.Status == $"{week.WeekName}: {period.PeriodName}"))
+                                    @foreach (var app in applications.Where(a => a.Status == period.PeriodName))
                                     {
                                         <div class="application">
                                             @app.Volunteer.Name <br /> @app.Volunteer.Children.Count børn
