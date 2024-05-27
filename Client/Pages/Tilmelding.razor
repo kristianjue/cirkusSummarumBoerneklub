@@ -209,6 +209,7 @@
                 }
             </InputSelect>
         </div>
+
         @if(_selectedCityId1 != null)
         {
             <div class="col-md-6 mb-3">
@@ -221,6 +222,7 @@
                             <option value="@period.PeriodName">@period.PeriodName</option>
                         }
                     }
+
                     else
                     {
                         <option value="">No periods available</option>
@@ -248,6 +250,7 @@
                     }
                 </InputSelect>
             </div>
+
             @if(_selectedCityId2 != null){
                 <div class="col-md-6 mb-3">
                     <label for="Priority2">Periode</label>
@@ -394,9 +397,6 @@
         _newTilmelding.Id = System.Guid.NewGuid().ToString();
         _newTilmelding.Volunteer.Id = Guid.NewGuid().ToString();
         _newTilmelding.Status = "Ny";
-
-        // Debugging statement
-        Console.WriteLine($"Priority1: {_newTilmelding.Priority1}");
 
         var response = await Http.PostAsJsonAsync<Application>($"https://localhost:7026/api/application/create", _newTilmelding);
 
