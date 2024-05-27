@@ -47,6 +47,7 @@
                 }
             }
         </div>
+
         <div class="week-sections">
             @if (!string.IsNullOrEmpty(selectedCity))
             {
@@ -61,7 +62,7 @@
                             {
                                 <div class="sub-section">
                                     <h4>@period.PeriodName</h4>
-                                    @foreach (var app in applications.Where(a => a.Status == $"uge {week.WeekName}: {period.PeriodName}"))
+                                    @foreach (var app in applications.Where(a => a.Status == period.PeriodName))
                                     {
                                         <div class="application">
                                             @app.Volunteer.Name <br /> @app.Volunteer.Children.Count børn
@@ -126,6 +127,7 @@
     private async Task LoadCities()
     {
         cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getall");
+        
     }
 
     private async Task LoadApplications()
@@ -169,6 +171,7 @@
     {
         app.Status = newStatus;
         StateHasChanged();
+        Console.WriteLine($"Application {app.Id} status updated to {newStatus}");
     }
 
     private void RemoveApplication(Application app)
