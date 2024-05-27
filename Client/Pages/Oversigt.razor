@@ -54,11 +54,11 @@
             <div class="col-3">
                 <label for="status">Status</label>
                 <select type="text" class="form-control" id="status" @onchange="OnStatusChanged">
-                    <option value="Alle ansøgninger">Alle ansøgninger</option>
-                    <option value="Nye ansøgninger">Nye ansøgninger</option>
-                    <option value="Godkendte ansøgninger">Godkendte ansøgninger</option>
-                    <option value="Afviste ansøgninger">Afviste ansøgninger</option>
-                    <option value="Ansøgninger på venteliste">Ansøgninger på venteliste</option>
+                    <option value="">Alle ansøgninger</option>
+                    <option value="Ny">Nye ansøgninger</option>
+                    <option value="Godkendt">Godkendte ansøgninger</option>
+                    <option value="Afvist">Afviste ansøgninger</option>
+                    <option value="Venteliste">Ansøgninger på venteliste</option>
                 </select>
             </div>
         </div>
@@ -138,6 +138,7 @@
     private string selectedCity;
     private string selectedType;
     private string selectedStatus;
+    private string selectedPeriod;
 
     protected override async Task OnInitializedAsync()
     {
@@ -207,7 +208,8 @@
 
     private void OnPeriodChanged(ChangeEventArgs e)
     {
-        // Handle period change if necessary
+        selectedPeriod = e.Value.ToString();
+        FilterApplications();
     }
 
     private void UpdateFilteredPeriods()
@@ -229,6 +231,7 @@
             (string.IsNullOrEmpty(selectedCity) || app.City?.Name == selectedCity) &&
             (string.IsNullOrEmpty(selectedType) || app.Type == selectedType) &&
             (string.IsNullOrEmpty(selectedStatus) || app.Status == selectedStatus) &&
+            (string.IsNullOrEmpty(selectedPeriod) || app.Priority1 == selectedPeriod) &&
             (string.IsNullOrEmpty(searchText) || app.Volunteer.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
                                                  app.Volunteer.Children.Any(child => child.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)))
         ).ToList();
