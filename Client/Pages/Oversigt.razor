@@ -1,16 +1,22 @@
 @page "/Oversigt"
 @using Core
+@using Blazored.LocalStorage
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
+@inject ILocalStorageService localStore
 
+<StaffRestriction></StaffRestriction>
 <div class="row">
     <div class="col-9">
         <h3>Oversigt</h3>
     </div>
     <div class="col-3">
         <div class="float-end">
-            <button class="btn btn-secondary">Send mail</button>
-            <button class="btn btn-secondary">Hent pdf</button>
+            @if (isAdmin == true)
+            {
+                <button class="btn btn-secondary">Send mail</button>
+            }
+            <button class="btn btn-secondary" @onclick="GetAllPdf">Hent pdf</button>
         </div>
     </div>
 </div>
@@ -18,41 +24,47 @@
     <div class="col-6">
         <div class="row">
             <div class="col-3">
-                <label for="city">Type</label>
-                <select type="text" class="form-control" id="city">
-                    <option value="ingen2.">Alle typer</option>
+                <label for="type">Type</label>
+                <select type="text" class="form-control" id="type" @onchange="OnTypeChanged">
+                    <option value="">Alle typer</option>
                     <option value="Børneklubben">Børneklubben</option>
                     <option value="Ung frivillig">Ung frivillig</option>
                 </select>
             </div>
             <div class="col-3">
                 <label for="city">By</label>
-                <select type="text" class="form-control" id="city">
-                    <option value="Alle byer">Alle byer</option>
-                    <option value="Aarhus">Aarhus</option>
-                    <option value="Ballerup">Ballerup</option>
+                <select type="text" class="form-control" id="city" @onchange="OnCityChanged">
+                    <option value="">Vælg by</option>
+                    @if (cities != null)
+                    {
+                        @foreach (var city in cities)
+                        {
+                            <option value="@city.Name">@city.Name</option>
+                        }
+                    }
                 </select>
             </div>
             <div class="col-3">
                 <label for="period">Periode</label>
-                <select type="text" class="form-control" id="period">
-                    <option value="Alle perioder">Alle perioder</option>
-                    <option value="Uge 27: Onsdag-søndag">Uge 27: Onsdag-søndag</option>
-                    <option value="Uge 27: Onsdag-fredag">Uge 27: Onsdag-fredag</option>
-                    <option value="Uge 27: Lørdag-søndag">Uge 27: Lørdag-søndag</option>
-                    <option value="Uge 28: Onsdag-søndag">Uge 28: Onsdag-søndag</option>
-                    <option value="Uge 28: Onsdag-fredag">Uge 28: Onsdag-fredag</option>
-                    <option value="Uge 28: Lørdag-søndag">Uge 28: Lørdag-søndag</option>
+                <select type="text" class="form-control" id="period" @onchange="OnPeriodChanged">
+                    <option value="">Vælg periode</option>
+                    @if (filteredPeriods != null)
+                    {
+                        @foreach (var period in filteredPeriods)
+                        {
+                            <option value="@period.PeriodName">@period.PeriodName</option>
+                        }
+                    }
                 </select>
             </div>
             <div class="col-3">
                 <label for="status">Status</label>
-                <select type="text" class="form-control" id="status">
-                    <option value="Alle ansøgninger">Alle ansøgninger</option>
-                    <option value="Nye ansøgninger">Nye ansøgninger</option>
-                    <option value="Godkendte ansøgninger">Godkendte ansøgninger</option>
-                    <option value="Afviste ansøgninger">Afviste ansøgninger</option>
-                    <option value="Ansøgninger på venteliste">Ansøgninger på venteliste</option>
+                <select type="text" class="form-control" id="status" @onchange="OnStatusChanged">
+                    <option value="">Alle ansøgninger</option>
+                    <option value="Ny">Nye ansøgninger</option>
+                    <option value="Godkendt">Godkendte ansøgninger</option>
+                    <option value="Afvist">Afviste ansøgninger</option>
+                    <option value="Venteliste">Ansøgninger på venteliste</option>
                 </select>
             </div>
         </div>
@@ -60,39 +72,41 @@
     <div class="col-6">
         <div class="float-end">
             <label for="search">Søg</label>
-            <input type="text" class="form-control" id="search" @bind="searchText" />
+            <input type="text" class="form-control" id="search" @bind="searchText" @oninput="OnSearchChanged" />
         </div>
     </div>
 </div>
 
 <div class="row mt-4">
-    @if (applications == null)
+    @if (filteredApplications == null)
     {
         <p>Loading...</p>
     }
     else
     {
-        @foreach (var application in applications)
+        @foreach (var application in filteredApplications)
         {
             <div class="col-9 mx-auto mt-4">
-                <div class="row overview-guardian">
-                    <div class="col-3">
+                <div class="row overview-guardian d-flex align-items-center">
+                    <div class="col-2">
                         <p class="overview-label">Værges navn:</p>
                         <p>@application.Volunteer.Name</p>
                     </div>
-                    <div class="col-3">
+                    <div class="col-2">
                         <p class="overview-label">Periode:</p>
                         <p>@application.Priority1</p>
                     </div>
-                    <div class="col-3">
+                    <div class="col-2">
                         <p class="overview-label">Status:</p>
                         <p>@application.Status</p>
                     </div>
-                    <div class="col-3">
-                        <div class="float-end" style="margin-top: 17px">
-                            <button class="btn btn-dark">Pdf</button>
-                            <button class="btn btn-danger" @onclick="() => EditApplication(application.Id)">Rediger</button>
-                        </div>
+                    <div class="col-2">
+                        <p class="overview-label">By:</p>
+                        <p>@application.City.Name</p>
+                    </div>
+                    <div class="col-4 d-flex justify-content-end">
+                        <button class="btn btn-dark me-2" @onclick="() => GetPdf(application.Id)">Pdf</button>
+                        @if(isAdmin==true){<button class="btn btn-danger" @onclick="() => EditApplication(application.Id)">Rediger</button>}
                     </div>
                 </div>
                 @if (application.Volunteer.Children != null)
@@ -110,7 +124,7 @@
                             </div>
                             <div class="col-4">
                                 <p class="overview-label">Type:</p>
-                                <p>@application.Priority2</p>
+                                <p>@application.Type</p>
                             </div>
                         </div>
                     }
@@ -121,22 +135,126 @@
 </div>
 
 @code {
-    private List<Application> applications;
+    private List<Application> applications = new List<Application>();
+    private List<Application> filteredApplications = new List<Application>();
     private string searchText = "";
+    private List<City> cities = new List<City>();
+    private List<Period> filteredPeriods = new List<Period>();
+    private bool isAdmin = false;
+
+    private string selectedCity;
+    private string selectedType;
+    private string selectedStatus;
+    private string selectedPeriod;
 
     protected override async Task OnInitializedAsync()
     {
-        await GetAllApplications();
+        try
+        {
+            await GetAllApplications();
+            cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getall");
+            await CheckCredentials();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading data: {ex.Message}");
+        }
     }
 
     private async Task GetAllApplications()
     {
-        applications = await Http.GetFromJsonAsync<List<Application>>("https://localhost:7026/api/application/getall");
+        try
+        {
+            applications = await Http.GetFromJsonAsync<List<Application>>("https://localhost:7026/api/application/getall");
+            filteredApplications = applications;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading applications: {ex.Message}");
+        }
     }
 
     private void EditApplication(string applicationId)
     {
         NavigationManager.NavigateTo($"/edit-application/{applicationId}");
     }
-}
 
+    public void GetPdf(string applicationId)
+    {
+        NavigationManager.NavigateTo($"https://localhost:7026/api/pdf/get/{applicationId}");
+    }
+
+    public void GetAllPdf()
+    {
+        NavigationManager.NavigateTo($"https://localhost:7026/api/pdf/get-all");
+    }
+
+    private void OnCityChanged(ChangeEventArgs e)
+    {
+        selectedCity = e.Value.ToString();
+        UpdateFilteredPeriods();
+        FilterApplications();
+    }
+
+    private void OnTypeChanged(ChangeEventArgs e)
+    {
+        selectedType = e.Value.ToString();
+        FilterApplications();
+    }
+
+    private void OnStatusChanged(ChangeEventArgs e)
+    {
+        selectedStatus = e.Value.ToString();
+        FilterApplications();
+    }
+
+    private void OnSearchChanged(ChangeEventArgs e)
+    {
+        searchText = e.Value.ToString();
+        FilterApplications();
+    }
+
+    private void OnPeriodChanged(ChangeEventArgs e)
+    {
+        selectedPeriod = e.Value.ToString();
+        FilterApplications();
+    }
+
+    private void UpdateFilteredPeriods()
+    {
+        var city = cities.FirstOrDefault(c => c.Name == selectedCity);
+        if (city != null)
+        {
+            filteredPeriods = city.Weeks.SelectMany(week => week.Periods).ToList();
+        }
+        else
+        {
+            filteredPeriods.Clear();
+        }
+    }
+
+    private void FilterApplications()
+    {
+        filteredApplications = applications.Where(app =>
+            (string.IsNullOrEmpty(selectedCity) || app.City?.Name == selectedCity) &&
+            (string.IsNullOrEmpty(selectedType) || app.Type == selectedType) &&
+            (string.IsNullOrEmpty(selectedStatus) || app.Status == selectedStatus) &&
+            (string.IsNullOrEmpty(selectedPeriod) || app.Priority1 == selectedPeriod) &&
+            (string.IsNullOrEmpty(searchText) || app.Volunteer.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                                 app.Volunteer.Children.Any(child => child.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)))
+        ).ToList();
+    }
+    
+    public async Task CheckCredentials()
+    {
+        var localStorageUser = await localStore.GetItemAsync<Administrator>("currentAdministrator");
+        
+            var email = localStorageUser.Email;
+            var user = await Http.GetFromJsonAsync<Administrator>("https://localhost:7026/api/admin/get-by-email/" + email);
+
+            if (user.Role == "Administrator")
+            {
+                isAdmin = true;
+            }
+    }
+}

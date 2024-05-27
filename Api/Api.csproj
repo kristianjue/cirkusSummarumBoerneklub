@@ -12,11 +12,73 @@
       <PackageReference Include="MongoDB.Bson" Version="2.25.0" />
       <PackageReference Include="MongoDB.Driver" Version="2.25.0" />
       <PackageReference Include="MongoDB.Driver.Core" Version="2.25.0" />
+      <PackageReference Include="Postmark" Version="5.0.0" />
+      <PackageReference Include="QuestPDF" Version="2024.3.6" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Client\Client.csproj" />
       <ProjectReference Include="..\Core\Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="..\..\..\.nuget\packages\questpdf\2024.3.6\LatoFont\Lato-Black.ttf">
+        <Link>Logic\LatoFont\Lato-Black.ttf</Link>
+      </None>
+      <None Include="..\..\..\.nuget\packages\questpdf\2024.3.6\LatoFont\Lato-BlackItalic.ttf">
+        <Link>Logic\LatoFont\Lato-BlackItalic.ttf</Link>
+      </None>
+      <None Include="..\..\..\.nuget\packages\questpdf\2024.3.6\LatoFont\Lato-Bold.ttf">
+        <Link>Logic\LatoFont\Lato-Bold.ttf</Link>
+      </None>
+      <None Include="..\..\..\.nuget\packages\questpdf\2024.3.6\LatoFont\Lato-BoldItalic.ttf">
+        <Link>Logic\LatoFont\Lato-BoldItalic.ttf</Link>
+      </None>
+      <None Include="..\..\..\.nuget\packages\questpdf\2024.3.6\LatoFont\Lato-ExtraBold.ttf">
+        <Link>Logic\LatoFont\Lato-ExtraBold.ttf</Link>
+      </None>
+      <None Include="..\..\..\.nuget\packages\questpdf\2024.3.6\LatoFont\Lato-ExtraBoldItalic.ttf">
+        <Link>Logic\LatoFont\Lato-ExtraBoldItalic.ttf</Link>
+      </None>
+      <None Include="..\..\..\.nuget\packages\questpdf\2024.3.6\LatoFont\Lato-ExtraLight.ttf">
+        <Link>Logic\LatoFont\Lato-ExtraLight.ttf</Link>
+      </None>
+      <None Include="..\..\..\.nuget\packages\questpdf\2024.3.6\LatoFont\Lato-ExtraLightItalic.ttf">
+        <Link>Logic\LatoFont\Lato-ExtraLightItalic.ttf</Link>
+      </None>
+      <None Include="..\..\..\.nuget\packages\questpdf\2024.3.6\LatoFont\Lato-Italic.ttf">
+        <Link>Logic\LatoFont\Lato-Italic.ttf</Link>
+      </None>
+      <None Include="..\..\..\.nuget\packages\questpdf\2024.3.6\LatoFont\Lato-Light.ttf">
+        <Link>Logic\LatoFont\Lato-Light.ttf</Link>
+      </None>
+      <None Include="..\..\..\.nuget\packages\questpdf\2024.3.6\LatoFont\Lato-LightItalic.ttf">
+        <Link>Logic\LatoFont\Lato-LightItalic.ttf</Link>
+      </None>
+      <None Include="..\..\..\.nuget\packages\questpdf\2024.3.6\LatoFont\Lato-Medium.ttf">
+        <Link>Logic\LatoFont\Lato-Medium.ttf</Link>
+      </None>
+      <None Include="..\..\..\.nuget\packages\questpdf\2024.3.6\LatoFont\Lato-MediumItalic.ttf">
+        <Link>Logic\LatoFont\Lato-MediumItalic.ttf</Link>
+      </None>
+      <None Include="..\..\..\.nuget\packages\questpdf\2024.3.6\LatoFont\Lato-Regular.ttf">
+        <Link>Logic\LatoFont\Lato-Regular.ttf</Link>
+      </None>
+      <None Include="..\..\..\.nuget\packages\questpdf\2024.3.6\LatoFont\Lato-SemiBold.ttf">
+        <Link>Logic\LatoFont\Lato-SemiBold.ttf</Link>
+      </None>
+      <None Include="..\..\..\.nuget\packages\questpdf\2024.3.6\LatoFont\Lato-SemiBoldItalic.ttf">
+        <Link>Logic\LatoFont\Lato-SemiBoldItalic.ttf</Link>
+      </None>
+      <None Include="..\..\..\.nuget\packages\questpdf\2024.3.6\LatoFont\Lato-Thin.ttf">
+        <Link>Logic\LatoFont\Lato-Thin.ttf</Link>
+      </None>
+      <None Include="..\..\..\.nuget\packages\questpdf\2024.3.6\LatoFont\Lato-ThinItalic.ttf">
+        <Link>Logic\LatoFont\Lato-ThinItalic.ttf</Link>
+      </None>
+      <None Include="..\..\..\.nuget\packages\questpdf\2024.3.6\LatoFont\OFL.txt">
+        <Link>Logic\LatoFont\OFL.txt</Link>
+      </None>
     </ItemGroup>
 
 </Project>

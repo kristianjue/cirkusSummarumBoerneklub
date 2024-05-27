@@ -23,6 +23,7 @@ public class ApplicationController : ControllerBase
         try
         {
             _applicationRepository.CreateApplication(application);
+            Api.Logic.Email.ApplicationSent(application);
             return Ok(application);
         }
         catch (Exception ex)
@@ -77,7 +78,7 @@ public class ApplicationController : ControllerBase
 
             // Update the application details
             existingApplication.Status = application.Status;
-            existingApplication.Location = application.Location;
+            existingApplication.City = application.City;
             existingApplication.Priority1 = application.Priority1;
             existingApplication.Priority2 = application.Priority2;
             existingApplication.Volunteer = application.Volunteer;

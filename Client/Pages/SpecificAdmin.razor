@@ -3,11 +3,11 @@
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
-
+<AdminRestriction></AdminRestriction>
 <div class="container mt-5">
     <div class="row">
-        <div class="col-md-8">
-            <div class="card mb-4 shadow-sm">
+        <div class="col-md-12">
+            <div class="card mb-4 shadow-sm position-relative">
                 <div class="row no-gutters">
                     <div class="col-md-4">
                         <img src="data:image/jpg;base64,@admin.Image" class="card-img" alt="Image" style="height: 100%; object-fit: cover;">
@@ -18,21 +18,11 @@
                             <p class="card-text"><strong>Email:</strong> @admin.Email</p>
                             <p class="card-text"><strong>Telefon:</strong> @admin.PhoneNumber</p>
                             <p class="card-text"><strong>Kræv Number:</strong> @admin.KrævNumber</p>
-                            <button class="btn btn-primary" @onclick="EditAdmin">Edit Admin</button>
+                            <p class="card-text"><strong>Rolle:</strong> @admin.Role</p>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card bg-light mb-4 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Admin Details:</h5>
-                    <p class="card-text"><strong>Navn:</strong> @admin.Name</p>
-                    <p class="card-text"><strong>Email:</strong> @admin.Email</p>
-                    <p class="card-text"><strong>Telefon:</strong> @admin.PhoneNumber</p>
-                    <p class="card-text"><strong>Kræv Number:</strong> @admin.KrævNumber</p>
-                </div>
+                <button class="btn btn-primary position-absolute" style="top: 10px; right: 10px;" @onclick="EditAdmin">Edit Admin</button>
             </div>
         </div>
     </div>

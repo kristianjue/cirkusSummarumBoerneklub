@@ -3,6 +3,7 @@
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 
+<AdminRestriction></AdminRestriction>
 <div class="row">
     <div class="col-9">
             <h3 class="mb-0">Bruger oversigt</h3>
@@ -37,6 +38,7 @@
                                     <h5 class="card-title">@admin.Name</h5>
                                     <p class="card-text"><strong>Email:</strong> @admin.Email</p>
                                     <p class="card-text"><strong>Telefon:</strong> @admin.PhoneNumber</p>
+                                    <p class="card-text"><strong>Rolle:</strong> @admin.Role</p>
                                     <button class="btn btn-success" @onclick="() => ViewUser(admin.Email)">Se bruger</button>
                                 </div>
                             </div>
@@ -88,6 +90,7 @@
     {
         await GetAllAdmins();
     }
+    
 
     public async Task GetAllAdmins()
     {
@@ -96,7 +99,7 @@
 
     private void AddNewUser()
     {
-        NavigationManager.NavigateTo("/tilføjadmin");
+        NavigationManager.NavigateTo("/nyadmin");
     }
     
 

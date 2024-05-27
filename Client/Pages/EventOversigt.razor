@@ -1,0 +1,59 @@
+﻿@page "/eventoversigt"
+@inject HttpClient Http
+@using Core
+<AdminRestriction></AdminRestriction>
+<PageTitle>System Settings Overview</PageTitle>
+
+<h1 class="text-center">System Settings Overview</h1>
+
+@if (cities == null)
+{
+    <p>Loading...</p>
+}
+else if (!cities.Any())
+{
+    <p>No events found.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>By</th>
+                <th>Åben for ansøgning</th>
+                <th>Uge</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var city in cities)
+            {
+                <tr>
+                    <td>@city.Name</td>
+                    <td>@(city.OpenForRegistration ? "Ja" : "Nej")</td>
+                    <td>
+                        <a class="btn btn-primary" href="/specifikevent/@city.Name">Rediger</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<City> cities;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getall");
+            
+            
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading system settings: {ex.Message}");
+        }
+    }
+}

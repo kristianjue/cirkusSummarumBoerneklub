@@ -4,14 +4,16 @@
 @using System.Net.Http.Json
 @inject HttpClient Http
 @inject NavigationManager Navigation
-
+<StaffRestriction></StaffRestriction>
 <div class="admin-dashboard">
     <div class="row justify-content-end" style="margin-bottom: 20px">
         <div class="col-3">
             <h5><label for="city">Lokation</label></h5>
-            <select name="city" class="form-select" @onchange="UpdateLocation">
-                <option value="Aarhus">Aarhus</option>
-                <option value="Ballerup">Ballerup</option>
+            <select name="city" class="form-select" @onchange="UpdateCity">
+                @foreach (var city in cities)
+                {
+                    <option value="@city.Name">@city.Name</option>
+                }
             </select>
         </div>
     </div>
@@ -22,7 +24,7 @@
             {
                 <p>Loading...</p>
             }
-            else if (applications.Count == 0)
+            else if (!applications.Any())
             {
                 <p>No applications found.</p>
             }
@@ -31,54 +33,47 @@
                 @foreach (var app in applications.Where(a => string.IsNullOrEmpty(a.Status) || a.Status == "Ny"))
                 {
                     <div class="application">
-                        @app.Id <br /> @app.Volunteer.Name <br /> @app.Volunteer.Email <br /> @app.Priority1 + @app.Priority2 <br /> @app.Volunteer.Children.Count børn
+                        @app.Volunteer.Name <br /> @app.Volunteer.Email <br /> @app.Priority1 + @app.Priority2 <br /> @app.Volunteer.Children.Count børn
                         <select @onchange="(e) => UpdateApplicationStatus(app, e.Value.ToString())" class="form-select">
                             <option value="">Vælg uge</option>
-                            @foreach (var week in new[] { "Uge 27: Ons-Søn", "Uge 27: Ons-Fre", "Uge 27: Lør-Søn", "Uge 28: Ons-Søn", "Uge 28: Ons-Fre", "Uge 28: Lør-Søn", "Venteliste", "Afvist" })
+                            @foreach (var period in _filteredPeriods)
                             {
-                                <option style=" color:@GetWeekColor(week)" value="@week">@week</option>
+                                <option value="@period.PeriodName">@period.PeriodName</option>
                             }
+                            <option value="Venteliste">Venteliste</option>
+                            <option value="Afvist">Afvist</option>
                         </select>
                     </div>
                 }
             }
         </div>
+
         <div class="week-sections">
-            @foreach (var week in new[] { "Uge 27", "Uge 28" })
+            @if (!string.IsNullOrEmpty(selectedCity))
             {
-                <div class="section">
-                    <h3 style=" color:@GetWeekColor(week)">@week (@GetChildrenCount(week) / 20)</h3>
-                    <div class="sub-section">
-                        <h4>Ons-Søn</h4>
-                        @foreach (var app in applications.Where(a => a.Status == $"{week}: Ons-Søn"))
-                        {
-                            <div class="application">
-                                @app.Id
-                                <button class="btn btn-danger" @onclick="() => RemoveApplication(app)">Fortryd</button>
-                            </div>
-                        }
-                    </div>
-                    <div class="sub-section">
-                        <h4>Ons-Fre</h4>
-                        @foreach (var app in applications.Where(a => a.Status == $"{week}: Ons-Fre"))
-                        {
-                            <div class="application">
-                                @app.Id
-                                <button class="btn btn-danger" @onclick="() => RemoveApplication(app)">Slet</button>
-                            </div>
-                        }
-                    </div>
-                    <div class="sub-section">
-                        <h4>Lør-Søn</h4>
-                        @foreach (var app in applications.Where(a => a.Status == $"{week}: Lør-Søn"))
-                        {
-                            <div class="application">
-                                @app.Id
-                                <button class="btn btn-danger" @onclick="() => RemoveApplication(app)">Slet</button>
-                            </div>
-                        }
-                    </div>
-                </div>
+                var city = cities.FirstOrDefault(c => c.Name == selectedCity);
+                if (city != null)
+                {
+                    @foreach (var week in city.Weeks)
+                    {
+                        <div class="section">
+                            <h3 style="color:@GetWeekColor(week.WeekName)">Uge @week.WeekName (@GetChildrenCount($"uge {week.WeekName}") / 20)</h3>
+                            @foreach (var period in week.Periods)
+                            {
+                                <div class="sub-section">
+                                    <h4>@period.PeriodName</h4>
+                                    @foreach (var app in applications.Where(a => a.Status == period.PeriodName))
+                                    {
+                                        <div class="application">
+                                            @app.Volunteer.Name <br /> @app.Volunteer.Children.Count børn
+                                            <button class="btn btn-danger" @onclick="() => RemoveApplication(app)">Fortryd</button>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                }
             }
         </div>
     </div>
@@ -90,8 +85,8 @@
                 @foreach (var app in applications.Where(a => a.Status == "Venteliste"))
                 {
                     <div class="application">
-                        @app.Id
-                        <button class="btn btn-danger" @onclick="() => RemoveApplication(app)">Slet</button>
+                        @app.Volunteer.Name <br /> @app.Volunteer.Children.Count børn
+                        <button class="btn btn-danger" @onclick="() => RemoveApplication(app)">Fortryd</button>
                     </div>
                 }
             </div>
@@ -103,8 +98,8 @@
                 @foreach (var app in applications.Where(a => a.Status == "Afvist"))
                 {
                     <div class="application">
-                        @app.Id
-                        <button class="btn btn-danger" @onclick="() => RemoveApplication(app)">Slet</button>
+                        @app.Volunteer.Name <br /> @app.Volunteer.Children.Count børn
+                        <button class="btn btn-danger" @onclick="() => RemoveApplication(app)">Fortryd</button>
                     </div>
                 }
             </div>
@@ -119,64 +114,69 @@
 
 @code {
     private List<Application> applications = new List<Application>();
-    private string selectedLocation = "Aarhus";
+    private List<City> cities = new List<City>();
+    private List<Period> _filteredPeriods = new List<Period>();
+    private string selectedCity;
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadCities();
         await LoadApplications();
+    }
+
+    private async Task LoadCities()
+    {
+        cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getall");
+        
     }
 
     private async Task LoadApplications()
     {
         try
         {
-            Console.WriteLine($"Loading applications for location: {selectedLocation}");
             applications = await Http.GetFromJsonAsync<List<Application>>("https://localhost:7026/api/application/getall");
-            if (applications != null)
-            {
-                Console.WriteLine($"Total applications loaded: {applications.Count}");
-                foreach (var app in applications)
-                {
-                    Console.WriteLine($"Application: Id={app.Id}, Status={app.Status}, Location={app.Location}");
-                }
-
-                applications = applications.Where(a => a.Location == selectedLocation).ToList();
-                Console.WriteLine($"Filtered applications for {selectedLocation}: {applications.Count}");
-                foreach (var app in applications)
-                {
-                    Console.WriteLine($"Filtered Application: Id={app.Id}, Status={app.Status}, Location={app.Location}");
-                }
-            }
-            else
-            {
-                Console.WriteLine("No applications found.");
-            }
+            FilterApplicationsByCity();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading applications: {ex.Message}");
         }
-        StateHasChanged();
     }
 
-    private async Task UpdateLocation(ChangeEventArgs e)
+    private async Task UpdateCity(ChangeEventArgs e)
     {
-        selectedLocation = e.Value.ToString();
-        Console.WriteLine($"Location updated to: {selectedLocation}");
+        selectedCity = e.Value.ToString();
+        await RefreshFilteredPeriods();
         await LoadApplications();
+    }
+
+    private async Task RefreshFilteredPeriods()
+    {
+        var city = cities.FirstOrDefault(c => c.Name == selectedCity);
+        if (city != null)
+        {
+            // Reload the city to get updated periods
+            var updatedCity = await Http.GetFromJsonAsync<City>($"https://localhost:7026/api/City/get/{city.Name}");
+            if (updatedCity != null)
+            {
+                var index = cities.IndexOf(city);
+                cities[index] = updatedCity;
+                _filteredPeriods = updatedCity.Weeks.SelectMany(w => w.Periods).ToList();
+                StateHasChanged();
+            }
+        }
     }
 
     private void UpdateApplicationStatus(Application app, string newStatus)
     {
         app.Status = newStatus;
-        Console.WriteLine($"Application Id={app.Id} status updated to: {newStatus}");
         StateHasChanged();
+        Console.WriteLine($"Application {app.Id} status updated to {newStatus}");
     }
 
     private void RemoveApplication(Application app)
     {
         app.Status = ""; // Reset the status to remove from the current week and return to the application list
-        Console.WriteLine($"Application Id={app.Id} status reset to empty");
         StateHasChanged();
     }
 
@@ -186,9 +186,6 @@
         {
             try
             {
-                var jsonString = System.Text.Json.JsonSerializer.Serialize(app);
-                Console.WriteLine($"Saving application: {jsonString}");
-
                 var response = await Http.PutAsJsonAsync($"https://localhost:7026/api/application/update/{app.Id}", app);
                 if (!response.IsSuccessStatusCode)
                 {
@@ -212,8 +209,9 @@
         return applications.Where(a => a.Status.StartsWith(week)).Sum(a => a.Volunteer.Children.Count);
     }
 
-    private string GetWeekColor(string week)
+    private string GetWeekColor(string weekName)
     {
+        string week = $"uge {weekName}";
         int childrenCount = GetChildrenCount(week);
         if (childrenCount == 0)
         {
@@ -230,6 +228,16 @@
         return "red"; // Full or over capacity
     }
 
+    private string GetOptionStyle(string weekOption)
+    {
+        string week = weekOption.Split(':')[0]; // Extract week part (e.g., "Uge 27")
+        return $"color: {GetWeekColor(week)};";
+    }
+
+    private void FilterApplicationsByCity()
+    {
+        applications = applications.Where(a => a.City.Name == selectedCity).ToList();
+    }
 }
 
 <style>

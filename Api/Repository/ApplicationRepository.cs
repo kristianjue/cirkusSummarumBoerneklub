@@ -37,7 +37,7 @@ public class ApplicationRepository : IApplicationRepository
         var filter = Builders<Application>.Filter.Eq(a => a.Id, application.Id);
         var update = Builders<Application>.Update
             .Set(a => a.Status, application.Status)
-            .Set(a => a.Location, application.Location)
+            .Set(a => a.City, application.City)
             .Set(a => a.Priority1, application.Priority1)
             .Set(a => a.Priority2, application.Priority2)
             .Set(a => a.Volunteer, application.Volunteer);

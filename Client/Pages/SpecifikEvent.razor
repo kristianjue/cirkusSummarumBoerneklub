@@ -1,0 +1,127 @@
+﻿@page "/specifikevent/{name}"
+@inject HttpClient Http
+@inject NavigationManager navigationManager
+@using Core
+@using Microsoft.AspNetCore.Components.Forms
+<AdminRestriction></AdminRestriction>
+<PageTitle>Specifik Event</PageTitle>
+
+<h1 class="text-center">Specifik Event</h1>
+
+<EditForm EditContext="@aEditContext" class="container mt-4" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary class="alert alert-danger" />
+
+    <h3 class="mb-4">Edit Lokation</h3>
+    <div class="form-check">
+        <InputCheckbox id="openForRegistration" @bind-Value="city.OpenForRegistration" class="form-check-input" />
+        <label class="form-check-label" for="openForRegistration">Åben for registration</label>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="cityName" class="form-label">By</label>
+                    <InputText id="cityName" @bind-Value="city.Name" class="form-control" />
+                </div>
+            </div>
+            <h5 class="card-title">Uger</h5>
+            @foreach (var week in city.Weeks)
+            {
+                <div class="row mb-3" @key="week">
+                    <div class="col-md-3">
+                        <label for="weekName" class="form-label">Uge Navn</label>
+                        <InputText id="weekName" @bind-Value="week.WeekName" class="form-control" />
+                    </div>
+                    <h5 class="card-title">Perioder</h5>
+                    @foreach (var period in week.Periods)
+                    {
+                        <div class="row mb-3" @key="period">
+                            <div class="col-md-3">
+                                <label for="periodName" class="form-label">Periode Navn</label>
+                                <InputText id="periodName" @bind-Value="period.PeriodName" class="form-control" />
+                            </div>
+                            <div class="col-md-3">
+                                <label for="startDate" class="form-label">Start Dato</label>
+                                <InputDate id="startDate" @bind-Value="period.StartDate" class="form-control" />
+                            </div>
+                            <div class="col-md-3">
+                                <label for="endDate" class="form-label">Slut Dato</label>
+                                <InputDate id="endDate" @bind-Value="period.EndDate" class="form-control" />
+                            </div>
+                            <div class="col-md-3">
+                                <label for="capacity" class="form-label">Kapacitet</label>
+                                <InputNumber id="capacity" @bind-Value="period.Capacity" class="form-control" />
+                            </div>
+                            <div class="col-md-12 text-end">
+                                <button type="button" class="btn btn-danger mt-2" @onclick="() => RemovePeriod(week, period)">Fjern Periode</button>
+                            </div>
+                        </div>
+                    }
+                    <div class="text-end">
+                        <button type="button" class="btn btn-primary" @onclick="() => AddPeriod(week)">Tilføj Periode</button>
+                    </div>
+                </div>
+            }
+            <div class="text-end">
+                <button type="button" class="btn btn-primary" @onclick="() => AddWeek(city)">Tilføj Uge</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mb-4">
+        <button type="submit" class="btn btn-success">Gem</button>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter] public string Name { get; set; }
+    private EditContext aEditContext;
+    private City city = new City { Weeks = new List<Week>() };
+
+    protected override async Task OnInitializedAsync()
+    {
+        aEditContext = new EditContext(city);
+        city = await Http.GetFromJsonAsync<City>($"https://localhost:7026/api/City/get/{Name}");
+        aEditContext = new EditContext(city);
+    }
+
+    public async Task HandleValidSubmit()
+    {
+        var response = await Http.PutAsJsonAsync($"https://localhost:7026/api/City/update/{city.Name}", city);
+        if (response.IsSuccessStatusCode)
+        {
+            navigationManager.NavigateTo("eventoversigt");
+        }
+        else
+        {
+            var responseContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Failed to update city: {response.StatusCode} - {responseContent}");
+        }
+    }
+
+    private void AddPeriod(Week week)
+    {
+        if (week.Periods == null)
+        {
+            week.Periods = new List<Period>();
+        }
+        week.Periods.Add(new Period());
+    }
+
+    private void RemovePeriod(Week week, Period period)
+    {
+        week.Periods.Remove(period);
+    }
+
+    private void AddWeek(City city)
+    {
+        city.Weeks.Add(new Week { Periods = new List<Period> { new Period() } });
+    }
+
+    private void RemoveWeek(Week week)
+    {
+        city.Weeks.Remove(week);
+    }
+}

@@ -48,8 +48,9 @@ public class AdminRespository : IAdminRepository
             .Set(administrator => administrator.Email, admin.Email)
             .Set(administrator => administrator.PhoneNumber, admin.PhoneNumber)
             .Set(administrator => administrator.Password, admin.Password)
-            .Set(administrator => administrator.KrævNumber, admin.KrævNumber);
-
+            .Set(administrator => administrator.KrævNumber, admin.KrævNumber)
+            .Set(administrator => administrator.Image, admin.Image)
+            .Set(administrator => administrator.Role, admin.Role);
         AdministratorCollection.UpdateOne(filter, update);
     }
 
