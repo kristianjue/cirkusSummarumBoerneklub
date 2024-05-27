@@ -5,7 +5,7 @@
 @inject IJSRuntime JSRuntime
 
 <PageTitle>Edit Admin</PageTitle>
-
+<AdminRestriction></AdminRestriction>
 <h3>Edit Admin</h3>
 <EditForm EditContext="@aEditContext" class="row p-3" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
@@ -14,9 +14,24 @@
         <label for="Name">Name</label>
         <InputText id="Name" @bind-Value="admin.Name" class="form-control" />
     </div>
-    <div class="col-md-6 mb-3">
+    <div class="col-md-3 mb-3">
         <label for="Email">Email</label>
         <InputText id="Email" @bind-Value="admin.Email" class="form-control" />
+    </div>
+    <div class="col-md-3 mb-3">
+    <label for="role">Bruger rolle</label>
+    <InputSelect id="role" @bind-Value="admin.Role" class="form-control">
+        @if (loadedRole == "Administrator")
+        {
+            <option value="Administrator" selected>Administrator</option>
+            <option value="Standard bruger">Standard bruger</option>
+        }
+        else
+        {
+            <option value="Standard bruger" selected>Standard bruger</option>
+            <option value="Administrator">Administrator</option>
+        }
+    </InputSelect>
     </div>
     <div class="col-md-6 mb-3">
         <label for="PhoneNumber">Phone Number</label>
@@ -45,7 +60,8 @@
 @code {
     [Parameter] public string email { get; set; }
     private Administrator admin = new();
-
+    private string loadedRole;
+    
     private EditContext aEditContext;
     private string errorMessage;
 
@@ -53,6 +69,7 @@
     {
         aEditContext = new EditContext(admin);
         admin = await GetAdminByEmail(email) ?? new Administrator();
+        loadedRole = admin.Role;
         aEditContext = new EditContext(admin);
     }
 

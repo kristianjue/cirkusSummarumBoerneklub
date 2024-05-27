@@ -1,0 +1,23 @@
+@using Blazored.LocalStorage
+@inject NavigationManager Navigation
+@inject ILocalStorageService localStore
+@inject HttpClient Http
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await CheckCredentials();
+    }
+    
+    public async Task CheckCredentials()
+    {
+        var localStorageUser = await localStore.GetItemAsync<Administrator>("currentAdministrator");
+        
+        if (localStorageUser == null)
+        {
+            var currentUrl = Navigation.Uri;
+            await localStore.SetItemAsync("target", currentUrl);
+            Navigation.NavigateTo("/login");
+        }
+    }
+}

@@ -1,4 +1,9 @@
-﻿@inherits LayoutComponentBase
+﻿@using Blazored.LocalStorage
+@inherits LayoutComponentBase
+@inject ILocalStorageService localStore
+@inject HttpClient Http
+
+
 
 <div class="page">
     <div class="sidebar">
@@ -7,7 +12,9 @@
 
     <main>
         <div class="top-row px-4">
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
+            @if(AccountName == null){<a href="/login">Personale</a>}
+            @if(AccountName != null){<p>Velkommen @AccountName</p>
+            <p><a href="Log_ud">Log ud</a></p>}
         </div>
 
         <article class="content px-4">
@@ -15,3 +22,27 @@
         </article>
     </main>
 </div>
+
+@code{
+
+    string AccountName;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await getUsername();
+        
+    }
+    
+    public async Task getUsername()
+    {
+        var localStorageUser = await localStore.GetItemAsync<Administrator>("currentAdministrator");
+        if (localStorageUser != null)
+        {
+        var email = localStorageUser.Email;
+            var user = await Http.GetFromJsonAsync<Administrator>("https://localhost:7026/api/admin/get-by-email/" + email);
+
+            AccountName = user.Name;
+        }
+    }
+
+}

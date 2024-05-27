@@ -1,0 +1,20 @@
+@page "/Log_ud"
+@using Blazored.LocalStorage
+@inject NavigationManager Navigation
+@inject ILocalStorageService localStore
+
+<h3>Log_ud</h3>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await RemoveCredentials();
+    }
+    
+    public async Task RemoveCredentials()
+    {
+        await localStore.RemoveItemAsync("currentAdministrator");
+        Navigation.NavigateTo("/login", true);
+        
+    }
+}
