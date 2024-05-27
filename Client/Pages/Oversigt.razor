@@ -14,7 +14,7 @@
         <div class="float-end">
             @if (isAdmin == true)
             {
-                <button class="btn btn-secondary">Send mail</button>
+                <button class="btn btn-secondary" @onclick="SendMail"> Send mail</button>
             }
             <button class="btn btn-secondary" @onclick="GetAllPdf">Hent pdf</button>
         </div>
@@ -240,6 +240,11 @@
             (string.IsNullOrEmpty(searchText) || app.Volunteer.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
                                                  app.Volunteer.Children.Any(child => child.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)))
         ).ToList();
+    }
+    
+    public void SendMail()
+    {
+        NavigationManager.NavigateTo("/send-mail");
     }
     
     public async Task CheckCredentials()

@@ -26,6 +26,12 @@ namespace Api.Repository
         {
             return _settingsCollection.Find(FilterDefinition<City>.Empty).ToList();
         }
+        
+        public List<City> GetAllActiveCity()
+        {
+            var filter = Builders<City>.Filter.Eq(settings => settings.OpenForRegistration, true);
+            return _settingsCollection.Find(filter).ToList();
+        }
 
         public City GetCityByName(string name)
         {

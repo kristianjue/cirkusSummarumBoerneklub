@@ -10,5 +10,6 @@ namespace Api.Interfaces
         City GetCityByName(string name);
         void UpdateCity(City settings);
         void DeleteCity(string id);
+        List<City> GetAllActiveCity();
     }
 }
