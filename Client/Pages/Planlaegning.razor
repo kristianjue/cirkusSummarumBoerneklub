@@ -10,6 +10,7 @@
         <div class="col-3">
             <h5><label for="city">Lokation</label></h5>
             <select name="city" class="form-select" @onchange="UpdateCity">
+                <option value="" disabled selected="selected"></option>
                 @foreach (var city in cities)
                 {
                     <option value="@city.Name">@city.Name</option>
@@ -57,11 +58,11 @@
                     @foreach (var week in city.Weeks)
                     {
                         <div class="section">
-                            <h3 style="color:@GetWeekColor(week.WeekName)">Uge @week.WeekName (@GetChildrenCount($"uge {week.WeekName}") / 20)</h3>
+                            <h3> @week.WeekName</h3>
                             @foreach (var period in week.Periods)
                             {
                                 <div class="sub-section">
-                                    <h4>@period.PeriodName</h4>
+                                    <h4 style="color:@GetWeekColor(period.PeriodName)">@period.PeriodName (@GetChildrenCount(period.PeriodName) / @period.Capacity)</h4>
                                     @foreach (var app in applications.Where(a => a.Status == period.PeriodName))
                                     {
                                         <div class="application">
@@ -105,6 +106,30 @@
             </div>
         </div>
     </div>
+
+    <div class="row mt-4">
+        <h3>Oversigt over ansøgninger pr. periode</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Periode</th>
+                    <th>Antal ansøgninger</th>
+                    <th>Kapacitet</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var period in _filteredPeriods)
+                {
+                    <tr>
+                        <td>@period.PeriodName</td>
+                        <td>@GetApplicationCountForPeriod(period.PeriodName)</td>
+                        <td>@period.Capacity</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
     <div class="row justify-content-end" style="margin-top: 20px">
         <div class="col-3">
             <button class="btn btn-primary" @onclick="SaveChanges">Gem</button>
@@ -127,7 +152,7 @@
     private async Task LoadCities()
     {
         cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getall");
-        
+
     }
 
     private async Task LoadApplications()
@@ -204,34 +229,40 @@
         Navigation.NavigateTo("/planlaegning", forceLoad: true); // Reload the page to get fresh data
     }
 
-    private int GetChildrenCount(string week)
+    private int GetChildrenCount(string periodName)
     {
-        return applications.Where(a => a.Status.StartsWith(week)).Sum(a => a.Volunteer.Children.Count);
+        return applications.Where(a => a.Status == periodName).Sum(a => a.Volunteer.Children.Count);
     }
 
-    private string GetWeekColor(string weekName)
+    private int GetApplicationCountForPeriod(string periodName)
     {
-        string week = $"uge {weekName}";
-        int childrenCount = GetChildrenCount(week);
-        if (childrenCount == 0)
+        return applications.Count(a => a.Priority1 == periodName);
+    }
+
+    private string GetWeekColor(string periodName)
+    {
+        var period = _filteredPeriods.FirstOrDefault(p => p.PeriodName == periodName);
+        if (period == null)
+        {
+            return "black"; // Default color if period not found
+        }
+
+        int childrenCount = GetChildrenCount(periodName);
+        double occupancyRate = (double)childrenCount / period.Capacity * 100;
+
+        if (occupancyRate == 0)
         {
             return "black"; // No children assigned yet
         }
-        if (childrenCount <= 10)
+        if (occupancyRate <= 50)
         {
             return "green"; // Safe range
         }
-        if (childrenCount <= 19)
+        if (occupancyRate <= 90)
         {
             return "orange"; // Warning range
         }
         return "red"; // Full or over capacity
-    }
-
-    private string GetOptionStyle(string weekOption)
-    {
-        string week = weekOption.Split(':')[0]; // Extract week part (e.g., "Uge 27")
-        return $"color: {GetWeekColor(week)};";
     }
 
     private void FilterApplicationsByCity()
