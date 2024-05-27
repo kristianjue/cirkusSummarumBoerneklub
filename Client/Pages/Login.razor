@@ -50,8 +50,14 @@
 
             // Get where to navigate to
             var target = await localStore.GetItemAsStringAsync("target");
+            if(target != null)
+            {
             target = target.Replace("\"", "").Replace("https://localhost:7033", "");
-
+            }
+            else
+            {
+                target = "/";
+            }
             Navigation.NavigateTo(target, true);
         }
         else
