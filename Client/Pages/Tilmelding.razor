@@ -1,4 +1,4 @@
-@page "/tilmelding"
+@page "/"
 @inject NavigationManager navigationManager
 @inject HttpClient Http
 @using Core
@@ -393,7 +393,7 @@
 
         if (response.IsSuccessStatusCode)
         {
-            navigationManager.NavigateTo($"brugeroversigt");
+            navigationManager.NavigateTo($"ansøgningsbekræftelse");
         }
         else
         {

@@ -2,37 +2,46 @@
 @inject NavigationManager navigationManager
 @inject HttpClient Http
 @using Core
-
+<AdminRestriction></AdminRestriction>
 <h3>Tilføj Ny Bruger</h3>
 <EditForm EditContext="@aEditContext" class="row p-3" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
     <ValidationSummary />
-<div class="row" style="margin-bottom: 30px">
-    <div class="col-md-6 mb-3">
-        <label for="email">Email</label>
-       <InputText id="email" @bind-Value="_newAdministrater.Email" class="form-control" />
-    </div>
-    <div class="col-md-3 mb-3">
-        <label for="phoneNumber">Telefonnummer</label>
-       <InputNumber id="phoneNumber" @bind-Value="_newAdministrater.PhoneNumber" class="form-control" />
-    </div>
-    <div class="col-md-3 mb-3">
-        <label for="memberNumber">Krævnummer</label>
-        <InputNumber id="KrævNumber" @bind-Value="_newAdministrater.KrævNumber" class="form-control" />
-    </div>
-    <div class="col-md-6 mb-3">
-            <label for="fullName">Navn</label>
-            <InputText id="Password" @bind-Value="_newAdministrater.Name" class="form-control" />
+    <div class="row" style="margin-bottom: 30px">
+        <div class="col-md-6 mb-3">
+                    <label for="fullName">Navn</label>
+                    <InputText id="Password" @bind-Value="_newAdministrater.Name" class="form-control" />
         </div>
-    <div class="col-md-6 mb-3">
-        <label for="password">Adgangskode</label>
-        <InputText id="Password" @bind-Value="_newAdministrater.Password" class="form-control" />
-    </div>
+        <div class="col-md-3 mb-3">
+            <label for="phoneNumber">Telefonnummer</label>
+            <InputNumber id="phoneNumber" @bind-Value="_newAdministrater.PhoneNumber" class="form-control"/>
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="memberNumber">Krævnummer</label>
+            <InputNumber id="KrævNumber" @bind-Value="_newAdministrater.KrævNumber" class="form-control"/>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="email">Email</label>
+            <InputText id="email" @bind-Value="_newAdministrater.Email" class="form-control"/>
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="password">Adgangskode</label>
+            <InputText id="Password" @bind-Value="_newAdministrater.Password" class="form-control"/>
+        </div>
+        <div class="col-md-3 mb-3">
+                    <label for="role">Bruger rolle</label>
+                    <InputSelect id="role" @bind-Value="_newAdministrater.Role" class="form-control">
+                        @if(_newAdministrater.Role == null){<option value="" disabled selected></option>}
+                        <option value="Standard">Standard bruger</option>
+                        <option value="Administrator">Administrator</option>
+                    </InputSelect>
+                    
+        </div>
         <div class="col-md-6 mb-3">
             <label for="Image">Billede</label>
-            <InputFile id="image" @bind-Value="_newAdministrater.Image" OnChange="HandleFileUpload" accept="image/jpeg" class="form-control" />
+            <InputFile id="image" @bind-Value="_newAdministrater.Image" OnChange="HandleFileUpload" accept="image/jpeg" class="form-control"/>
         </div>
-</div>
+    </div>
 
     <div>
         <button type="submit" class="btn btn-success" style="margin-top: 10px">Tilføj bruger</button>

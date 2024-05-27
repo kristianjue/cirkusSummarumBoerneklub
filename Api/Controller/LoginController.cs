@@ -34,7 +34,7 @@ public class LoginController : ControllerBase
         var adminFromDb = _loginRepositories.VerifyLogin(email, password);
         if (adminFromDb == null)
         {
-            return Unauthorized(); // Returnerer 401 hvis login fejler
+            return Ok(false); // Returnerer 401 hvis login fejler
         }
         return Ok(true); // Returnerer 200 hvis login er succesfuld
     }
