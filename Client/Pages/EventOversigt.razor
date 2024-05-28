@@ -1,5 +1,6 @@
 ﻿@page "/eventoversigt"
 @inject HttpClient Http
+@inject IJSRuntime JSRuntime
 @using Core
 <AdminRestriction></AdminRestriction>
 <PageTitle>System Settings Overview</PageTitle>
@@ -22,7 +23,7 @@ else
                 <th>By</th>
                 <th>Åben for ansøgning</th>
                 <th>Uge</th>
-                <th></th>
+                <th>Handlinger</th> <!-- Tilføj en kolonne til handlinger -->
             </tr>
         </thead>
         <tbody>
@@ -33,6 +34,9 @@ else
                     <td>@(city.OpenForRegistration ? "Ja" : "Nej")</td>
                     <td>
                         <a class="btn btn-primary" href="/specifikevent/@city.Name">Rediger</a>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger" @onclick="@(async () => await DeleteCity(city.Name))">Slet</button> <!-- Tilføj slet-knappen -->
                     </td>
                 </tr>
             }
@@ -48,12 +52,36 @@ else
         try
         {
             cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getall");
-            
-            
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading system settings: {ex.Message}");
+        }
+    }
+
+    private async Task DeleteCity(string cityName)
+    {
+        var confirm = await JSRuntime.InvokeAsync<bool>("confirm", new object[] { $"Er du sikker på, at du vil slette {cityName}?" });
+        if (confirm)
+        {
+            try
+            {
+                var response = await Http.DeleteAsync($"https://localhost:7026/api/City/delete/{cityName}");
+                if (response.IsSuccessStatusCode)
+                {
+                    cities.RemoveAll(c => c.Name == cityName);
+                    StateHasChanged();
+                }
+                else
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Failed to delete city: {response.StatusCode} - {responseContent}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting city: {ex.Message}");
+            }
         }
     }
 }

@@ -34,6 +34,7 @@
                 @foreach (var app in applications.Where(a => string.IsNullOrEmpty(a.Status) || a.Status == "Ny"))
                 {
                     <div class="application">
+
                         @app.Volunteer.Name <br /> @app.Volunteer.Email <br /> @app.Priority1 + @app.Priority2 <br /> @app.Volunteer.Children.Count børn
                         <select @bind="app.SelectedStatus" @oninput="(e) => UpdateApplicationStatus(app, e.Value.ToString())" class="form-select">
                             <option value="">Vælg uge</option>
@@ -46,6 +47,7 @@
                         </select>
                     </div>
                 }
+
             }
         </div>
 
