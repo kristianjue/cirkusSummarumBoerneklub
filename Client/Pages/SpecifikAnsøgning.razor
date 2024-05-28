@@ -124,7 +124,7 @@
             <div class="col-md-6 mb-3">
                 <label for="Priority1">Periode</label>
                 <InputSelect id="Priority1" @bind-Value="_existingApplication.Priority1" class="form-control">
-                    <option value="">Vælg periode</option>
+                    <option value="">Vælg periode</option> <!-- Tilføj denne linje -->
                     @if (_filteredPeriodsFirst != null)
                     {
                         @foreach (var period in _filteredPeriodsFirst)
@@ -152,6 +152,7 @@
                     {
                         <option value="" disabled selected></option>
                     }
+
                     @if (_cities != null)
                     {
                         @foreach (var city in _cities)
@@ -196,7 +197,6 @@
 
 
 
-
     <div class="row" style="margin-bottom: 50px; text-align: center">
         <div class="col-12 mb-3">
             <br />
@@ -204,6 +204,7 @@
         </div>
     </div>
 </EditForm>
+
 
 @code {
     [Parameter] public string applicationId { get; set; }
@@ -227,7 +228,6 @@
         aEditContext = new EditContext(_existingApplication);
         await LoadCities();
         await LoadApplicationData();
-        aEditContext = new EditContext(_existingApplication);
     }
 
     private async Task LoadCities()
@@ -250,7 +250,7 @@
             _selectedCityId1 = _existingApplication.City?.Name;
             if (!string.IsNullOrEmpty(_selectedCityId1))
             {
-                OnCityChanged();
+                OnCityChanged(); // Opdater perioder ved første indlæsning
             }
         }
         catch (Exception ex)
@@ -266,13 +266,12 @@
         {
             _existingApplication.City = selectedCity;
             _filteredPeriodsFirst = selectedCity.Weeks.SelectMany(week => week.Periods).ToList();
-            _filteredPeriodsSecond = _filteredPeriodsFirst;
         }
         else
         {
             _filteredPeriodsFirst.Clear();
-            _filteredPeriodsSecond.Clear();
         }
+        StateHasChanged(); // Tving UI til at opdatere
     }
 
     private void OnSecondaryCityChanged()
@@ -284,8 +283,9 @@
         }
         else
         {
-            _filteredPeriodsSecond.Clear();
+           _filteredPeriodsSecond.Clear();
         }
+        StateHasChanged(); // Tving UI til at opdatere
     }
 
     private void ShowSecondPriority()
@@ -328,4 +328,7 @@
         _existingApplication.Volunteer.Children.Remove(child);
     }
 }
+
+
+
 
