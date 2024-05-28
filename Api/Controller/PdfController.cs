@@ -1,4 +1,5 @@
 using System.Net;
+using System.Web;
 using Microsoft.AspNetCore.Mvc;
 using Api.Logic;
 using Api.Repository;
@@ -12,11 +13,13 @@ public class PdfController : ControllerBase
 {
     private readonly PdfForSignature _pdfForSignature;
     private readonly IApplicationRepository _applicationRepository;
+    private readonly ISignatureRepository _signatureRepository;
 
-    public PdfController(PdfForSignature pdfForSignature, IApplicationRepository applicationRepository)
+    public PdfController(PdfForSignature pdfForSignature, IApplicationRepository applicationRepository, ISignatureRepository signatureRepository)
     {
         _pdfForSignature = pdfForSignature;
         _applicationRepository = applicationRepository;
+        _signatureRepository = signatureRepository;
     }
     
     [HttpGet]
@@ -40,26 +43,68 @@ public class PdfController : ControllerBase
     }
     
     [HttpGet]
-    [Route("get-all")]
-    public async Task<ActionResult> GenerateAll()
+    [Route("get-signature/{SignatureId}")]
+    public async Task<ActionResult> GenerateSignaturePdf(string SignatureId)
     {
-        // Fetch or create the Signature object using the ApplicationId
-        List<Application> applications = _applicationRepository.GetAllApplications();
         
-        while (applications.Count == 0)
-        {
-            await Task.Delay(10);
-        }
+        // Fetch or create the Signature object using the ApplicationId
+        var signature = _signatureRepository.GetSignatureById(SignatureId);
         
         // Use the injected service to create a document
-        var document = _pdfForSignature.CreateDocumentForAllApplication(applications);
-
-        // Generate PDF file and return it as a response
+        var document = _pdfForSignature.CreateDocumentForSpecifcSignature(signature);
+        
+        // Generer PDF-fil og returner den som et svar
         using (var stream = new MemoryStream())
         {
             document.GeneratePdf(stream);
             stream.Position = 0;
-            return File(stream.ToArray(), "application/pdf", "all-applications.pdf");
+            return File(stream.ToArray(), "application/pdf", $"{SignatureId}.pdf");
         }
     }
+    
+    [HttpGet]
+    [Route("get-all/applications/{city}/{period}/{status}")]
+    
+    public async Task<ActionResult> GenerateAll(string city, string period, string status)
+    {
+        string encodedCity = city;
+        city = HttpUtility.UrlDecode(encodedCity);
+        
+        string encodedPeriod = period;
+        period = HttpUtility.UrlDecode(encodedPeriod);
+        
+        string encodedStatus = status;
+        status = HttpUtility.UrlDecode(encodedStatus);
+        
+        var allApplications = _applicationRepository.GetApplicationsByfilter(city, period, status);
+        
+        var document = _pdfForSignature.CreateDocumentForAllApplication(allApplications);
+        
+        using (var stream = new MemoryStream())
+        {
+            document.GeneratePdf(stream);
+            stream.Position = 0;
+            return File(stream.ToArray(), "application/pdf", $"filtered-applications-{DateTime.Now}.pdf");
+        }
+        
+    }
+    
+    [HttpGet]
+    [Route("get-all/signatures")]
+    
+    public async Task<ActionResult> GenerateAllSignatures()
+    {
+        var allSignatures = _signatureRepository.GetAllSignatures();
+
+        var document = _pdfForSignature.CreateDocumentForAllSignatures(allSignatures);
+        
+        using (var stream = new MemoryStream())
+        {
+            document.GeneratePdf(stream);
+            stream.Position = 0;
+            return File(stream.ToArray(), "application/pdf", $"all-signatures-{DateTime.Now}.pdf");
+        }
+        
+    }
+    
 }

@@ -18,8 +18,13 @@
             @if (isAdmin == true && selectedType == "Børneklubben")
             {
                 <button class="btn btn-secondary" @onclick="SendMail" style="margin-right: 5px"> Send mail</button>
+            
+                <button class="btn btn-secondary" @onclick="GetAllPdfForApplication">Hent pdf</button>
             }
-            <button class="btn btn-secondary" @onclick="GetAllPdf">Hent pdf</button>
+            @if (selectedType == "Ung frivillig")
+            {
+                <button class="btn btn-secondary" @onclick="GetAllPdfForSignature">Hent pdf</button>
+            }
         </div>
     </div>
 </div>
@@ -269,13 +274,32 @@
         NavigationManager.NavigateTo($"https://localhost:7026/api/pdf/get-signature/{signatureId}");
     }
 
-    public async Task GetAllPdf()
+    public void GetAllPdfForApplication()
     {
-       var response = await Http.PostAsJsonAsync<List<Application>>("https://localhost:7026/api/pdf/get-all-applications", filteredApplications);
-        if(response.IsSuccessStatusCode)
+        string PdfSelectedCity = selectedCity;
+        string PdfSelectedPeriod = selectedPeriod;
+        string PdfSelectedStatus = selectedStatus;
+
+        if (PdfSelectedCity == null)
         {
-            NavigationManager.NavigateTo(response.Content.ReadAsStringAsync().Result);
+            PdfSelectedCity = "all";
         }
+        if (PdfSelectedPeriod == null)
+        {
+            PdfSelectedPeriod = "all";
+        }
+        
+        if (PdfSelectedStatus == null)
+        {
+            PdfSelectedStatus = "all";
+        }
+        
+        NavigationManager.NavigateTo($"https://localhost:7026/api/pdf/get-all/applications/{PdfSelectedCity}/{PdfSelectedPeriod}/{PdfSelectedStatus}");
+    }
+    
+    public void GetAllPdfForSignature()
+    {
+        NavigationManager.NavigateTo("https://localhost:7026/api/pdf/get-all/signatures");
     }
 
     private void OnCityChanged(ChangeEventArgs e)
