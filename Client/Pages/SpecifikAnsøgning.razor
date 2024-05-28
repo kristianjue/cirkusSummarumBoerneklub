@@ -234,7 +234,7 @@
     {
         try
         {
-            _cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getall");
+            _cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getallactive");
         }
         catch (Exception ex)
         {
@@ -285,12 +285,14 @@
         {
            _filteredPeriodsSecond.Clear();
         }
-        StateHasChanged(); // Tving UI til at opdatere
+        StateHasChanged(); 
     }
 
     private void ShowSecondPriority()
     {
         _showSecondPriority = true;
+        _selectedCityId2 = _cities.FirstOrDefault(city => city.Name != _selectedCityId1)?.Name;
+        OnSecondaryCityChanged();
     }
 
     private void HideSecondPriority()
