@@ -1,4 +1,4 @@
-@page "/"
+﻿@page "/"
 @inject NavigationManager navigationManager
 @inject HttpClient Http
 @using Core
@@ -148,12 +148,14 @@
                 <label for="kidSize">T-shirt størrelse</label>
                 <InputSelect id="kidSize" @bind-Value="kid2.Size" class="form-control">
                     @if(kid2.Size == null){<option value="" disabled selected="selected"></option>}
-                    <option value="XXS">XXS</option>
+                    <option value="110-116">110-116</option>
+                    <option value="122-128">122-128</option>
+                    <option value="134-140">134-140</option>
+                    <option value="146-152">146-152</option>
+                    <option value="158-164">158-164</option>
                     <option value="XS">XS</option>
                     <option value="S">S</option>
-                    <option value="M">M</option>
-                    <option value="L">L</option>
-                    <option value="XL">XL</option>
+                    
                 </InputSelect>
             </div>
             <div class="col-md-3 mb-3">
