@@ -210,19 +210,19 @@
             </InputSelect>
         </div>
 
-        @if(_selectedCityId1 != null)
+        @if (_selectedCityId1 != null)
         {
             <div class="col-md-6 mb-3">
                 <label for="Priority1">Periode</label>
                 <InputSelect id="Priority1" @bind-Value="_newTilmelding.Priority1" class="form-control">
-                    @if (_filteredPeriodsFirst != null && _filteredPeriodsFirst.Any())
+                    <option value="">Vælg periode</option> <!-- Tilføj denne linje -->
+                    @if (_filteredPeriodsFirst != null)
                     {
                         @foreach (var period in _filteredPeriodsFirst)
                         {
                             <option value="@period.PeriodName">@period.PeriodName</option>
                         }
                     }
-
                     else
                     {
                         <option value="">No periods available</option>
@@ -255,6 +255,7 @@
                 <div class="col-md-6 mb-3">
                     <label for="Priority2">Periode</label>
                     <InputSelect id="Priority2" @bind-Value="_newTilmelding.Priority2" class="form-control">
+                        <option value="">Vælg periode</option>
                         @if (_filteredPeriodsSecond != null && _filteredPeriodsSecond.Any())
                         {
                             @foreach (var period in _filteredPeriodsSecond)

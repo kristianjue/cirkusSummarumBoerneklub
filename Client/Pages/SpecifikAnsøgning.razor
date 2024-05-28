@@ -104,7 +104,11 @@
     <div class="row" style="margin-bottom: 30px">
         <div class="col-md-6 mb-3">
             <label for="city1">By</label>
-            <InputSelect id="city1" @bind-Value="_selectedCityId1" class="form-control">
+            <InputSelect @bind-Value="_selectedCityId1" @oninput="OnCityChanged" id="city1" class="form-control">
+                @if (_selectedCityId1 == null)
+                {
+                    <option value="" disabled selected></option>
+                }
                 @if (_cities != null)
                 {
                     @foreach (var city in _cities)
@@ -113,50 +117,17 @@
                     }
                 }
             </InputSelect>
-            <button type="button" class="btn btn-primary" @onclick="OnCityChanged">Vælg By</button>
         </div>
-        <div class="col-md-6 mb-3">
-            <label for="Priority1">Periode</label>
-            <InputSelect id="Priority1" @bind-Value="_existingApplication.Priority1" class="form-control">
-                @if (_filteredPeriodsFirst != null && _filteredPeriodsFirst.Any())
-                {
-                    @foreach (var period in _filteredPeriodsFirst)
-                    {
-                        <option value="@period.PeriodName">@period.PeriodName</option>
-                    }
-                }
-                else
-                {
-                    <option value="">No periods available</option>
-                }
-            </InputSelect>
-        </div>
-    </div>
 
-    @if (_showSecondPriority)
-    {
-        <h3>Pasnings Ønske - 2. prioritet</h3>
-        <div class="row" style="margin-bottom: 30px">
+        @if (_selectedCityId1 != null)
+        {
             <div class="col-md-6 mb-3">
-                <label for="city2">By</label>
-                <InputSelect id="city2" @bind-Value="_selectedCityId2" class="form-control">
-                    @if (_cities != null)
+                <label for="Priority1">Periode</label>
+                <InputSelect id="Priority1" @bind-Value="_existingApplication.Priority1" class="form-control">
+                    <option value="">Vælg periode</option>
+                    @if (_filteredPeriodsFirst != null)
                     {
-                        @foreach (var city in _cities)
-                        {
-                            <option value="@city.Name">@city.Name</option>
-                        }
-                    }
-                }
-                </InputSelect>
-                <button type="button" class="btn btn-primary" @onclick="OnSecondaryCityChanged">Vælg By</button>
-            </div>
-            <div class="col-md-6 mb-3">
-                <label for="Priority2">Periode</label>
-                <InputSelect id="Priority2" @bind-Value="_existingApplication.Priority2" class="form-control">
-                    @if (_filteredPeriodsSecond != null && _filteredPeriodsSecond.Any())
-                    {
-                        @foreach (var period in _filteredPeriodsSecond)
+                        @foreach (var period in _filteredPeriodsFirst)
                         {
                             <option value="@period.PeriodName">@period.PeriodName</option>
                         }
@@ -165,9 +136,52 @@
                     {
                         <option value="">No periods available</option>
                     }
+                </InputSelect>
+            </div>
+        }
+    </div>
+
+    @if (_showSecondPriority)
+    {
+        <h3>Pasnings Ønske - 2. prioritet</h3>
+        <div class="row" style="margin-bottom: 30px">
+            <div class="col-md-6 mb-3">
+                <label for="city2">By</label>
+                <InputSelect id="city2" @bind-Value="_selectedCityId2" @oninput="OnSecondaryCityChanged" class="form-control">
+                    @if (_selectedCityId2 == null)
+                    {
+                        <option value="" disabled selected></option>
+                    }
+                    @if (_cities != null)
+                    {
+                        @foreach (var city in _cities)
+                        {
+                            <option value="@city.Name">@city.Name</option>
+                        }
                     }
                 </InputSelect>
             </div>
+
+            @if (_selectedCityId2 != null)
+            {
+                <div class="col-md-6 mb-3">
+                    <label for="Priority2">Periode</label>
+                    <InputSelect id="Priority2" @bind-Value="_existingApplication.Priority2" class="form-control">
+                        <option value="">Vælg periode</option>
+                        @if (_filteredPeriodsSecond != null && _filteredPeriodsSecond.Any())
+                        {
+                            @foreach (var period in _filteredPeriodsSecond)
+                            {
+                                <option value="@period.PeriodName">@period.PeriodName</option>
+                            }
+                        }
+                        else
+                        {
+                            <option value="">No periods available</option>
+                        }
+                    </InputSelect>
+                </div>
+            }
             <div class="col-12 text-center">
                 <button type="button" class="btn btn-danger" @onclick="HideSecondPriority">Fjern 2. prioritet</button>
             </div>
@@ -179,6 +193,9 @@
             <button type="button" class="btn btn-secondary" @onclick="ShowSecondPriority">Tilføj 2. prioritet</button>
         </div>
     }
+
+
+
 
     <div class="row" style="margin-bottom: 50px; text-align: center">
         <div class="col-12 mb-3">

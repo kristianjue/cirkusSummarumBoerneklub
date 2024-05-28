@@ -34,7 +34,14 @@
                 @foreach (var app in applications.Where(a => string.IsNullOrEmpty(a.Status) || a.Status == "Ny"))
                 {
                     <div class="application">
-                        @app.Volunteer.Name <br /> @app.Volunteer.Email <br /> @app.Priority1 + @app.Priority2 <br /> @app.Volunteer.Children.Count børn
+                        @app.Volunteer.Name <br /> @app.Volunteer.Email <br />
+                        @app.Priority1
+                        @if (!string.IsNullOrEmpty(app.Priority2))
+                        {
+                            <span> + @app.Priority2</span>
+                        }
+                        <br />
+                        @app.Volunteer.Children.Count børn
                         <select @onchange="(e) => UpdateApplicationStatus(app, e.Value.ToString())" class="form-select">
                             <option value="">Vælg uge</option>
                             @foreach (var period in _filteredPeriods)
@@ -46,6 +53,7 @@
                         </select>
                     </div>
                 }
+
             }
         </div>
 
