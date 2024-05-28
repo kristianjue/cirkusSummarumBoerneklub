@@ -64,12 +64,12 @@
                                 <div class="col-md-3">
                                     <label for="capacity" class="form-label">Kapacitet</label>
                                     <InputNumber id="capacity" @bind-Value="period.Capacity" class="form-control" />
+                                    <ValidationMessage For="@(() => period.Capacity)" />
                                 </div>
-                                
+
                                 <div class="col-md-12 text-end">
                                     <button type="button" class="btn btn-danger mt-2" @onclick="() => RemovePeriod(city, week, period)">Fjern Periode</button>
                                 </div>
-                                
                             </div>
                         }
                     </div>
@@ -106,6 +106,12 @@
 
     public async Task HandleValidSubmit()
     {
+        if (!aEditContext.Validate())
+        {
+            Console.WriteLine("Form contains validation errors.");
+            return;
+        }
+
         foreach (var city in cities)
         {
             // Ensure that the city field is not null or empty
