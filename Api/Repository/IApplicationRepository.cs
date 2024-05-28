@@ -13,4 +13,6 @@ public interface IApplicationRepository
     void UpdateApplication(Application application);
 
     void DeleteApplication(string id);
+    
+    List<Application> GetApplicationsByfilter(string city, string period, string status);
 }

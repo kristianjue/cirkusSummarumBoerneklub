@@ -31,6 +31,31 @@ public class ApplicationRepository : IApplicationRepository
         var filter = Builders<Application>.Filter.Eq(application => application.Id, id);
         return ApplicationCollection.Find(filter).SingleOrDefault();
     }
+    
+    public List<Application> GetApplicationsByfilter(string city, string period, string status)
+    {
+        var filterBuilder = Builders<Application>.Filter;
+        var filters = new List<FilterDefinition<Application>>();
+
+        if (!string.IsNullOrEmpty(city) && city != "all")
+        {
+            filters.Add(filterBuilder.Eq(application => application.City.Name, city));
+        }
+
+        if (!string.IsNullOrEmpty(period) && period != "all")
+        {
+            filters.Add(filterBuilder.Eq(application => application.Priority1, period));
+        }
+
+        if (!string.IsNullOrEmpty(status) && status != "all")
+        {
+            filters.Add(filterBuilder.Eq(application => application.Status, status));
+        }
+
+        var filter = filters.Count > 0 ? filterBuilder.And(filters) : FilterDefinition<Application>.Empty;
+    
+        return ApplicationCollection.Find(filter).ToList();
+    }
 
     public void UpdateApplication(Application application)
     {

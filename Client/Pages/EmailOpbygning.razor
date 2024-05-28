@@ -1,11 +1,58 @@
 @using Blazored.TextEditor
 @using System.Net
 @inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@using Blazored.LocalStorage
+@inject ILocalStorageService localStore
+
 
 @page "/send-mail"
-<h3>Send email</h3>
+<h3>Send email til @filteredApplications.Count modtagere</h3>
 <AdminRestriction></AdminRestriction>
-<InputText class="form-control" @bind-Value="emailSubject" placeholder="Indtast emne på email" style="margin-bottom: 20px" />
+<div class="row">
+    <div class="col-6">
+        <div class="row mb-4">
+                <div class="col-3">
+                    <label for="city">By</label>
+                    <select type="text" class="form-control" id="city" @onchange="OnCityChanged">
+                        <option value="">Vælg by</option>
+                        @if (cities != null)
+                        {
+                            @foreach (var city in cities)
+                            {
+                                <option value="@city.Name">@city.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-3">
+                    <label for="period">Periode</label>
+                    <select type="text" class="form-control" id="period" @onchange="OnPeriodChanged">
+                        <option value="">Vælg periode</option>
+                        @if (filteredPeriods != null)
+                        {
+                            @foreach (var period in filteredPeriods)
+                            {
+                                <option value="@period.PeriodName">@period.PeriodName</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-3">
+                    <label for="status">Status</label>
+                    <select type="text" class="form-control" id="status" @onchange="OnStatusChanged">
+                        <option value="">Alle ansøgninger</option>
+                        <option value="Ny">Nye ansøgninger</option>
+                        <option value="Godkendt">Godkendte ansøgninger</option>
+                        <option value="Afvist">Afviste ansøgninger</option>
+                        <option value="Venteliste">Ansøgninger på venteliste</option>
+                    </select>
+                </div>
+        </div>
+    </div>
+</div>
+<label for="subject">Emne på mail</label>
+<InputText class="form-control" @bind-Value="emailSubject" id="subject" placeholder="Indtast emne på email" style="margin-bottom: 20px" />
 
 
 <BlazoredTextEditor  EditorCssStyle="height:400px;" Placeholder="Skriv din mail her" @ref="@QuillHtml">
@@ -31,12 +78,23 @@
 </BlazoredTextEditor>
 
 <div style="margin-top: 20px">
-<button class="btn btn-success" @onclick="async () => await SendEmail()">Send testmail til mig</button>
+    <button class="btn btn-success" @onclick="async () => await SendTestEmail()">Send testmail til mig</button>
+    <button class="btn btn-success" @onclick="async () => await SendEmail()">Send email</button>
 </div>
 
 @code {
     
     private string emailSubject = string.Empty;
+    private List<City> _cities;
+    private string selectedCity;
+    private string selectedStatus;
+    private string selectedPeriod;
+    private List<City> cities = new List<City>();
+    private List<Application> applications = new List<Application>();
+    private List<Application> filteredApplications = new List<Application>();
+    private List<Period> filteredPeriods = new List<Period>();
+    private string AdminEmail;
+
     
     BlazoredTextEditor QuillHtml;
     string EmailContent;
@@ -47,7 +105,113 @@
         var SpecifcEmail = new EmailRequest();
         SpecifcEmail.Subject = emailSubject;
         SpecifcEmail.Body = EmailContent;
-        await Http.PostAsJsonAsync<EmailRequest>("https://localhost:7026/api/email/custom-email",SpecifcEmail);
+        SpecifcEmail.Recipients = new List<string>();
+        foreach (var app in filteredApplications)
+        {
+            SpecifcEmail.Recipients.Add(app.Volunteer.Email);
+        }
+        var emailRequest = await Http.PostAsJsonAsync<EmailRequest>("https://localhost:7026/api/email/custom-email",SpecifcEmail);
+        if(emailRequest.StatusCode == HttpStatusCode.OK)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Email er sendt");
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Der skete en fejl, kontakt support");
+        }
+    }
+    
+    public async Task SendTestEmail()
+    {
+        EmailContent = await this.QuillHtml.GetHTML();
+        var SpecifcEmail = new EmailRequest();
+        SpecifcEmail.Subject = emailSubject;
+        SpecifcEmail.Body = EmailContent;
+        SpecifcEmail.Recipients = new List<string>();
+        SpecifcEmail.Recipients.Add(AdminEmail);
+        var emailRequest = await Http.PostAsJsonAsync<EmailRequest>("https://localhost:7026/api/email/custom-email",SpecifcEmail);
+        if(emailRequest.StatusCode == HttpStatusCode.OK)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Test mail er sendt");
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Der skete en fejl, kontakt support");
+        }
+    }
+    
+    private void OnCityChanged(ChangeEventArgs e)
+    {
+        selectedCity = e.Value.ToString();
+        UpdateFilteredPeriods();
+        FilterApplications();
+    }
+    
+    private void OnStatusChanged(ChangeEventArgs e)
+    {
+        selectedStatus = e.Value.ToString();
+        FilterApplications();
+    }
+    
+    private void OnPeriodChanged(ChangeEventArgs e)
+    {
+        selectedPeriod = e.Value.ToString();
+        FilterApplications();
+    }
+    
+    private void UpdateFilteredPeriods()
+    {
+        var city = cities.FirstOrDefault(c => c.Name == selectedCity);
+        if (city != null)
+        {
+            filteredPeriods = city.Weeks.SelectMany(week => week.Periods).ToList();
+        }
+        else
+        {
+            filteredPeriods.Clear();
+        }
+    }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await GetAllApplications();
+            cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getall");
+            await getAdminEmail();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading data: {ex.Message}");
+        }
+    }
+    
+    private async Task GetAllApplications()
+    {
+        try
+        {
+            applications = await Http.GetFromJsonAsync<List<Application>>("https://localhost:7026/api/application/getall");
+            filteredApplications = applications;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading applications: {ex.Message}");
+        }
+    }
+    
+    private void FilterApplications()
+    {
+        filteredApplications = applications.Where(app =>
+            (string.IsNullOrEmpty(selectedCity) || app.City?.Name == selectedCity) &&
+            (string.IsNullOrEmpty(selectedStatus) || app.Status == selectedStatus) &&
+            (string.IsNullOrEmpty(selectedPeriod) || app.Priority1 == selectedPeriod)).ToList();
+    }
+
+    public async Task getAdminEmail()
+    {
+        var localStorageUser = await localStore.GetItemAsync<Administrator>("currentAdministrator");
+        
+         AdminEmail = localStorageUser.Email;
     }
 
 }
