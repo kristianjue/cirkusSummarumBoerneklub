@@ -48,20 +48,23 @@ namespace Api.Logic
         
         public  async Task SendCustomEmail(EmailRequest emailRequest)
         {
-            var message = new TemplatedPostmarkMessage()
+            foreach (string email in emailRequest.Recipients)
             {
-                To = "kristian@juelsgaard.dk",
-                From = "kristian@juelsgaard.dk",
-                TrackOpens = true,
-                TemplateId = 36014854,
-                TemplateModel = new Dictionary<string,object> {
-                    {"emailSubject", emailRequest.Subject},
-                    {"HTMLbody", emailRequest.Body}
-                } 
-            };
+                var message = new TemplatedPostmarkMessage()
+                {
+                    To = $"{email}",
+                    From = "kristian@juelsgaard.dk",
+                    TrackOpens = true,
+                    TemplateId = 36014854,
+                    TemplateModel = new Dictionary<string,object> {
+                        {"emailSubject", emailRequest.Subject},
+                        {"HTMLbody", emailRequest.Body}
+                    } 
+                };
 
-            var client = new PostmarkClient("87c8a126-119b-4ba7-9874-230ebdccc21a");
-            await client.SendMessageAsync(message);
+                var client = new PostmarkClient("87c8a126-119b-4ba7-9874-230ebdccc21a");
+                await client.SendMessageAsync(message);
+            }
         }
     }
 }
