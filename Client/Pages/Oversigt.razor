@@ -1,9 +1,12 @@
 @page "/Oversigt"
 @using Core
 @using Blazored.LocalStorage
+@using System.Net.Mime
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 @inject ILocalStorageService localStore
+@inject IJSRuntime JSRuntime
+
 
 <StaffRestriction></StaffRestriction>
 <div class="row">
@@ -12,9 +15,9 @@
     </div>
     <div class="col-3">
         <div class="float-end">
-            @if (isAdmin == true)
+            @if (isAdmin == true && selectedType == "Børneklubben")
             {
-                <button class="btn btn-secondary" @onclick="SendMail"> Send mail</button>
+                <button class="btn btn-secondary" @onclick="SendMail" style="margin-right: 5px"> Send mail</button>
             }
             <button class="btn btn-secondary" @onclick="GetAllPdf">Hent pdf</button>
         </div>
@@ -26,47 +29,49 @@
             <div class="col-3">
                 <label for="type">Type</label>
                 <select type="text" class="form-control" id="type" @onchange="OnTypeChanged">
-                    <option value="">Alle typer</option>
                     <option value="Børneklubben">Børneklubben</option>
                     <option value="Ung frivillig">Ung frivillig</option>
                 </select>
             </div>
-            <div class="col-3">
-                <label for="city">By</label>
-                <select type="text" class="form-control" id="city" @onchange="OnCityChanged">
-                    <option value="">Vælg by</option>
-                    @if (cities != null)
-                    {
-                        @foreach (var city in cities)
+            @if(selectedType == "Børneklubben")
+            {
+                <div class="col-3">
+                    <label for="city">By</label>
+                    <select type="text" class="form-control" id="city" @onchange="OnCityChanged">
+                        <option value="">Vælg by</option>
+                        @if (cities != null)
                         {
-                            <option value="@city.Name">@city.Name</option>
+                            @foreach (var city in cities)
+                            {
+                                <option value="@city.Name">@city.Name</option>
+                            }
                         }
-                    }
-                </select>
-            </div>
-            <div class="col-3">
-                <label for="period">Periode</label>
-                <select type="text" class="form-control" id="period" @onchange="OnPeriodChanged">
-                    <option value="">Vælg periode</option>
-                    @if (filteredPeriods != null)
-                    {
-                        @foreach (var period in filteredPeriods)
+                    </select>
+                </div>
+                <div class="col-3">
+                    <label for="period">Periode</label>
+                    <select type="text" class="form-control" id="period" @onchange="OnPeriodChanged">
+                        <option value="">Vælg periode</option>
+                        @if (filteredPeriods != null)
                         {
-                            <option value="@period.PeriodName">@period.PeriodName</option>
+                            @foreach (var period in filteredPeriods)
+                            {
+                                <option value="@period.PeriodName">@period.PeriodName</option>
+                            }
                         }
-                    }
-                </select>
-            </div>
-            <div class="col-3">
-                <label for="status">Status</label>
-                <select type="text" class="form-control" id="status" @onchange="OnStatusChanged">
-                    <option value="">Alle ansøgninger</option>
-                    <option value="Ny">Nye ansøgninger</option>
-                    <option value="Godkendt">Godkendte ansøgninger</option>
-                    <option value="Afvist">Afviste ansøgninger</option>
-                    <option value="Venteliste">Ansøgninger på venteliste</option>
-                </select>
-            </div>
+                    </select>
+                </div>
+                <div class="col-3">
+                    <label for="status">Status</label>
+                    <select type="text" class="form-control" id="status" @onchange="OnStatusChanged">
+                        <option value="">Alle ansøgninger</option>
+                        <option value="Ny">Nye ansøgninger</option>
+                        <option value="Godkendt">Godkendte ansøgninger</option>
+                        <option value="Afvist">Afviste ansøgninger</option>
+                        <option value="Venteliste">Ansøgninger på venteliste</option>
+                    </select>
+                </div>
+            }
         </div>
     </div>
     <div class="col-6">
@@ -78,72 +83,133 @@
 </div>
 
 <div class="row mt-4">
-    @if (filteredApplications == null)
+    @if(selectedType == "Børneklubben")
     {
-        <p>Loading...</p>
-    }
-    else
-    {
-        @foreach (var application in filteredApplications)
+        @if (filteredApplications == null)
         {
-            <div class="col-9 mx-auto mt-4">
-                <div class="row overview-guardian d-flex align-items-center">
-                    <div class="col-2">
-                        <p class="overview-label">Værges navn:</p>
-                        <p>@application.Volunteer.Name</p>
-                    </div>
-                    <div class="col-2">
-                        <p class="overview-label">Periode:</p>
-                        <p>@application.Priority1</p>
-                    </div>
-                    <div class="col-2">
-                        <p class="overview-label">Status:</p>
-                        <p>@application.Status</p>
-                    </div>
-                    <div class="col-2">
-                        <p class="overview-label">By:</p>
-                        <p>@application.City.Name</p>
-                    </div>
-                    <div class="col-4 d-flex justify-content-end">
-                        <button class="btn btn-dark me-2" @onclick="() => GetPdf(application.Id)">Pdf</button>
-                        @if(isAdmin==true){<button class="btn btn-danger" @onclick="() => EditApplication(application.Id)">Rediger</button>}
-                    </div>
-                </div>
-                @if (application.Volunteer.Children != null)
-                {
-                    @foreach (var child in application.Volunteer.Children)
-                    {
-                        <div class="row overview-child">
-                            <div class="col-4">
-                                <p class="overview-label">Barnets navn:</p>
-                                <p>@child.Name</p>
-                            </div>
-                            <div class="col-4">
-                                <p class="overview-label">Alder:</p>
-                                <p>@child.Age år</p>
-                            </div>
-                            <div class="col-4">
-                                <p class="overview-label">Type:</p>
-                                <p>@application.Type</p>
-                            </div>
+            <p>Loading...</p>
+        }
+        else
+        {
+            @foreach (var application in filteredApplications)
+            {
+                <div class="col-9 mx-auto mt-4">
+                    <div class="row overview-guardian d-flex align-items-center">
+                        <div class="col-2">
+                            <p class="overview-label">Værges navn:</p>
+                            <p>@application.Volunteer.Name</p>
                         </div>
+                        <div class="col-2">
+                            <p class="overview-label">Periode:</p>
+                            <p>@application.Priority1</p>
+                        </div>
+                        <div class="col-2">
+                            <p class="overview-label">Status:</p>
+                            <p>@application.Status</p>
+                        </div>
+                        <div class="col-2">
+                            <p class="overview-label">By:</p>
+                            <p>@application.City.Name</p>
+                        </div>
+                        <div class="col-4 d-flex justify-content-end">
+                            <button class="btn btn-dark me-2" @onclick="() => GetPdf(application.Id)">Pdf</button>
+                            @if (isAdmin == true)
+                            {
+                                <button class="btn btn-danger" @onclick="() => EditApplication(application.Id)">Rediger</button>
+                            }
+                        </div>
+                    </div>
+                    @if (application.Volunteer.Children != null)
+                    {
+                        @foreach (var child in application.Volunteer.Children)
+                        {
+                            <div class="row overview-child">
+                                <div class="col-4">
+                                    <p class="overview-label">Barnets navn:</p>
+                                    <p>@child.Name</p>
+                                </div>
+                                <div class="col-4">
+                                    <p class="overview-label">Alder:</p>
+                                    <p>@child.Age år</p>
+                                </div>
+                                <div class="col-4">
+                                    <p class="overview-label">Type:</p>
+                                    <p>@application.Type</p>
+                                </div>
+                            </div>
+                        }
                     }
-                }
-            </div>
+                </div>
+            }
         }
     }
+    @if(selectedType == "Ung frivillig")
+        {
+                @foreach (var signature in signatures)
+                {
+                    <div class="col-9 mx-auto mt-4">
+                        <div class="row overview-guardian d-flex align-items-center">
+                            <div class="col-2">
+                                <p class="overview-label">Værges navn:</p>
+                                @if(signature.Volunteer == null){<p>@signature.Name</p>}
+                                else{<p>@signature.Volunteer.Name</p>}
+                            </div>
+                            <div class="col-2">
+                                <p class="overview-label">Email:</p>
+                                @if(signature.Volunteer == null){<p>@signature.Email</p>}
+                                else{<p>@signature.Volunteer.Email</p>}
+                            </div>
+                            <div class="col-2">
+                                <p class="overview-label">Tlf:</p>
+                                @if(signature.Volunteer == null){<p>@signature.PhoneNumber</p>}
+                                else{<p>@signature.Volunteer.PhoneNumber</p>}
+                            </div>
+                                <div class="col-2">
+                                    <p class="overview-label">Krævnummer:</p>
+                                    @if(signature.Volunteer == null){<p>@signature.KrævNumber</p>}
+                                                                    else{<p>@signature.Volunteer.KrævNumber</p>}
+                                </div>
+                            
+                            <div class="col-4 d-flex justify-content-end">
+                                <button class="btn btn-dark me-2" @onclick="() => GetPdfForSignature(signature.Id)">Pdf</button>
+                            </div>
+                        </div>
+                        @if (signature.YoungVolunteer != null)
+                        {
+                                <div class="row overview-child">
+                                    <div class="col-4">
+                                        <p class="overview-label">Unge frivilliges navn:</p>
+                                        <p>@signature.YoungVolunteer.Name</p>
+                                    </div>
+                                    <div class="col-4">
+                                        <p class="overview-label">Alder:</p>
+                                        <p>@signature.YoungVolunteer.Age år</p>
+                                    </div>
+                                    <div class="col-4">
+                                        <p class="overview-label">Unge frivilliges KrævNummer:</p>
+                                        <p>@signature.YoungVolunteer.KrævNumber</p>
+                                    </div>
+                                </div>
+                        }
+                        
+                    </div>
+                }
+        }
 </div>
+    
 
 @code {
     private List<Application> applications = new List<Application>();
     private List<Application> filteredApplications = new List<Application>();
+    private List<Signature> signatures = new List<Signature>();
+    private List<Signature> filteredSignatures = new List<Signature>();
     private string searchText = "";
     private List<City> cities = new List<City>();
     private List<Period> filteredPeriods = new List<Period>();
     private bool isAdmin = false;
 
     private string selectedCity;
-    private string selectedType;
+    private string selectedType = "Børneklubben";
     private string selectedStatus;
     private string selectedPeriod;
 
@@ -151,9 +217,10 @@
     {
         try
         {
+            await CheckCredentials();
             await GetAllApplications();
             cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getall");
-            await CheckCredentials();
+            await GetAllSignatures();
         }
         catch (Exception ex)
         {
@@ -161,6 +228,19 @@
         }
     }
 
+    private async Task GetAllSignatures()
+    {
+        try
+        {
+            signatures = await Http.GetFromJsonAsync<List<Signature>>("https://localhost:7026/api/signature");
+            filteredSignatures = signatures;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading signatures: {ex.Message}");
+        }
+    }
+    
     private async Task GetAllApplications()
     {
         try
@@ -183,10 +263,19 @@
     {
         NavigationManager.NavigateTo($"https://localhost:7026/api/pdf/get/{applicationId}");
     }
-
-    public void GetAllPdf()
+    
+    public void GetPdfForSignature(string signatureId)
     {
-        NavigationManager.NavigateTo($"https://localhost:7026/api/pdf/get-all");
+        NavigationManager.NavigateTo($"https://localhost:7026/api/pdf/get-signature/{signatureId}");
+    }
+
+    public async Task GetAllPdf()
+    {
+       var response = await Http.PostAsJsonAsync<List<Application>>("https://localhost:7026/api/pdf/get-all-applications", filteredApplications);
+        if(response.IsSuccessStatusCode)
+        {
+            NavigationManager.NavigateTo(response.Content.ReadAsStringAsync().Result);
+        }
     }
 
     private void OnCityChanged(ChangeEventArgs e)
@@ -254,12 +343,12 @@
     {
         var localStorageUser = await localStore.GetItemAsync<Administrator>("currentAdministrator");
         
-            var email = localStorageUser.Email;
-            var user = await Http.GetFromJsonAsync<Administrator>("https://localhost:7026/api/admin/get-by-email/" + email);
+        var email = localStorageUser.Email;
+        var user = await Http.GetFromJsonAsync<Administrator>("https://localhost:7026/api/admin/get-by-email/" + email);
 
-            if (user.Role == "Administrator")
-            {
-                isAdmin = true;
-            }
+        if (user.Role == "Administrator")
+        { 
+            isAdmin = true;
+        }
     }
 }

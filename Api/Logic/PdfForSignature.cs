@@ -75,6 +75,78 @@ namespace Api.Logic
             });
         }
         
+        public IDocument CreateDocumentForSpecifcSignature(Signature signature)
+        {
+            return Document.Create(container =>
+            {
+                    container.Page(page =>
+                    {
+                        page.Size(PageSizes.A4);
+                        page.Margin(2, Unit.Centimetre);
+                        page.PageColor(Colors.White);
+                        page.DefaultTextStyle(x => x.FontSize(20));
+
+                        page.Header()
+                            .Text("Cirkus Summarum")
+                            .SemiBold().FontSize(28);
+
+                        page.Content()
+                            .PaddingVertical(1, Unit.Centimetre)
+                            .Column(x =>
+                            {
+                                x.Spacing(20);
+
+                                x.Item().Text(text =>
+                                {
+                                    text.Span("Frivilliges navn:").Bold().FontSize(16);
+                                    text.Span($" {signature.YoungVolunteer.Name}").FontSize(16);
+                                });
+                                
+                                x.Item().Text(text =>
+                                {
+                                    text.Span("Frivilliges KrævNummer:").Bold().FontSize(16);
+                                    text.Span($" {signature.YoungVolunteer.KrævNumber}").FontSize(16);
+                                });
+
+
+                                x.Item().LineVertical(3);
+
+                                x.Item().Text(text =>
+                                {
+                                    text.Span("Forældre:").Bold().FontSize(16);
+                                    text.Span($" {signature.Name}").FontSize(16);
+                                });
+                                x.Item().Text(text =>
+                                {
+                                    text.Span("Email:").Bold().FontSize(16);
+                                    text.Span($" {signature.Email}").FontSize(16);
+                                });
+                                x.Item().Text(text =>
+                                {
+                                    text.Span("Telefonnummer:").Bold().FontSize(16);
+                                    text.Span($" {signature.PhoneNumber}").FontSize(16);
+                                });
+
+                                x.Item().Text(text =>
+                                {
+                                    text.Span("Kræw nummer på værge:").Bold().FontSize(16);
+                                    text.Span($" {signature.KrævNumber ?? signature.Volunteer.KrævNumber}").FontSize(16);
+                                });
+
+                                x.Item().LineVertical(6);
+
+                                x.Item().Text(
+                                        "Jeg giver hermed tilladelse til, at mit barn må deltage som frivillig på Cirkus Summarum.")
+                                    .FontSize(16);
+
+                                string signatureData = signature.YoungVolunteer.Signature.Replace("data:image/png;base64,", "");
+                                byte[] image = Convert.FromBase64String(signatureData);
+                                x.Item().Image(image);
+                            });
+                    });
+            });
+        }
+        
         public IDocument CreateDocumentForAllApplication(List<Application> allApplications)
         {
             return Document.Create(container =>
