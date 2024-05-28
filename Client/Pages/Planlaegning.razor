@@ -34,15 +34,9 @@
                 @foreach (var app in applications.Where(a => string.IsNullOrEmpty(a.Status) || a.Status == "Ny"))
                 {
                     <div class="application">
-                        @app.Volunteer.Name <br /> @app.Volunteer.Email <br />
-                        @app.Priority1
-                        @if (!string.IsNullOrEmpty(app.Priority2))
-                        {
-                            <span> + @app.Priority2</span>
-                        }
-                        <br />
-                        @app.Volunteer.Children.Count børn
-                        <select @onchange="(e) => UpdateApplicationStatus(app, e.Value.ToString())" class="form-select">
+
+                        @app.Volunteer.Name <br /> @app.Volunteer.Email <br /> @app.Priority1 + @app.Priority2 <br /> @app.Volunteer.Children.Count børn
+                        <select @bind="app.SelectedStatus" @oninput="(e) => UpdateApplicationStatus(app, e.Value.ToString())" class="form-select">
                             <option value="">Vælg uge</option>
                             @foreach (var period in _filteredPeriods)
                             {
@@ -202,9 +196,13 @@
 
     private void UpdateApplicationStatus(Application app, string newStatus)
     {
-        app.Status = newStatus;
-        StateHasChanged();
-        Console.WriteLine($"Application {app.Id} status updated to {newStatus}");
+        Task.Run(() =>
+        {
+            app.Status = newStatus;
+            app.SelectedStatus = ""; // Reset the selected status
+            InvokeAsync(StateHasChanged);
+            Console.WriteLine($"Application {app.Id} status updated to {newStatus}");
+        });
     }
 
     private void RemoveApplication(Application app)

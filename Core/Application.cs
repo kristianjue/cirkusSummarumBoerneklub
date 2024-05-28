@@ -7,7 +7,9 @@ namespace Core
     {
         public string Id { get; set; }
         public string Status { get; set; }
-
+        
+        public string SelectedStatus { get; set; }
+        
         public string Type { get; set; }
         
         public City City { get; set; }
