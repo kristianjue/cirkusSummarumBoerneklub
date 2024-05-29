@@ -49,7 +49,14 @@ public class ApplicationRepository : IApplicationRepository
 
         if (!string.IsNullOrEmpty(status) && status != "all")
         {
-            filters.Add(filterBuilder.Eq(application => application.Status, status));
+            if (status == "Godkendt")
+            {
+                filters.Add(filterBuilder.Nin(application => application.Status, new[] { "Ny", "Venteliste", "Afvist" }));
+            }
+            else
+            {
+                filters.Add(filterBuilder.Eq(application => application.Status, status));
+            }
         }
 
         var filter = filters.Count > 0 ? filterBuilder.And(filters) : FilterDefinition<Application>.Empty;
