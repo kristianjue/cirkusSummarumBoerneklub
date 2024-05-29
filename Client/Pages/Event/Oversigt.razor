@@ -225,6 +225,7 @@
             await CheckCredentials();
             await GetAllApplications();
             cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getall");
+            SetStatus();
             await GetAllSignatures();
         }
         catch (Exception ex)
@@ -233,6 +234,17 @@
         }
     }
 
+    private void SetStatus()
+    {
+        foreach (Application app in applications)
+        {
+            if (cities.Find(City => City.Name == app.Type) != null)
+            {
+                app.Status = "Godkendt";
+            }
+        }
+    }
+    
     private async Task GetAllSignatures()
     {
         try
