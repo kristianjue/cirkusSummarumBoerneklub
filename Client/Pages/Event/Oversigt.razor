@@ -212,6 +212,7 @@
     private List<City> cities = new List<City>();
     private List<Period> filteredPeriods = new List<Period>();
     private bool isAdmin = false;
+    private List<string> allPeriodsToStatus = new List<string>();
 
     private string selectedCity;
     private string selectedType = "Børneklubben";
@@ -236,12 +237,29 @@
 
     private void SetStatus()
     {
+        foreach (City city in cities)
+        {
+            foreach (Week week in city.Weeks)
+            {
+                foreach (Period period in week.Periods)
+                {
+                    allPeriodsToStatus.Add(period.PeriodName);
+
+                }
+            }
+        }
+
         foreach (Application app in applications)
         {
-            if (cities.Find(City => City.Name == app.Type) != null)
+            if (allPeriodsToStatus.Contains(app.Status))
             {
                 app.Status = "Godkendt";
             }
+            else
+            {
+                Console.WriteLine($"Can't match status for {app.Status}");
+            }
+
         }
     }
     
