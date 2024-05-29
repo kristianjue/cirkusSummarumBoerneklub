@@ -132,7 +132,10 @@
     protected override void OnInitialized()
     {
         _newSignatur.YoungVolunteer = new YoungVolunteer();
-        _newSignatur.Volunteer = new Volunteer();
+        _newSignatur.Volunteer = new Volunteer
+            {
+                Children = new List<Child>() // Assuming Children is a List<Child>
+            };
         aEditContext = new EditContext(_newSignatur);
     }
 
