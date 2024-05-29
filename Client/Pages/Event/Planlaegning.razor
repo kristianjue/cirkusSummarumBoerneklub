@@ -153,7 +153,7 @@
 
     private async Task LoadCities()
     {
-        cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getall");
+        cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getallactive");
 
     }
 
@@ -161,7 +161,7 @@
     {
         try
         {
-            applications = await Http.GetFromJsonAsync<List<Application>>("https://localhost:7026/api/application/getall");
+            applications = await Http.GetFromJsonAsync<List<Application>>("https://localhost:7026/api/application/getallactive");
             FilterApplicationsByCity();
         }
         catch (Exception ex)
