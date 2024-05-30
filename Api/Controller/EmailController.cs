@@ -6,7 +6,7 @@ using Core;
 
 [ApiController]
 [Route("api/email")]
-public class EmailController : ControllerBase // EmailController er en ControllerBase, der håndterer HTTP-anmodninger relateret til e-mails.
+public class EmailController : ControllerBase // EmailController er en ControllerBase, der hÃ¥ndterer HTTP-anmodninger relateret til e-mails.
 {
     private readonly Email _email; // initialiserer Email klassen
 

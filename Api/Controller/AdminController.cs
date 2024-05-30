@@ -6,7 +6,7 @@ using Core;
 [ApiController] 
 [Route("api/admin")]
 
-// AdminController er en ControllerBase, der håndterer HTTP-anmodninger relateret til administratorer.
+// AdminController er en ControllerBase, der hÃ¥ndterer HTTP-anmodninger relateret til administratorer.
 public class AdminController : ControllerBase
 {
     // Interface til AdminRepository for dataadgang.
@@ -36,7 +36,7 @@ public class AdminController : ControllerBase
         _adminRepository.CreateAdmin(admin);
     }
 
-    // HTTP GET metode til at hente en administrator baseret på email.
+    // HTTP GET metode til at hente en administrator baseret pï¿½ email.
     [HttpGet]
     [Route("get-by-email/{email}")]
     public ActionResult<Administrator> GetAdminByEmail(string email)
@@ -45,7 +45,7 @@ public class AdminController : ControllerBase
         return Ok(_adminRepository.GetAdminByEmail(email));
     }
 
-    // HTTP POST metode til at opdatere en eksisterende administrator baseret på email.
+    // HTTP POST metode til at opdatere en eksisterende administrator baseret pÃ¥ email.
     [HttpPost]
     [Route("update/{email}")]
     public void UpdateAdmin(string email, [FromBody] Administrator admin)
@@ -54,7 +54,7 @@ public class AdminController : ControllerBase
         _adminRepository.UpdateAdmin(email, admin);
     }
 
-    // HTTP DELETE metode til at slette en administrator baseret på email.
+    // HTTP DELETE metode til at slette en administrator baseret pÃ¥ email.
     [HttpDelete]
     [Route("delete/{email}")]
     public void DeleteAdmin(string email)
