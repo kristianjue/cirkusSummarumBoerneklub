@@ -6,6 +6,11 @@ namespace Api.Logic
 {
     public class Email
     {
+        /// <summary>
+        /// Via PostMark sendes en bekræftelsesmail til den ansøger, som har sendt en ansøgning
+        /// </summary>
+        /// <param name="Application"></param>
+        /// <returns></returns>
         public static async void ApplicationSent(Application application)
         {
             
@@ -46,6 +51,11 @@ namespace Api.Logic
             
         }
         
+        /// <summary>
+        /// Via Postmark sendes en custom email til alle brugere i EmialRequest.Recipients
+        /// </summary>
+        /// <param name="EmailRequest"></param>
+        /// <returns></returns>
         public  async Task SendCustomEmail(EmailRequest emailRequest)
         {
             foreach (string email in emailRequest.Recipients)

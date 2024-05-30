@@ -7,6 +7,11 @@ namespace Api.Logic
 {
     public class PdfForSignature
     {
+        /// <summary>
+        /// Ved at bruge QuestPDF biblioteket generer vi en PDF-fil for alle børn på en specifik ansøgnng.
+        /// </summary>
+        /// <param name="Application"></param>
+        /// <returns></returns>
         public IDocument CreateDocumentForSpecifcApplication(Application application)
         {
             return Document.Create(container =>
@@ -75,6 +80,11 @@ namespace Api.Logic
             });
         }
         
+        /// <summary>
+        /// Ved at bruge QuestPDF biblioteket generer vi en PDF-fil for en specifik signatur til frivillige.
+        /// </summary>
+        /// <param name="Signature"></param>
+        /// <returns></returns>
         public IDocument CreateDocumentForSpecifcSignature(Signature signature)
         {
             return Document.Create(container =>
@@ -147,6 +157,11 @@ namespace Api.Logic
             });
         }
         
+        /// <summary>
+        /// Ved at bruge QuestPDF biblioteket generer vi en PDF-fil for alle ansøgninger. Dette gør vi ved at bruge en container, som indeholder en side for hver signatur, og for hvert barn.
+        /// </summary>
+        /// <param name="List<Application>"></param>
+        /// <returns></returns>
         public IDocument CreateDocumentForAllApplication(List<Application> allApplications)
         {
             return Document.Create(container =>
@@ -217,6 +232,11 @@ namespace Api.Logic
             });
         }
         
+        /// <summary>
+        /// Ved at bruge QuestPDF biblioteket generer vi en PDF-fil for alle signaturer. Dette gør vi ved at bruge en container, som indeholder en side for hver signatur.
+        /// </summary>
+        /// <param name="signatures"></param>
+        /// <returns></returns>
         public IDocument CreateDocumentForAllSignatures(List<Signature> signatures)
         {
             return Document.Create(container =>
