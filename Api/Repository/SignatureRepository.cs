@@ -31,30 +31,6 @@ namespace Api.Repository
             return SignatureCollection.Find(filter).SingleOrDefault();
         }
 
-        public void UpdateSignature(Signature signature)
-        {
-            var filter = Builders<Signature>.Filter.Eq(signature => signature.Id, signature.Id);
-            var update = Builders<Signature>.Update
-                .Set(signature => signature.Name, signature.Name)
-                .Set(signature => signature.Email, signature.Email)
-                .Set(signature => signature.PhoneNumber, signature.PhoneNumber)
-                .Set(signature => signature.KrævNumber, signature.KrævNumber)
-                .Set(signature => signature.Volunteer, signature.Volunteer)
-                .Set(signature => signature.YoungVolunteer, signature.YoungVolunteer);
-
-            SignatureCollection.UpdateOne(filter, update);
-        }
-
-        public void DeleteSignature(string id)
-        {
-            var filter = Builders<Signature>.Filter.Eq(signature => signature.Id, id);
-            SignatureCollection.DeleteOne(filter);
-        }
-
-
-
-
-
 
     }
 }

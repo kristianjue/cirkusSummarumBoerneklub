@@ -125,47 +125,71 @@
 </EditForm>
 
 @code {
+    // Variabel til at håndtere formularindsendelse og validering.
     private EditContext aEditContext;
 
+    // Initialiserer en ny signatur instans.
     Signature _newSignatur = new();
 
+    // Metode kaldet ved komponentinitialisering.
     protected override void OnInitialized()
     {
+        // Initialiserer YoungVolunteer objektet i signaturen.
         _newSignatur.YoungVolunteer = new YoungVolunteer();
+
+        // Initialiserer Volunteer objektet i signaturen med en tom liste af børn.
         _newSignatur.Volunteer = new Volunteer
             {
-                Children = new List<Child>() // Assuming Children is a List<Child>
+                Children = new List<Child>() // Antager at Children er en liste af Child objekter.
             };
+
+        // Initialiserer EditContext med signatur objektet.
         aEditContext = new EditContext(_newSignatur);
     }
 
+    // Asynkron metode til at håndtere gyldig formularindsendelse.
     public async Task HandleValidSubmit()
     {
+        // Tjekker om guardian skal tilføjes.
         if (addguardien == true)
         {
+            // Hvis guardian skal tilføjes, sættes Volunteer til null.
             _newSignatur.Volunteer = null;
         }
         else
         {
+            // Ellers genereres en ny unik ID for Volunteer.
             _newSignatur.Volunteer.Id = System.Guid.NewGuid().ToString();
-
         }
+
+        // Genererer en ny unik ID for signaturen.
         _newSignatur.Id = System.Guid.NewGuid().ToString();
+
+        // Sætter signaturen for YoungVolunteer som en Base64 string.
         _newSignatur.YoungVolunteer.Signature = SignatureForVoulenteerAsBase64;
+
+        // Sender en POST-anmodning til API'et for at oprette signaturen.
         await Http.PostAsJsonAsync<Signature>($"https://localhost:7026/api/signature/create", _newSignatur);
 
+        // Navigerer til ansøgningsbekræftelse siden.
         navigationManager.NavigateTo($"ansøgningsbekræftelse");
     }
 
+    // Boolsk værdi til at angive om guardian skal tilføjes.
     public bool addguardien = false;
 
+    // Metode til at vise eller skjule guardian sektionen.
     public void showguardien()
     {
+        // Toggler værdien af addguardien.
         addguardien = !addguardien;
     }
 
+    // Byte-array til at gemme signaturen for volontøren.
     public byte[] SignatureForVoulenteer { get; set; } = Array.Empty<byte>();
 
+    // Egenskab, der returnerer signaturen for volontøren som en Base64-kodet streng.
     public string SignatureForVoulenteerAsBase64 => System.Text.Encoding.UTF8.GetString(SignatureForVoulenteer);
+
 
 }

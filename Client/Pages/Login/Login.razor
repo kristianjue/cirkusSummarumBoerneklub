@@ -24,61 +24,87 @@
 </EditForm>
 
 @code {
+    // Variabel til at håndtere formularindsendelse og validering.
     private EditContext aEditContext;
+
+    // Initialiserer en administrator instans.
     private Core.Administrator administrator = new Core.Administrator();
-    
+
+    // Metode kaldet ved komponentinitialisering.
     protected override void OnInitialized()
     {
+        // Initialiserer EditContext med administrator objektet.
         aEditContext = new EditContext(administrator);
     }
 
+    // Asynkron metode til at håndtere formularindsendelse.
     private async Task HandleSubmit()
     {
-        if(administrator.Email == null || administrator.Password == null)
+        // Tjekker om email eller adgangskode ikke er udfyldt.
+        if (administrator.Email == null || administrator.Password == null)
         {
+            // Viser en advarselsbesked hvis felterne ikke er udfyldt.
             JSRuntime.InvokeVoidAsync("alert", "Udfyld venligst alle felter");
             return;
         }
+
+        // Validerer loginoplysningerne.
         var validAdmin = await ValidLogin(administrator.Email, administrator.Password);
         if (validAdmin)
         {
-            // Get the user
+            // Henter brugeren baseret på email.
             var theAdmin = await GetUserByEmail(administrator.Email);
 
-            // Save it in local storage
+            // Gemmer brugeren i lokal lagring.
             await localStore.SetItemAsync<Administrator>("currentAdministrator", theAdmin);
 
-            // Get where to navigate to
+            // Henter mål-URL fra lokal lagring.
             var target = await localStore.GetItemAsStringAsync("target");
-            if(target != null)
+            if (target != null)
             {
-            target = target.Replace("\"", "").Replace("https://localhost:7033", "");
+                // Rydder mål-URL for unødvendige tegn og lokal værtsadresse.
+                target = target.Replace("\"", "").Replace("https://localhost:7033", "");
             }
             else
             {
+                // Sætter standardmål-URL til rod.
                 target = "/";
             }
+
+            // Navigerer til mål-URL.
             Navigation.NavigateTo(target, true);
         }
         else
         {
+            // Viser en advarselsbesked hvis loginoplysningerne er forkerte.
             JSRuntime.InvokeVoidAsync("alert", "Forkert email eller adgangskode");
         }
     }
 
+    // Asynkron metode til at validere loginoplysninger.
     private async Task<bool> ValidLogin(string email, string password)
     {
+        // Bygger URL til API kaldet med email og adgangskode.
         var url = $"https://localhost:7026/api/login?email={email}&password={password}";
+
+        // Sender GET-anmodning til API'et og får resultatet som en boolsk værdi.
         var res = await Http.GetFromJsonAsync<bool>(url);
 
+        // Returnerer resultatet af loginvalideringen.
         return res;
     }
 
+    // Asynkron metode til at hente en bruger baseret på email.
     private async Task<Administrator> GetUserByEmail(string email)
     {
+        // Bygger URL til API kaldet med email.
         var url = $"https://localhost:7026/api/login/getuser?email={email}";
+
+        // Sender GET-anmodning til API'et og får resultatet som en Administrator objekt.
         var res = await Http.GetFromJsonAsync<Administrator>(url);
 
+        // Returnerer administrator objektet.
         return res;
     }
+
 }

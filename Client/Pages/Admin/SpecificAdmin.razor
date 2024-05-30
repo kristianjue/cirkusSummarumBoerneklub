@@ -29,36 +29,50 @@
 </div>
 
 @code {
+    // Parameter til at modtage emailen som en offentlig egenskab.
     [Parameter] public string email { get; set; }
+
+    // Initialiserer en ny administrator instans.
     private Administrator admin = new Administrator();
+
+    // Variabel til at gemme fejlmeddelelser.
     private string errorMessage;
 
+    // Metode kaldet ved komponentinitialisering.
     protected override async Task OnInitializedAsync()
     {
+        // Henter administrator data baseret på email.
         await GetAdminByEmail(email);
     }
 
+    // Asynkron metode til at hente en administrator baseret på email.
     private async Task GetAdminByEmail(string email)
     {
         try
         {
+            // Sender en GET-anmodning til API'et og tildeler resultatet til admin objektet.
             admin = await Http.GetFromJsonAsync<Administrator>($"https://localhost:7026/api/admin/get-by-email/{email}");
         }
         catch (Exception ex)
         {
+            // Gemmer og logger fejlmeddelelsen, hvis der opstår en undtagelse.
             errorMessage = $"Error fetching admin data: {ex.Message}";
             Console.WriteLine(errorMessage);
         }
     }
 
+    // Metode til at navigere til siden for at redigere administratoren.
     private void EditAdmin()
     {
-        // Navigate to the edit page
+        // Navigerer til redigeringssiden for den specifikke administrator baseret på email.
         NavigationManager.NavigateTo($"/edit-admin/{admin.Email}");
     }
 
+    // Asynkron metode til at vise en bekræftelsesdialog.
     private async Task<bool> Confirm(string message)
     {
+        // Viser en bekræftelsesdialog i browseren og returnerer brugerens svar.
         return await JSRuntime.InvokeAsync<bool>("confirm", message);
     }
+
 }
