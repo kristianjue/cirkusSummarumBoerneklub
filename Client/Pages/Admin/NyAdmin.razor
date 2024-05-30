@@ -49,32 +49,46 @@
     </EditForm>
     
     @code {
+    // Initialiserer en ny administrator instans.
     Administrator _newAdministrater = new();
-        
+
+    // Variabel til at håndtere formularindsendelse og validering.
     private EditContext aEditContext;
-    
+
+    // Metode kaldet ved komponentinitialisering.
     protected override void OnInitialized()
     {
+        // Initialiserer EditContext med den nye administrator objektet.
         aEditContext = new EditContext(_newAdministrater);
     }
 
+    // Asynkron metode til at håndtere gyldig formularindsendelse.
     public async Task HandleValidSubmit()
     {
+        // Sender en POST-anmodning til API'et for at oprette en ny administrator.
         await Http.PostAsJsonAsync<Administrator>($"https://localhost:7026/api/admin/create", _newAdministrater);
-        
-        navigationManager.NavigateTo($"brugeroversigt");
 
+        // Navigerer til "brugeroversigt" siden ved succes.
+        navigationManager.NavigateTo($"brugeroversigt");
     }
 
-
+    // Asynkron metode til at håndtere filupload.
     private async Task HandleFileUpload(InputFileChangeEventArgs image)
     {
-        var file = image.File; //Henter filen fra input
-        var buffer = new byte[file.Size]; // Opretter en "beholder"/buffer med samme størrelse som filen, hvor vi kan gemme filens data
-        await file.OpenReadStream().ReadAsync(buffer); //Læser filen ind i bufferen
+        // Henter den uploadede fil.
+        var file = image.File; // Henter filen fra input.
 
-        var imageString = Convert.ToBase64String(buffer); //Konverterer bufferen til en base64 string
+        // Opretter en buffer til at læse filen ind.
+        var buffer = new byte[file.Size]; // Opretter en "beholder"/buffer med samme størrelse som filen, hvor vi kan gemme filens data.
 
-        _newAdministrater.Image = imageString; //Gemmer base64 stringen i listing objektet
+        // Læser filen ind i buffer.
+        await file.OpenReadStream().ReadAsync(buffer); // Læser filen ind i bufferen.
+
+        // Konverterer bufferen til en Base64-kodet streng.
+        var imageString = Convert.ToBase64String(buffer); // Konverterer bufferen til en base64 string.
+
+        // Gemmer Base64-strengen i administrator objektet.
+        _newAdministrater.Image = imageString; // Gemmer base64 stringen i listing objektet.
     }
+
 }

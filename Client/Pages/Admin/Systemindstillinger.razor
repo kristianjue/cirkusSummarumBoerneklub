@@ -94,33 +94,42 @@
 </EditForm>
 
 @code {
+    // Variabel til at håndtere formularindsendelse og validering.
     private EditContext aEditContext;
 
+    // Liste over byer.
     private List<City> cities = new List<City>();
 
+    // Metode kaldet ved komponentinitialisering.
     protected override void OnInitialized()
     {
+        // Initialiserer EditContext med listen over byer.
         aEditContext = new EditContext(cities);
-        AddCity(); // Add a new city when the component is initialized
+        // Tilføjer en ny by, når komponenten initialiseres.
+        AddCity();
     }
 
+    // Asynkron metode til at håndtere gyldig formularindsendelse.
     public async Task HandleValidSubmit()
     {
+        // Validerer formularen.
         if (!aEditContext.Validate())
         {
             Console.WriteLine("Form contains validation errors.");
             return;
         }
 
+        // Itererer gennem listen over byer.
         foreach (var city in cities)
         {
-            // Ensure that the city field is not null or empty
+            // Tjekker om bynavnet ikke er null eller tomt.
             if (string.IsNullOrEmpty(city.Name))
             {
                 Console.WriteLine("The city field is required.");
                 return;
             }
 
+            // Sender en POST-anmodning til API'et for at oprette en ny by.
             var response = await Http.PostAsJsonAsync("https://localhost:7026/api/City/create", city);
             if (response.IsSuccessStatusCode)
             {
@@ -132,39 +141,53 @@
                 Console.WriteLine($"Failed to save system settings: {response.StatusCode} - {responseContent}");
             }
         }
+        // Navigerer til "brugeroversigt" siden ved succes.
         navigationManager.NavigateTo("brugeroversigt");
     }
 
+    // Metode til at tilføje en periode til en uge i en by.
     private void AddPeriod(City city, Week week)
     {
+        // Initialiserer listen af perioder, hvis den er null.
         if (week.Periods == null)
         {
             week.Periods = new List<Period>();
         }
+        // Tilføjer en ny periode til ugen.
         week.Periods.Add(new Period());
     }
 
+    // Metode til at fjerne en periode fra en uge i en by.
     private void RemovePeriod(City city, Week week, Period period)
     {
+        // Fjerner den angivne periode fra listen af perioder.
         week.Periods.Remove(period);
+        // Fjerner ugen fra byens liste af uger, hvis der ikke er flere perioder.
         if (week.Periods.Count == 0)
         {
             city.Weeks.Remove(week);
         }
     }
 
+    // Metode til at tilføje en uge til en by.
     private void AddWeek(City city)
     {
+        // Tilføjer en ny uge med en tom liste af perioder til byens liste af uger.
         city.Weeks.Add(new Week { Periods = new List<Period> { new Period() } });
     }
 
+    // Metode til at tilføje en ny by.
     private void AddCity()
     {
+        // Tilføjer en ny by med en tom liste af uger og perioder til listen over byer.
         cities.Add(new City { Weeks = new List<Week> { new Week { Periods = new List<Period> { new Period() } } } });
     }
 
+    // Metode til at fjerne en by fra listen over byer.
     private void RemoveCity(City city)
     {
+        // Fjerner den angivne by fra listen over byer.
         cities.Remove(city);
     }
+
 }

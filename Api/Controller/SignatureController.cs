@@ -36,19 +36,6 @@ namespace Api.Controller
             return Ok(_signatureRepository.GetSignatureById(id));
         }
 
-        [HttpPut]
-        public IActionResult UpdateSignature(Signature signature)
-        {
-            _signatureRepository.UpdateSignature(signature);
-            return Ok();
-        }
-
-        [HttpDelete("delete-specific/{id}")]
-        public IActionResult DeleteSignature(string id)
-        {
-            _signatureRepository.DeleteSignature(id);
-            return Ok();
-        }
         
     }
 }

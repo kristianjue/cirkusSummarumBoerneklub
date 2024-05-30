@@ -4,32 +4,43 @@
 @inject HttpClient Http
 
 @code {
-
+    // Metode kaldet ved komponentinitialisering.
     protected override async Task OnInitializedAsync()
     {
+        // Tjekker brugerens legitimationsoplysninger.
         await CheckCredentials();
-        
     }
-    
+
+    // Asynkron metode til at tjekke brugerens legitimationsoplysninger.
     public async Task CheckCredentials()
     {
+        // Henter den nuværende administrator fra lokal lagring.
         var localStorageUser = await localStore.GetItemAsync<Administrator>("currentAdministrator");
-    
+
+        // Hvis der ikke findes nogen bruger i lokal lagring:
         if (localStorageUser == null)
         {
+            // Henter den aktuelle URL.
             var currentUrl = Navigation.Uri;
+            // Gemmer den aktuelle URL i lokal lagring som "target".
             await localStore.SetItemAsync("target", currentUrl);
+            // Navigerer brugeren til login-siden.
             Navigation.NavigateTo("/login");
         }
         else
         {
+            // Henter brugerens email.
             var email = localStorageUser.Email;
+            // Henter brugeroplysninger fra API'et baseret på email.
             var user = await Http.GetFromJsonAsync<Administrator>("https://localhost:7026/api/admin/get-by-email/" + email);
 
+            // Hvis brugeren ikke har rollen "Administrator":
             if (user.Role != "Administrator")
             {
+                // Navigerer brugeren til siden "ingenadgang" (adgang nægtet).
                 Navigation.NavigateTo("/ingenadgang");
             }
         }
     }
+
 }

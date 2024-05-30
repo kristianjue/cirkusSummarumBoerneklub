@@ -76,52 +76,76 @@
 </EditForm>
 
 @code {
+    // Parameter til at modtage navnet på byen som en offentlig egenskab.
     [Parameter] public string Name { get; set; }
+
+    // Variabel til at håndtere formularindsendelse og validering.
     private EditContext aEditContext;
+
+    // By objekt, der initialiseres med en tom liste af uger.
     private City city = new City { Weeks = new List<Week>() };
 
+    // Metode kaldet ved komponentinitialisering.
     protected override async Task OnInitializedAsync()
     {
+        // Initialiserer EditContext med det tomme by objekt.
         aEditContext = new EditContext(city);
+        // Henter by data fra API'et baseret på navnet og opdaterer city objektet.
         city = await Http.GetFromJsonAsync<City>($"https://localhost:7026/api/City/get/{Name}");
+        // Opdaterer EditContext med det hentede by objekt.
         aEditContext = new EditContext(city);
     }
 
+    // Asynkron metode til at håndtere gyldig formularindsendelse.
     public async Task HandleValidSubmit()
     {
+        // Sender en PUT-anmodning til API'et for at opdatere byens data.
         var response = await Http.PutAsJsonAsync($"https://localhost:7026/api/City/update/{city.Name}", city);
+        // Tjekker om PUT-anmodningen var succesfuld.
         if (response.IsSuccessStatusCode)
         {
+            // Navigerer til "eventoversigt" siden, hvis opdateringen var succesfuld.
             navigationManager.NavigateTo("eventoversigt");
         }
         else
         {
+            // Henter fejlmeddelelsen fra responsen og logger den, hvis opdateringen fejlede.
             var responseContent = await response.Content.ReadAsStringAsync();
             Console.WriteLine($"Failed to update city: {response.StatusCode} - {responseContent}");
         }
     }
 
+    // Metode til at tilføje en periode til en given uge.
     private void AddPeriod(Week week)
     {
+        // Initialiserer listen af perioder, hvis den er null.
         if (week.Periods == null)
         {
             week.Periods = new List<Period>();
         }
+        // Tilføjer en ny periode til listen af perioder.
         week.Periods.Add(new Period());
     }
 
+    // Metode til at fjerne en periode fra en given uge.
     private void RemovePeriod(Week week, Period period)
     {
+        // Fjerner den angivne periode fra listen af perioder.
         week.Periods.Remove(period);
     }
 
+    // Metode til at tilføje en uge til byen.
     private void AddWeek(City city)
     {
+        // Tilføjer en ny uge med en tom periode til listen af uger i byen.
         city.Weeks.Add(new Week { Periods = new List<Period> { new Period() } });
     }
 
+    // Metode til at fjerne en uge fra byen.
     private void RemoveWeek(Week week)
     {
+        // Fjerner den angivne uge fra listen af uger i byen.
         city.Weeks.Remove(week);
     }
+
 }

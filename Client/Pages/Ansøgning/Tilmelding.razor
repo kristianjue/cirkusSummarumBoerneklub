@@ -295,143 +295,189 @@
 </EditForm>
 
 @code {
-    private EditContext aEditContext;
-    private List<City> _cities;
-    private string _selectedCityId1;
-    private string _selectedCityId2;
-    private List<Period> _filteredPeriodsFirst = new();
-    private List<Period> _filteredPeriodsSecond = new();
-    private bool _showSecondPriority = false;
+    private EditContext aEditContext; // EditContext for form
+    private List<City> _cities; // Liste af byer
+    private string _selectedCityId1; // Valgt by
+    private string _selectedCityId2; // Valgt by
+    private List<Period> _filteredPeriodsFirst = new(); // Filtreret liste af perioder
+    private List<Period> _filteredPeriodsSecond = new(); // Filtreret liste af perioder
+    private bool _showSecondPriority = false; // Vis 2. prioritet
 
-    Application _newTilmelding = new();
+    Application _newTilmelding = new(); // Ny tilmelding
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync() // Initialisering
     {
-        _newTilmelding.Volunteer = new Volunteer();
-        _newTilmelding.Volunteer.Children = new List<Child>();
+        _newTilmelding.Volunteer = new Volunteer(); // Initialiser ny frivillig
+        _newTilmelding.Volunteer.Children = new List<Child>(); // Initialiser liste af børn
         _newTilmelding.Type = "Børneklubben"; // Sæt type ved initialisering
-        aEditContext = new EditContext(_newTilmelding);
+        aEditContext = new EditContext(_newTilmelding); // Initialiser EditContext med ny tilmelding som argument
 
-        await LoadCity();
+        await LoadCity(); // Hent byer
     }
 
-    private async Task LoadCity()
+    private async Task LoadCity() // metode til at hente byer
     {
-        _cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getallactive");
+        _cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getallactive"); // hent byer fra API med en liste af áf klassen City
     }
 
     private void OnCityChanged(ChangeEventArgs e)
     {
-        _selectedCityId1 = e.Value?.ToString()?? string.Empty;
+        // Konverterer værdien fra ChangeEventArgs til en streng og tildeler den til _selectedCityId1.
+        // Hvis e.Value er null, bruges en tom streng i stedet.
+        _selectedCityId1 = e.Value?.ToString() ?? string.Empty;
+
+        // Finder den første by i listen _cities, hvis navn matcher _selectedCityId1.
         var selectedCity = _cities.FirstOrDefault(city => city.Name == _selectedCityId1);
+
+        // Hvis en matchende by findes:
         if (selectedCity != null)
         {
+            // Sætter byens egenskab på _newTilmelding til den valgte by.
             _newTilmelding.City = selectedCity;
+
+            // Filtrerer perioder fra alle uger i den valgte by og gemmer dem i _filteredPeriodsFirst.
             _filteredPeriodsFirst = selectedCity.Weeks.SelectMany(week => week.Periods).ToList();
+
+            // Hvis der findes nogen perioder i _filteredPeriodsFirst:
             if (_filteredPeriodsFirst.Any())
             {
+                // Skriver antallet af fundne perioder og bynavnet til konsollen.
                 Console.WriteLine($"{_filteredPeriodsFirst.Count} periods found for city {_selectedCityId1}");
             }
             else
             {
+                // Hvis ingen perioder blev fundet, skrives en besked til konsollen.
                 Console.WriteLine("No periods found for the selected city");
             }
         }
         else
         {
+            // Hvis den valgte by ikke blev fundet i listen, skrives en besked til konsollen.
             Console.WriteLine("Selected city not found in the list");
         }
     }
 
+
     private void OnSecondaryCityChanged(ChangeEventArgs e)
     {
-        _selectedCityId2 = e.Value?.ToString()?? string.Empty;
+        // Konverterer værdien fra ChangeEventArgs til en streng og tildeler den til _selectedCityId2.
+        // Hvis e.Value er null, bruges en tom streng i stedet.
+        _selectedCityId2 = e.Value?.ToString() ?? string.Empty;
+
+        // Finder den første by i listen _cities, hvis navn matcher _selectedCityId2.
         var selectedCity = _cities.FirstOrDefault(city => city.Name == _selectedCityId2);
+
+        // Hvis en matchende by findes:
         if (selectedCity != null)
         {
+            // Filtrerer perioder fra alle uger i den valgte by og gemmer dem i _filteredPeriodsSecond.
             _filteredPeriodsSecond = selectedCity.Weeks.SelectMany(week => week.Periods).ToList();
+
+            // Hvis der findes nogen perioder i _filteredPeriodsSecond:
             if (_filteredPeriodsSecond.Any())
             {
+                // Skriver antallet af fundne perioder og bynavnet til konsollen.
                 Console.WriteLine($"{_filteredPeriodsSecond.Count} periods found for city {_selectedCityId2}");
             }
             else
             {
+                // Hvis ingen perioder blev fundet, skrives en besked til konsollen.
                 Console.WriteLine("No periods found for the selected city");
             }
         }
         else
         {
+            // Hvis den valgte by ikke blev fundet i listen, skrives en besked til konsollen.
             Console.WriteLine("Selected city not found in the list");
         }
     }
 
-    private void ShowSecondPriority()
+
+    private void ShowSecondPriority() // Vis 2. prioritet
     {
-        _showSecondPriority = true;
+        _showSecondPriority = true; // Sæt _showSecondPriority til true
     }
 
-    private void HideSecondPriority()
+    private void HideSecondPriority() // Metode til at skjule 2. prioritet
     {
-        _showSecondPriority = false;
-        _newTilmelding.Priority2 = null;
-        _selectedCityId2 = null;
-        _filteredPeriodsSecond.Clear();
+        _showSecondPriority = false; // Sæt _showSecondPriority til false
+        _newTilmelding.Priority2 = null; // Nulstil 2. prioritet
+        _selectedCityId2 = null; // Nulstil valgt by
+        _filteredPeriodsSecond.Clear(); // Ryd filtrerede perioder
     }
 
     private async Task HandleValidSubmit()
     {
-        if(_newTilmelding.Volunteer.Children.Count != null)
+        // Tjekker om listen over børn ikke er null og rydder den, hvis der er nogen børn i listen.
+        if (_newTilmelding.Volunteer.Children.Count != null)
         {
             _newTilmelding.Volunteer.Children.Clear();
         }
+
+        // Hvis der ikke er et ekstra barn, tilføjes det første barn med sin signatur.
         if (ekstraKid == false)
         {
+            // Sætter signaturen for det første barn.
             kid1.Signature = SignatureForKid1AsBase64;
+            // Tilføjer det første barn til listen over børn i _newTilmelding.Volunteer.
             _newTilmelding.Volunteer.Children.Add(kid1);
         }
         else
         {
+            // Sætter signaturerne for begge børn.
             kid1.Signature = SignatureForKid1AsBase64;
             kid2.Signature = SignatureForKid2AsBase64;
+            // Tilføjer begge børn til listen over børn i _newTilmelding.Volunteer.
             _newTilmelding.Volunteer.Children.Add(kid1);
             _newTilmelding.Volunteer.Children.Add(kid2);
         }
 
+        // Genererer nye unikke ID'er for tilmeldingen og frivillige.
         _newTilmelding.Id = System.Guid.NewGuid().ToString();
         _newTilmelding.Volunteer.Id = Guid.NewGuid().ToString();
+        // Sætter status for tilmeldingen til "Ny".
         _newTilmelding.Status = "Ny";
 
+        // Sender _newTilmelding som JSON til den angivne URL via en HTTP POST-anmodning.
         var response = await Http.PostAsJsonAsync<Application>($"https://localhost:7026/api/application/create", _newTilmelding);
 
+        // Tjekker om POST-anmodningen var succesfuld.
         if (response.IsSuccessStatusCode)
         {
+            // Navigerer til "ansøgningsbekræftelse" siden, hvis anmodningen var succesfuld.
             navigationManager.NavigateTo($"ansøgningsbekræftelse");
         }
         else
         {
+            // Henter fejlmeddelelsen fra responsen og skriver den til konsollen, hvis anmodningen fejlede.
             var responseContent = await response.Content.ReadAsStringAsync();
             Console.WriteLine($"Failed to submit application: {response.StatusCode} - {responseContent}");
         }
     }
 
-    public Child kid1 = new Child();
-    public Child kid2 = new Child();
 
-    private bool ekstraKid = false;
+    public Child kid1 = new Child(); // Initialiser barn 1
+    public Child kid2 = new Child(); // Initialiser barn 2
 
-    private void addKid()
+    private bool ekstraKid = false; // Ekstra barn
+
+    private void addKid() // metode til at tilføje ekstra barn
     {
-        ekstraKid = true;
+        ekstraKid = true; // Sæt ekstraKid til true
     }
 
-    private void removeKid()
+    private void removeKid() // metode til at fjerne ekstra barn
     {
-        ekstraKid = false;
+        ekstraKid = false; // Sæt ekstraKid til false
     }
 
+    // Egenskab til at gemme signaturen for barn 1 som en byte-array.
+    // Initialiseres med en tom byte-array.
     public byte[] SignatureForKid1 { get; set; } = Array.Empty<byte>();
-    public byte[] SignatureForKid2 { get; set; } = Array.Empty<byte>();
+    public byte[] SignatureForKid2 { get; set; } = Array.Empty<byte>(); // Egenskab til at gemme signaturen for barn 2 som en byte-array.
 
+    // Egenskab, der returnerer signaturen for barn 1 som en Base64-kodet streng.
+    // Dette konverterer byte-array'en i SignatureForKid1 til en Base64-kodet streng ved hjælp af UTF8-kodning.
     private string SignatureForKid1AsBase64 => System.Text.Encoding.UTF8.GetString(SignatureForKid1);
-    private string SignatureForKid2AsBase64 => System.Text.Encoding.UTF8.GetString(SignatureForKid2);
+    private string SignatureForKid2AsBase64 => System.Text.Encoding.UTF8.GetString(SignatureForKid2); // Egenskab, der returnerer signaturen for barn 2 som en Base64-kodet streng.
 }

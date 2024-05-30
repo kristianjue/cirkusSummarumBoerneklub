@@ -4,20 +4,20 @@
 @inject HttpClient Http
 
 @code {
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync() // metode til at tjekke brugerens legitimationsoplysninger
     {
-        await CheckCredentials();
+        await CheckCredentials(); // kald på metoden til at tjekke brugerens legitimationsoplysninger
     }
     
-    public async Task CheckCredentials()
+    public async Task CheckCredentials() // metode til at tjekke brugerens legitimationsoplysninger
     {
-        var localStorageUser = await localStore.GetItemAsync<Administrator>("currentAdministrator");
+        var localStorageUser = await localStore.GetItemAsync<Administrator>("currentAdministrator"); // henter den nuværende administrator fra lokal lagring
         
-        if (localStorageUser == null)
+        if (localStorageUser == null) // hvis der ikke findes nogen bruger i lokal lagring
         {
-            var currentUrl = Navigation.Uri;
-            await localStore.SetItemAsync("target", currentUrl);
-            Navigation.NavigateTo("/login");
+            var currentUrl = Navigation.Uri; // henter den aktuelle URL
+            await localStore.SetItemAsync("target", currentUrl); // gemmer den aktuelle URL i lokal lagring som "target"
+            Navigation.NavigateTo("/login"); // navigerer brugeren til login-siden
         }
     }
 }

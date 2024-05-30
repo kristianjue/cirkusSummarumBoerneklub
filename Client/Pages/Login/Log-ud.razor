@@ -6,15 +6,15 @@
 <h3>Log_ud</h3>
 
 @code {
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync() // metode til at fjerne brugerens legitimationsoplysninger
     {
-        await RemoveCredentials();
+        await RemoveCredentials(); // kald på metoden til at fjerne brugerens legitimationsoplysninger
     }
     
     public async Task RemoveCredentials()
     {
-        await localStore.RemoveItemAsync("currentAdministrator");
-        Navigation.NavigateTo("/login", true);
+        await localStore.RemoveItemAsync("currentAdministrator"); // fjerner brugerens legitimationsoplysninger fra lokal lagring
+        Navigation.NavigateTo("/login", true); // navigerer brugeren til login-siden
         
     }
 }

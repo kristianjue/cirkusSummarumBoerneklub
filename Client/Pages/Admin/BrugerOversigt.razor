@@ -84,27 +84,35 @@
 </style>
 
 @code {
+    // Liste over alle administratorer.
     private List<Administrator> AllAdmins;
 
+    // Metode kaldet ved komponentinitialisering.
     protected override async Task OnInitializedAsync()
     {
+        // Henter alle administratorer asynkront.
         await GetAllAdmins();
     }
-    
 
+    // Asynkron metode til at hente alle administratorer fra API'et.
     public async Task GetAllAdmins()
     {
+        // Sender en GET-anmodning til API'et og får resultatet som en liste over administratorer.
         AllAdmins = await Http.GetFromJsonAsync<List<Administrator>>("https://localhost:7026/api/admin/get-all");
     }
 
+    // Metode til at navigere til siden for at tilføje en ny administrator.
     private void AddNewUser()
     {
+        // Navigerer til siden "/nyadmin".
         NavigationManager.NavigateTo("/nyadmin");
     }
-    
 
+    // Metode til at se en specifik administrator baseret på email.
     private void ViewUser(string email)
     {
+        // Navigerer til siden for den specifikke administrator ved hjælp af email.
         NavigationManager.NavigateTo($"/admin/{email}");
     }
+
 }
