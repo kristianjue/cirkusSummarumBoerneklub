@@ -5,7 +5,7 @@
 @inject IJSRuntime JSRuntime
 
 <PageTitle>Edit Admin</PageTitle>
-
+<AdminRestriction></AdminRestriction>
 <h3>Edit Admin</h3>
 <EditForm EditContext="@aEditContext" class="row p-3" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
@@ -14,9 +14,24 @@
         <label for="Name">Name</label>
         <InputText id="Name" @bind-Value="admin.Name" class="form-control" />
     </div>
-    <div class="col-md-6 mb-3">
+    <div class="col-md-3 mb-3">
         <label for="Email">Email</label>
         <InputText id="Email" @bind-Value="admin.Email" class="form-control" />
+    </div>
+    <div class="col-md-3 mb-3">
+    <label for="role">Bruger rolle</label>
+    <InputSelect id="role" @bind-Value="admin.Role" class="form-control">
+        @if (loadedRole == "Administrator")
+        {
+            <option value="Administrator" selected>Administrator</option>
+            <option value="Standard bruger">Standard bruger</option>
+        }
+        else
+        {
+            <option value="Standard bruger" selected>Standard bruger</option>
+            <option value="Administrator">Administrator</option>
+        }
+    </InputSelect>
     </div>
     <div class="col-md-6 mb-3">
         <label for="PhoneNumber">Phone Number</label>
@@ -43,92 +58,132 @@
 <button type="button" class="btn btn-danger" @onclick="DeleteAdmin">Delete Admin</button>
 
 @code {
+    // Parameter til at modtage emailen som en offentlig egenskab.
     [Parameter] public string email { get; set; }
+
+    // Initialiserer en ny administrator instans.
     private Administrator admin = new();
 
+    // Variabel til at gemme den indlæste rolle.
+    private string loadedRole;
+
+    // Variabel til at håndtere formularindsendelse og validering.
     private EditContext aEditContext;
+
+    // Variabel til at gemme fejlmeddelelser.
     private string errorMessage;
 
+    // Metode kaldet ved komponentinitialisering.
     protected override async Task OnInitializedAsync()
     {
+        // Initialiserer EditContext med administrator objektet.
         aEditContext = new EditContext(admin);
+        // Henter administrator data baseret på email.
         admin = await GetAdminByEmail(email) ?? new Administrator();
+        // Gemmer den indlæste rolle.
+        loadedRole = admin.Role;
+        // Opdaterer EditContext med den hentede administrator.
         aEditContext = new EditContext(admin);
     }
 
+    // Asynkron metode til at hente en administrator baseret på email.
     public async Task<Administrator?> GetAdminByEmail(string email)
     {
         try
         {
+            // Sender en GET-anmodning til API'et og returnerer administrator objektet.
             return await Http.GetFromJsonAsync<Administrator>($"https://localhost:7026/api/admin/get-by-email/{email}");
         }
         catch (Exception ex)
         {
+            // Gemmer og logger fejlmeddelelsen, hvis der opstår en undtagelse.
             errorMessage = $"Error fetching admin data: {ex.Message}";
             Console.WriteLine(errorMessage);
             return null;
         }
     }
 
+    // Asynkron metode til at håndtere filupload.
     private async Task HandleFileUpload(InputFileChangeEventArgs e)
     {
+        // Henter den uploadede fil.
         var file = e.File;
+        // Opretter en buffer til at læse filen ind.
         var buffer = new byte[file.Size];
+        // Læser filen ind i buffer.
         await file.OpenReadStream().ReadAsync(buffer);
+        // Konverterer filen til en Base64-kodet streng.
         var imageString = Convert.ToBase64String(buffer);
-        admin.Image = imageString; // Opdaterer billedet i admin objektet
+        // Opdaterer billedet i administrator objektet.
+        admin.Image = imageString;
     }
 
+    // Asynkron metode til at håndtere gyldig formularindsendelse.
     public async Task HandleValidSubmit()
     {
         try
         {
+            // Sender en POST-anmodning til API'et for at opdatere administratoren.
             var response = await Http.PostAsJsonAsync($"https://localhost:7026/api/admin/update/{email}", admin);
+            // Tjekker om POST-anmodningen var succesfuld.
             if (response.IsSuccessStatusCode)
             {
+                // Navigerer til "brugeroversigt" siden ved succes.
                 NavigationManager.NavigateTo("/brugeroversigt");
             }
             else
             {
+                // Gemmer og logger fejlmeddelelsen, hvis opdateringen fejlede.
                 errorMessage = $"Error updating admin: {response.ReasonPhrase}";
                 Console.WriteLine(errorMessage);
             }
         }
         catch (Exception ex)
         {
+            // Gemmer og logger fejlmeddelelsen, hvis der opstår en undtagelse.
             errorMessage = $"Error updating admin: {ex.Message}";
             Console.WriteLine(errorMessage);
         }
     }
 
+    // Asynkron metode til at slette en administrator.
     public async Task DeleteAdmin()
     {
+        // Bekræfter om brugeren ønsker at slette administratoren.
         var confirmDelete = await Confirm("Are you sure you want to delete this admin?");
         if (confirmDelete)
         {
             try
             {
+                // Sender en DELETE-anmodning til API'et for at slette administratoren.
                 var response = await Http.DeleteAsync($"https://localhost:7026/api/admin/delete/{admin.Email}");
+                // Tjekker om DELETE-anmodningen var succesfuld.
                 if (response.IsSuccessStatusCode)
                 {
+                    // Navigerer til "brugeroversigt" siden ved succes.
                     NavigationManager.NavigateTo("/brugeroversigt");
                 }
                 else
                 {
+                    // Gemmer og logger fejlmeddelelsen, hvis sletningen fejlede.
                     errorMessage = $"Error deleting admin: {response.ReasonPhrase}";
                     Console.WriteLine(errorMessage);
                 }
             }
             catch (Exception ex)
             {
+                // Gemmer og logger fejlmeddelelsen, hvis der opstår en undtagelse.
                 errorMessage = $"Error deleting admin: {ex.Message}";
                 Console.WriteLine(errorMessage);
             }
         }
     }
 
+    // Asynkron metode til at vise en bekræftelsesdialog.
     private async Task<bool> Confirm(string message)
     {
+        // Viser en bekræftelsesdialog i browseren og returnerer brugerens svar.
         return await JSRuntime.InvokeAsync<bool>("confirm", message);
     }
+
 }

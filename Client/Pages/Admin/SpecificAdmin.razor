@@ -3,11 +3,11 @@
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
-
+<AdminRestriction></AdminRestriction>
 <div class="container mt-5">
     <div class="row">
-        <div class="col-md-8">
-            <div class="card mb-4 shadow-sm">
+        <div class="col-md-12">
+            <div class="card mb-4 shadow-sm position-relative">
                 <div class="row no-gutters">
                     <div class="col-md-4">
                         <img src="data:image/jpg;base64,@admin.Image" class="card-img" alt="Image" style="height: 100%; object-fit: cover;">
@@ -18,57 +18,61 @@
                             <p class="card-text"><strong>Email:</strong> @admin.Email</p>
                             <p class="card-text"><strong>Telefon:</strong> @admin.PhoneNumber</p>
                             <p class="card-text"><strong>Kræv Number:</strong> @admin.KrævNumber</p>
-                            <button class="btn btn-primary" @onclick="EditAdmin">Edit Admin</button>
+                            <p class="card-text"><strong>Rolle:</strong> @admin.Role</p>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card bg-light mb-4 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Admin Details:</h5>
-                    <p class="card-text"><strong>Navn:</strong> @admin.Name</p>
-                    <p class="card-text"><strong>Email:</strong> @admin.Email</p>
-                    <p class="card-text"><strong>Telefon:</strong> @admin.PhoneNumber</p>
-                    <p class="card-text"><strong>Kræv Number:</strong> @admin.KrævNumber</p>
-                </div>
+                <button class="btn btn-primary position-absolute" style="top: 10px; right: 10px;" @onclick="EditAdmin">Edit Admin</button>
             </div>
         </div>
     </div>
 </div>
 
 @code {
+    // Parameter til at modtage emailen som en offentlig egenskab.
     [Parameter] public string email { get; set; }
+
+    // Initialiserer en ny administrator instans.
     private Administrator admin = new Administrator();
+
+    // Variabel til at gemme fejlmeddelelser.
     private string errorMessage;
 
+    // Metode kaldet ved komponentinitialisering.
     protected override async Task OnInitializedAsync()
     {
+        // Henter administrator data baseret på email.
         await GetAdminByEmail(email);
     }
 
+    // Asynkron metode til at hente en administrator baseret på email.
     private async Task GetAdminByEmail(string email)
     {
         try
         {
+            // Sender en GET-anmodning til API'et og tildeler resultatet til admin objektet.
             admin = await Http.GetFromJsonAsync<Administrator>($"https://localhost:7026/api/admin/get-by-email/{email}");
         }
         catch (Exception ex)
         {
+            // Gemmer og logger fejlmeddelelsen, hvis der opstår en undtagelse.
             errorMessage = $"Error fetching admin data: {ex.Message}";
             Console.WriteLine(errorMessage);
         }
     }
 
+    // Metode til at navigere til siden for at redigere administratoren.
     private void EditAdmin()
     {
-        // Navigate to the edit page
+        // Navigerer til redigeringssiden for den specifikke administrator baseret på email.
         NavigationManager.NavigateTo($"/edit-admin/{admin.Email}");
     }
 
+    // Asynkron metode til at vise en bekræftelsesdialog.
     private async Task<bool> Confirm(string message)
     {
+        // Viser en bekræftelsesdialog i browseren og returnerer brugerens svar.
         return await JSRuntime.InvokeAsync<bool>("confirm", message);
     }
+
 }

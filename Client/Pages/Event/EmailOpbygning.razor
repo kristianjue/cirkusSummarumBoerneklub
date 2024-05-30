@@ -1,0 +1,291 @@
+@using Blazored.TextEditor
+@using System.Net
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@using Blazored.LocalStorage
+@inject ILocalStorageService localStore
+
+
+@page "/send-mail"
+<h3>Send email til @filteredApplications.Count modtagere</h3>
+<AdminRestriction></AdminRestriction>
+<div class="row">
+    <div class="col-6">
+        <div class="row mb-4">
+                <div class="col-3">
+                    <label for="city">By</label>
+                    <select type="text" class="form-control" id="city" @onchange="OnCityChanged">
+                        <option value="">Vælg by</option>
+                        @if (cities != null)
+                        {
+                            @foreach (var city in cities)
+                            {
+                                <option value="@city.Name">@city.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-3">
+                    <label for="period">Periode</label>
+                    <select type="text" class="form-control" id="period" @onchange="OnPeriodChanged">
+                        <option value="">Vælg periode</option>
+                        @if (filteredPeriods != null)
+                        {
+                            @foreach (var period in filteredPeriods)
+                            {
+                                <option value="@period.PeriodName">@period.PeriodName</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-3">
+                    <label for="status">Status</label>
+                    <select type="text" class="form-control" id="status" @onchange="OnStatusChanged">
+                        <option value="">Alle ansøgninger</option>
+                        <option value="Ny">Nye ansøgninger</option>
+                        <option value="Godkendt">Godkendte ansøgninger</option>
+                        <option value="Afvist">Afviste ansøgninger</option>
+                        <option value="Venteliste">Ansøgninger på venteliste</option>
+                    </select>
+                </div>
+        </div>
+    </div>
+</div>
+<label for="subject">Emne på mail</label>
+<InputText class="form-control" @bind-Value="emailSubject" id="subject" placeholder="Indtast emne på email" style="margin-bottom: 20px" />
+
+
+<BlazoredTextEditor  EditorCssStyle="height:400px;" Placeholder="Skriv din mail her" @ref="@QuillHtml">
+    <ToolbarContent>
+        <select class="ql-header">
+            <option selected=""></option>
+            <option value="1"></option>
+            <option value="2"></option>
+            <option value="3"></option>
+            <option value="4"></option>
+            <option value="5"></option>
+        </select>
+        <span class="ql-formats">
+            <button class="ql-bold"></button>
+            <button class="ql-italic"></button>
+            <button class="ql-underline"></button>
+            <button class="ql-strike"></button>
+        </span>
+        <span class="ql-formats">
+            <button class="ql-link"></button>
+        </span>
+    </ToolbarContent>
+</BlazoredTextEditor>
+
+<div style="margin-top: 20px">
+    <button class="btn btn-success" @onclick="async () => await SendTestEmail()">Send testmail til mig</button>
+    <button class="btn btn-success" @onclick="async () => await SendEmail()">Send email</button>
+</div>
+
+@code {
+    
+    // Variabel til emnefeltet i emailen.
+    private string emailSubject = string.Empty;
+
+    // Liste over byer, der skal indlæses.
+    private List<City> _cities;
+
+    // Variabel til at gemme den valgte by.
+    private string selectedCity;
+
+    // Variabel til at gemme den valgte status.
+    private string selectedStatus;
+
+    // Variabel til at gemme den valgte periode.
+    private string selectedPeriod;
+
+    // Liste over alle byer.
+    private List<City> cities = new List<City>();
+
+    // Liste over alle applikationer.
+    private List<Application> applications = new List<Application>();
+
+    // Liste over filtrerede applikationer baseret på valg.
+    private List<Application> filteredApplications = new List<Application>();
+
+    // Liste over filtrerede perioder baseret på den valgte by.
+    private List<Period> filteredPeriods = new List<Period>();
+
+    // Variabel til at gemme administratorens email.
+    private string AdminEmail;
+
+    // Referencer til Blazored Text Editor komponenten.
+    BlazoredTextEditor QuillHtml;
+
+    // Variabel til at gemme emailens indhold.
+    string EmailContent;
+
+    // Metode til at sende en email til filtrerede applikationer.
+    public async Task SendEmail()
+    {
+        // Henter HTML-indholdet fra editoren.
+        EmailContent = await this.QuillHtml.GetHTML();
+
+        // Opretter en ny email-forespørgsel.
+        var SpecifcEmail = new EmailRequest
+            {
+                Subject = emailSubject,
+                Body = EmailContent,
+                Recipients = new List<string>()
+            };
+
+        // Tilføjer emailadresser for alle frivillige i de filtrerede applikationer.
+        foreach (var app in filteredApplications)
+        {
+            SpecifcEmail.Recipients.Add(app.Volunteer.Email);
+        }
+
+        // Sender email-forespørgslen til API'et.
+        var emailRequest = await Http.PostAsJsonAsync<EmailRequest>("https://localhost:7026/api/email/custom-email", SpecifcEmail);
+
+        // Tjekker om anmodningen var succesfuld.
+        if (emailRequest.StatusCode == HttpStatusCode.OK)
+        {
+            // Viser en succesbesked.
+            await JSRuntime.InvokeVoidAsync("alert", "Email er sendt");
+        }
+        else
+        {
+            // Viser en fejbesked.
+            await JSRuntime.InvokeVoidAsync("alert", "Der skete en fejl, kontakt support");
+        }
+    }
+
+    // Metode til at sende en testemail til administratorens email.
+    public async Task SendTestEmail()
+    {
+        // Henter HTML-indholdet fra editoren.
+        EmailContent = await this.QuillHtml.GetHTML();
+
+        // Opretter en ny email-forespørgsel.
+        var SpecifcEmail = new EmailRequest
+            {
+                Subject = emailSubject,
+                Body = EmailContent,
+                Recipients = new List<string> { AdminEmail }
+            };
+
+        // Sender email-forespørgslen til API'et.
+        var emailRequest = await Http.PostAsJsonAsync<EmailRequest>("https://localhost:7026/api/email/custom-email", SpecifcEmail);
+
+        // Tjekker om anmodningen var succesfuld.
+        if (emailRequest.StatusCode == HttpStatusCode.OK)
+        {
+            // Viser en succesbesked.
+            await JSRuntime.InvokeVoidAsync("alert", "Test mail er sendt");
+        }
+        else
+        {
+            // Viser en fejbesked.
+            await JSRuntime.InvokeVoidAsync("alert", "Der skete en fejl, kontakt support");
+        }
+    }
+
+    // Metode kaldet, når den valgte by ændres.
+    private void OnCityChanged(ChangeEventArgs e)
+    {
+        // Opdaterer den valgte by baseret på brugerens valg.
+        selectedCity = e.Value.ToString();
+        // Opdaterer de filtrerede perioder baseret på den valgte by.
+        UpdateFilteredPeriods();
+        // Filtrerer applikationerne baseret på den valgte by.
+        FilterApplications();
+    }
+
+    // Metode kaldet, når den valgte status ændres.
+    private void OnStatusChanged(ChangeEventArgs e)
+    {
+        // Opdaterer den valgte status baseret på brugerens valg.
+        selectedStatus = e.Value.ToString();
+        // Filtrerer applikationerne baseret på den valgte status.
+        FilterApplications();
+    }
+
+    // Metode kaldet, når den valgte periode ændres.
+    private void OnPeriodChanged(ChangeEventArgs e)
+    {
+        // Opdaterer den valgte periode baseret på brugerens valg.
+        selectedPeriod = e.Value.ToString();
+        // Filtrerer applikationerne baseret på den valgte periode.
+        FilterApplications();
+    }
+
+    // Metode til at opdatere de filtrerede perioder baseret på den valgte by.
+    private void UpdateFilteredPeriods()
+    {
+        // Finder den valgte by i listen over byer.
+        var city = cities.FirstOrDefault(c => c.Name == selectedCity);
+        if (city != null)
+        {
+            // Filtrerer perioderne for den valgte by.
+            filteredPeriods = city.Weeks.SelectMany(week => week.Periods).ToList();
+        }
+        else
+        {
+            // Rydder listen over filtrerede perioder, hvis byen ikke findes.
+            filteredPeriods.Clear();
+        }
+    }
+
+    // Metode kaldet ved komponentinitialisering.
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Indlæser alle applikationer.
+            await GetAllApplications();
+            // Indlæser alle byer.
+            cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getall"); // Henter alle byer fra API'et.
+            // Henter administratorens email.
+            await getAdminEmail();
+        }
+        catch (Exception ex)
+        {
+            // Logger en fejlmeddelelse, hvis der opstår en fejl under indlæsning af data.
+            Console.WriteLine($"Error loading data: {ex.Message}");
+        }
+    }
+
+    // Asynkron metode til at indlæse alle applikationer.
+    private async Task GetAllApplications()
+    {
+        try
+        {
+            // Henter alle applikationer fra API'et.
+            applications = await Http.GetFromJsonAsync<List<Application>>("https://localhost:7026/api/application/getall");
+            // Sætter de filtrerede applikationer til at inkludere alle applikationer.
+            filteredApplications = applications;
+        }
+        catch (Exception ex)
+        {
+            // Logger en fejlmeddelelse, hvis der opstår en fejl under indlæsning af applikationer.
+            Console.WriteLine($"Error loading applications: {ex.Message}");
+        }
+    }
+
+    // Metode til at filtrere applikationerne baseret på valgte kriterier.
+    private void FilterApplications()
+    {
+        // Filtrerer applikationerne baseret på den valgte by, status og periode.
+        filteredApplications = applications.Where(app =>
+            (string.IsNullOrEmpty(selectedCity) || app.City?.Name == selectedCity) && 
+            (string.IsNullOrEmpty(selectedStatus) || app.Status == selectedStatus) &&
+            (string.IsNullOrEmpty(selectedPeriod) || app.Priority1 == selectedPeriod)).ToList();
+    }
+
+    // Asynkron metode til at hente administratorens email fra lokal lagring.
+    public async Task getAdminEmail()
+    {
+        // Henter den nuværende administrator fra lokal lagring.
+        var localStorageUser = await localStore.GetItemAsync<Administrator>("currentAdministrator");
+        // Sætter administratorens email.
+        AdminEmail = localStorageUser.Email;
+    }
+
+
+}

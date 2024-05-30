@@ -1,0 +1,151 @@
+﻿@page "/specifikevent/{name}"
+@inject HttpClient Http
+@inject NavigationManager navigationManager
+@using Core
+@using Microsoft.AspNetCore.Components.Forms
+<AdminRestriction></AdminRestriction>
+<PageTitle>Specifik Event</PageTitle>
+
+<h1 class="text-center">Specifik Event</h1>
+
+<EditForm EditContext="@aEditContext" class="container mt-4" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary class="alert alert-danger" />
+
+    <h3 class="mb-4">Edit Lokation</h3>
+    <div class="form-check">
+        <InputCheckbox id="openForRegistration" @bind-Value="city.OpenForRegistration" class="form-check-input" />
+        <label class="form-check-label" for="openForRegistration">Åben for registration</label>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="cityName" class="form-label">By</label>
+                    <InputText id="cityName" @bind-Value="city.Name" class="form-control" />
+                </div>
+            </div>
+            <h5 class="card-title">Uger</h5>
+            @foreach (var week in city.Weeks)
+            {
+                <div class="row mb-3" @key="week">
+                    <div class="col-md-3">
+                        <label for="weekName" class="form-label">Uge Navn</label>
+                        <InputText id="weekName" @bind-Value="week.WeekName" class="form-control" />
+                    </div>
+                    <h5 class="card-title">Perioder</h5>
+                    @foreach (var period in week.Periods)
+                    {
+                        <div class="row mb-3" @key="period">
+                            <div class="col-md-3">
+                                <label for="periodName" class="form-label">Periode Navn</label>
+                                <InputText id="periodName" @bind-Value="period.PeriodName" class="form-control" />
+                            </div>
+                            <div class="col-md-3">
+                                <label for="startDate" class="form-label">Start Dato</label>
+                                <InputDate id="startDate" @bind-Value="period.StartDate" class="form-control" />
+                            </div>
+                            <div class="col-md-3">
+                                <label for="endDate" class="form-label">Slut Dato</label>
+                                <InputDate id="endDate" @bind-Value="period.EndDate" class="form-control" />
+                            </div>
+                            <div class="col-md-3">
+                                <label for="capacity" class="form-label">Kapacitet</label>
+                                <InputNumber id="capacity" @bind-Value="period.Capacity" class="form-control" />
+                            </div>
+                            <div class="col-md-12 text-end">
+                                <button type="button" class="btn btn-danger mt-2" @onclick="() => RemovePeriod(week, period)">Fjern Periode</button>
+                            </div>
+                        </div>
+                    }
+                    <div class="text-end">
+                        <button type="button" class="btn btn-primary" @onclick="() => AddPeriod(week)">Tilføj Periode</button>
+                    </div>
+                </div>
+            }
+            <div class="text-end">
+                <button type="button" class="btn btn-primary" @onclick="() => AddWeek(city)">Tilføj Uge</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mb-4">
+        <button type="submit" class="btn btn-success">Gem</button>
+    </div>
+</EditForm>
+
+@code {
+    // Parameter til at modtage navnet på byen som en offentlig egenskab.
+    [Parameter] public string Name { get; set; }
+
+    // Variabel til at håndtere formularindsendelse og validering.
+    private EditContext aEditContext;
+
+    // By objekt, der initialiseres med en tom liste af uger.
+    private City city = new City { Weeks = new List<Week>() };
+
+    // Metode kaldet ved komponentinitialisering.
+    protected override async Task OnInitializedAsync()
+    {
+        // Initialiserer EditContext med det tomme by objekt.
+        aEditContext = new EditContext(city);
+        // Henter by data fra API'et baseret på navnet og opdaterer city objektet.
+        city = await Http.GetFromJsonAsync<City>($"https://localhost:7026/api/City/get/{Name}");
+        // Opdaterer EditContext med det hentede by objekt.
+        aEditContext = new EditContext(city);
+    }
+
+    // Asynkron metode til at håndtere gyldig formularindsendelse.
+    public async Task HandleValidSubmit()
+    {
+        // Sender en PUT-anmodning til API'et for at opdatere byens data.
+        var response = await Http.PutAsJsonAsync($"https://localhost:7026/api/City/update/{city.Name}", city);
+        // Tjekker om PUT-anmodningen var succesfuld.
+        if (response.IsSuccessStatusCode)
+        {
+            // Navigerer til "eventoversigt" siden, hvis opdateringen var succesfuld.
+            navigationManager.NavigateTo("eventoversigt");
+        }
+        else
+        {
+            // Henter fejlmeddelelsen fra responsen og logger den, hvis opdateringen fejlede.
+            var responseContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Failed to update city: {response.StatusCode} - {responseContent}");
+        }
+    }
+
+    // Metode til at tilføje en periode til en given uge.
+    private void AddPeriod(Week week)
+    {
+        // Initialiserer listen af perioder, hvis den er null.
+        if (week.Periods == null)
+        {
+            week.Periods = new List<Period>();
+        }
+        // Tilføjer en ny periode til listen af perioder.
+        week.Periods.Add(new Period());
+    }
+
+    // Metode til at fjerne en periode fra en given uge.
+    private void RemovePeriod(Week week, Period period)
+    {
+        // Fjerner den angivne periode fra listen af perioder.
+        week.Periods.Remove(period);
+    }
+
+    // Metode til at tilføje en uge til byen.
+    private void AddWeek(City city)
+    {
+        // Tilføjer en ny uge med en tom periode til listen af uger i byen.
+        city.Weeks.Add(new Week { Periods = new List<Period> { new Period() } });
+    }
+
+    // Metode til at fjerne en uge fra byen.
+    private void RemoveWeek(Week week)
+    {
+        // Fjerner den angivne uge fra listen af uger i byen.
+        city.Weeks.Remove(week);
+    }
+
+}

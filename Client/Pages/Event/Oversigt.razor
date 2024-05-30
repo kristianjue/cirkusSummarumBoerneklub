@@ -1,0 +1,495 @@
+@page "/Oversigt"
+@using Core
+@using Blazored.LocalStorage
+@using System.Net.Mime
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject ILocalStorageService localStore
+@inject IJSRuntime JSRuntime
+
+
+<StaffRestriction></StaffRestriction>
+<div class="row">
+    <div class="col-9">
+        <h3>Oversigt</h3>
+    </div>
+    <div class="col-3">
+        <div class="float-end">
+            @if (isAdmin == true && selectedType == "Børneklubben")
+            {
+                <button class="btn btn-secondary" @onclick="SendMail" style="margin-right: 5px"> Send mail</button>
+            
+                <button class="btn btn-secondary" @onclick="GetAllPdfForApplication">Hent pdf</button>
+            }
+            @if (selectedType == "Ung frivillig")
+            {
+                <button class="btn btn-secondary" @onclick="GetAllPdfForSignature">Hent pdf</button>
+            }
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-6">
+        <div class="row">
+            <div class="col-3">
+                <label for="type">Type</label>
+                <select type="text" class="form-control" id="type" @onchange="OnTypeChanged">
+                    <option value="Børneklubben">Børneklubben</option>
+                    <option value="Ung frivillig">Ung frivillig</option>
+                </select>
+            </div>
+            @if(selectedType == "Børneklubben")
+            {
+                <div class="col-3">
+                    <label for="city">By</label>
+                    <select type="text" class="form-control" id="city" @onchange="OnCityChanged">
+                        <option value="">Vælg by</option>
+                        @if (cities != null)
+                        {
+                            @foreach (var city in cities)
+                            {
+                                <option value="@city.Name">@city.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-3">
+                    <label for="period">Periode</label>
+                    <select type="text" class="form-control" id="period" @onchange="OnPeriodChanged">
+                        <option value="">Vælg periode</option>
+                        @if (filteredPeriods != null)
+                        {
+                            @foreach (var period in filteredPeriods)
+                            {
+                                <option value="@period.PeriodName">@period.PeriodName</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-3">
+                    <label for="status">Status</label>
+                    <select type="text" class="form-control" id="status" @onchange="OnStatusChanged">
+                        <option value="">Alle ansøgninger</option>
+                        <option value="Ny">Nye ansøgninger</option>
+                        <option value="Godkendt">Godkendte ansøgninger</option>
+                        <option value="Afvist">Afviste ansøgninger</option>
+                        <option value="Venteliste">Ansøgninger på venteliste</option>
+                    </select>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="col-6">
+        <div class="float-end">
+            <label for="search">Søg</label>
+            <input type="text" class="form-control" id="search" @bind="searchText" @oninput="OnSearchChanged" />
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    @if(selectedType == "Børneklubben")
+    {
+        @if (filteredApplications == null)
+        {
+            <p>Loading...</p>
+        }
+        else
+        {
+            @foreach (var application in filteredApplications)
+            {
+                <div class="col-9 mx-auto mt-4">
+                    <div class="row overview-guardian d-flex align-items-center">
+                        <div class="col-2">
+                            <p class="overview-label">Værges navn:</p>
+                            <p>@application.Volunteer.Name</p>
+                        </div>
+                        <div class="col-2">
+                            <p class="overview-label">Periode:</p>
+                            <p>@application.Priority1</p>
+                        </div>
+                        <div class="col-2">
+                            <p class="overview-label">Status:</p>
+                            <p>@application.Status</p>
+                        </div>
+                        <div class="col-2">
+                            <p class="overview-label">By:</p>
+                            <p>@application.City.Name</p>
+                        </div>
+                        <div class="col-4 d-flex justify-content-end">
+                            <button class="btn btn-dark me-2" @onclick="() => GetPdf(application.Id)">Pdf</button>
+                            @if (isAdmin == true)
+                            {
+                                <button class="btn btn-danger" @onclick="() => EditApplication(application.Id)">Rediger</button>
+                            }
+                        </div>
+                    </div>
+                    @if (application.Volunteer.Children != null)
+                    {
+                        @foreach (var child in application.Volunteer.Children)
+                        {
+                            <div class="row overview-child">
+                                <div class="col-4">
+                                    <p class="overview-label">Barnets navn:</p>
+                                    <p>@child.Name</p>
+                                </div>
+                                <div class="col-4">
+                                    <p class="overview-label">Alder:</p>
+                                    <p>@child.Age år</p>
+                                </div>
+                                <div class="col-4">
+                                    <p class="overview-label">Type:</p>
+                                    <p>@application.Type</p>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            }
+        }
+    }
+    @if(selectedType == "Ung frivillig")
+        {
+                @foreach (var signature in signatures)
+                {
+                    <div class="col-9 mx-auto mt-4">
+                        <div class="row overview-guardian d-flex align-items-center">
+                            <div class="col-2">
+                                <p class="overview-label">Værges navn:</p>
+                                @if(signature.Volunteer == null){<p>@signature.Name</p>}
+                                else{<p>@signature.Volunteer.Name</p>}
+                            </div>
+                            <div class="col-2">
+                                <p class="overview-label">Email:</p>
+                                @if(signature.Volunteer == null){<p>@signature.Email</p>}
+                                else{<p>@signature.Volunteer.Email</p>}
+                            </div>
+                            <div class="col-2">
+                                <p class="overview-label">Tlf:</p>
+                                @if(signature.Volunteer == null){<p>@signature.PhoneNumber</p>}
+                                else{<p>@signature.Volunteer.PhoneNumber</p>}
+                            </div>
+                                <div class="col-2">
+                                    <p class="overview-label">Krævnummer:</p>
+                                    @if(signature.Volunteer == null){<p>@signature.KrævNumber</p>}
+                                                                    else{<p>@signature.Volunteer.KrævNumber</p>}
+                                </div>
+                            
+                            <div class="col-4 d-flex justify-content-end">
+                                <button class="btn btn-dark me-2" @onclick="() => GetPdfForSignature(signature.Id)">Pdf</button>
+                            </div>
+                        </div>
+                        @if (signature.YoungVolunteer != null)
+                        {
+                                <div class="row overview-child">
+                                    <div class="col-4">
+                                        <p class="overview-label">Unge frivilliges navn:</p>
+                                        <p>@signature.YoungVolunteer.Name</p>
+                                    </div>
+                                    <div class="col-4">
+                                        <p class="overview-label">Alder:</p>
+                                        <p>@signature.YoungVolunteer.Age år</p>
+                                    </div>
+                                    <div class="col-4">
+                                        <p class="overview-label">Unge frivilliges KrævNummer:</p>
+                                        <p>@signature.YoungVolunteer.KrævNumber</p>
+                                    </div>
+                                </div>
+                        }
+                        
+                    </div>
+                }
+        }
+</div>
+    
+
+@code {
+    // Liste over alle applikationer.
+    private List<Application> applications = new List<Application>();
+
+    // Liste over filtrerede applikationer baseret på valg.
+    private List<Application> filteredApplications = new List<Application>();
+
+    // Liste over alle signaturer.
+    private List<Signature> signatures = new List<Signature>();
+
+    // Liste over filtrerede signaturer baseret på valg.
+    private List<Signature> filteredSignatures = new List<Signature>();
+
+    // Variabel til søgetekst.
+    private string searchText = "";
+
+    // Liste over alle byer.
+    private List<City> cities = new List<City>();
+
+    // Liste over filtrerede perioder baseret på den valgte by.
+    private List<Period> filteredPeriods = new List<Period>();
+
+    // Boolsk værdi til at angive om brugeren er admin.
+    private bool isAdmin = false;
+
+    // Liste over alle perioder der matcher status.
+    private List<string> allPeriodsToStatus = new List<string>();
+
+    // Variabel til at gemme den valgte by.
+    private string selectedCity;
+
+    // Variabel til at gemme den valgte type, som standard sat til "Børneklubben".
+    private string selectedType = "Børneklubben";
+
+    // Variabel til at gemme den valgte status.
+    private string selectedStatus;
+
+    // Variabel til at gemme den valgte periode.
+    private string selectedPeriod;
+
+    // Metode kaldet ved komponentinitialisering.
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Tjekker brugerens legitimationsoplysninger.
+            await CheckCredentials();
+            // Henter alle applikationer.
+            await GetAllApplications();
+            // Henter alle byer.
+            cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getall");
+            // Sætter statusser baseret på byernes perioder.
+            SetStatus();
+            // Henter alle signaturer.
+            await GetAllSignatures();
+        }
+        catch (Exception ex)
+        {
+            // Logger en fejlmeddelelse, hvis der opstår en fejl under indlæsning af data.
+            Console.WriteLine($"Error loading data: {ex.Message}");
+        }
+    }
+
+    // Metode til at sætte status baseret på byernes perioder.
+    private void SetStatus()
+    {
+        // Itererer gennem hver by.
+        foreach (City city in cities)
+        {
+            // Itererer gennem hver uge i byen.
+            foreach (Week week in city.Weeks)
+            {
+                // Itererer gennem hver periode i ugen.
+                foreach (Period period in week.Periods)
+                {
+                    // Tilføjer periode-navnet til listen over perioder der matcher status.
+                    allPeriodsToStatus.Add(period.PeriodName);
+                }
+            }
+        }
+
+        // Itererer gennem hver applikation.
+        foreach (Application app in applications)
+        {
+            // Hvis applikationens status matcher en periode, sættes status til "Godkendt".
+            if (allPeriodsToStatus.Contains(app.Status))
+            {
+                app.Status = "Godkendt";
+            }
+            else
+            {
+                // Logger en besked hvis status ikke kan matches.
+                Console.WriteLine($"Can't match status for {app.Status}");
+            }
+        }
+    }
+
+    // Asynkron metode til at hente alle signaturer.
+    private async Task GetAllSignatures()
+    {
+        try
+        {
+            // Henter alle signaturer fra API'et.
+            signatures = await Http.GetFromJsonAsync<List<Signature>>("https://localhost:7026/api/signature");
+            // Sætter de filtrerede signaturer til at inkludere alle signaturer.
+            filteredSignatures = signatures;
+        }
+        catch (Exception ex)
+        {
+            // Logger en fejlmeddelelse, hvis der opstår en fejl under indlæsning af signaturer.
+            Console.WriteLine($"Error loading signatures: {ex.Message}");
+        }
+    }
+
+    // Asynkron metode til at hente alle applikationer.
+    private async Task GetAllApplications()
+    {
+        try
+        {
+            // Henter alle applikationer fra API'et.
+            applications = await Http.GetFromJsonAsync<List<Application>>("https://localhost:7026/api/application/getall");
+            // Sætter de filtrerede applikationer til at inkludere alle applikationer.
+            filteredApplications = applications;
+        }
+        catch (Exception ex)
+        {
+            // Logger en fejlmeddelelse, hvis der opstår en fejl under indlæsning af applikationer.
+            Console.WriteLine($"Error loading applications: {ex.Message}");
+        }
+    }
+
+    // Metode til at redigere en applikation baseret på dens ID.
+    private void EditApplication(string applicationId)
+    {
+        // Navigerer til redigeringssiden for den specifikke applikation.
+        NavigationManager.NavigateTo($"/edit-application/{applicationId}");
+    }
+
+    // Metode til at hente en PDF for en specifik applikation baseret på dens ID.
+    public void GetPdf(string applicationId)
+    {
+        // Navigerer til API'et for at hente PDF'en for applikationen.
+        NavigationManager.NavigateTo($"https://localhost:7026/api/pdf/get/{applicationId}");
+    }
+
+    // Metode til at hente en PDF for en specifik signatur baseret på dens ID.
+    public void GetPdfForSignature(string signatureId)
+    {
+        // Navigerer til API'et for at hente PDF'en for signaturen.
+        NavigationManager.NavigateTo($"https://localhost:7026/api/pdf/get-signature/{signatureId}");
+    }
+
+    // Metode til at hente alle PDF'er for applikationer baseret på valgte kriterier.
+    public void GetAllPdfForApplication()
+    {
+        // Gemmer de valgte kriterier i lokale variabler.
+        string PdfSelectedCity = selectedCity;
+        string PdfSelectedPeriod = selectedPeriod;
+        string PdfSelectedStatus = selectedStatus;
+
+        // Hvis ingen by er valgt, sættes den til "all".
+        if (PdfSelectedCity == null)
+        {
+            PdfSelectedCity = "all";
+        }
+        // Hvis ingen periode er valgt, sættes den til "all".
+        if (PdfSelectedPeriod == null)
+        {
+            PdfSelectedPeriod = "all";
+        }
+        // Hvis ingen status er valgt, sættes den til "all".
+        if (PdfSelectedStatus == null)
+        {
+            PdfSelectedStatus = "all";
+        }
+
+        // Navigerer til API'et for at hente alle PDF'er for applikationer baseret på de valgte kriterier.
+        NavigationManager.NavigateTo($"https://localhost:7026/api/pdf/get-all/applications/{PdfSelectedCity}/{PdfSelectedPeriod}/{PdfSelectedStatus}");
+    }
+
+    // Metode til at hente alle PDF'er for signaturer.
+    public void GetAllPdfForSignature()
+    {
+        // Navigerer til API'et for at hente alle PDF'er for signaturer.
+        NavigationManager.NavigateTo("https://localhost:7026/api/pdf/get-all/signatures");
+    }
+
+    // Metode kaldet, når den valgte by ændres.
+    private void OnCityChanged(ChangeEventArgs e)
+    {
+        // Opdaterer den valgte by baseret på brugerens valg.
+        selectedCity = e.Value.ToString();
+        // Opdaterer de filtrerede perioder baseret på den valgte by.
+        UpdateFilteredPeriods();
+        // Filtrerer applikationerne baseret på den valgte by.
+        FilterApplications();
+    }
+
+    // Metode kaldet, når den valgte type ændres.
+    private void OnTypeChanged(ChangeEventArgs e)
+    {
+        // Opdaterer den valgte type baseret på brugerens valg.
+        selectedType = e.Value.ToString();
+        // Filtrerer applikationerne baseret på den valgte type.
+        FilterApplications();
+    }
+
+    // Metode kaldet, når den valgte status ændres.
+    private void OnStatusChanged(ChangeEventArgs e)
+    {
+        // Opdaterer den valgte status baseret på brugerens valg.
+        selectedStatus = e.Value.ToString();
+        // Filtrerer applikationerne baseret på den valgte status.
+        FilterApplications();
+    }
+
+    // Metode kaldet, når søgeteksten ændres.
+    private void OnSearchChanged(ChangeEventArgs e)
+    {
+        // Opdaterer søgeteksten baseret på brugerens indtastning.
+        searchText = e.Value.ToString();
+        // Filtrerer applikationerne baseret på søgeteksten.
+        FilterApplications();
+    }
+
+    // Metode kaldet, når den valgte periode ændres.
+    private void OnPeriodChanged(ChangeEventArgs e)
+    {
+        // Opdaterer den valgte periode baseret på brugerens valg.
+        selectedPeriod = e.Value.ToString();
+        // Filtrerer applikationerne baseret på den valgte periode.
+        FilterApplications();
+    }
+
+    // Metode til at opdatere de filtrerede perioder baseret på den valgte by.
+    private void UpdateFilteredPeriods()
+    {
+        // Finder den valgte by i listen over byer.
+        var city = cities.FirstOrDefault(c => c.Name == selectedCity);
+        if (city != null)
+        {
+            // Filtrerer perioderne for den valgte by.
+            filteredPeriods = city.Weeks.SelectMany(week => week.Periods).ToList();
+        }
+        else
+        {
+            // Rydder listen over filtrerede perioder, hvis byen ikke findes.
+            filteredPeriods.Clear();
+        }
+    }
+
+    // Metode til at filtrere applikationerne baseret på valgte kriterier.
+    private void FilterApplications()
+    {
+        // Filtrerer applikationerne baseret på den valgte by, type, status, periode og søgetekst.
+        filteredApplications = applications.Where(app =>
+            (string.IsNullOrEmpty(selectedCity) || app.City?.Name == selectedCity) &&
+            (string.IsNullOrEmpty(selectedType) || app.Type == selectedType) &&
+            (string.IsNullOrEmpty(selectedStatus) || app.Status == selectedStatus) &&
+            (string.IsNullOrEmpty(selectedPeriod) || app.Priority1 == selectedPeriod) &&
+            (string.IsNullOrEmpty(searchText) || app.Volunteer.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                                app.Volunteer.Children.Any(child => child.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)))
+        ).ToList();
+    }
+
+    // Metode til at navigere til send-mail siden.
+    public void SendMail()
+    {
+        NavigationManager.NavigateTo("/send-mail");
+    }
+
+    // Asynkron metode til at tjekke brugerens legitimationsoplysninger.
+    public async Task CheckCredentials()
+    {
+        // Henter den nuværende administrator fra lokal lagring.
+        var localStorageUser = await localStore.GetItemAsync<Administrator>("currentAdministrator");
+
+        // Henter brugerens email.
+        var email = localStorageUser.Email;
+        // Henter brugeroplysninger fra API'et baseret på email.
+        var user = await Http.GetFromJsonAsync<Administrator>("https://localhost:7026/api/admin/get-by-email/" + email);
+
+        // Tjekker om brugeren er administrator.
+        if (user.Role == "Administrator")
+        {
+            isAdmin = true;
+        }
+    }
+
+}

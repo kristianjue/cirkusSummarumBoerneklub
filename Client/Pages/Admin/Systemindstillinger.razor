@@ -1,0 +1,193 @@
+@page "/systemindstillinger"
+@inject NavigationManager navigationManager
+@inject HttpClient Http
+@using Core
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Security.Authentication
+
+<AdminRestriction></AdminRestriction>
+
+<PageTitle>Systemindstillinger</PageTitle>
+
+<h1 class="text-center">Systemindstillinger</h1>
+
+<EditForm EditContext="@aEditContext" class="container mt-4" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary class="alert alert-danger" />
+
+    <h3 class="mb-4">Tilføj lokation</h3>
+    @foreach (var city in cities)
+    {
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="city" class="form-label">By</label>
+                        <InputText id="city" @bind-Value="city.Name" class="form-control" />
+                    </div>
+                    @if (cities.Count > 1)
+                    {
+                        <div class="col-md-6 text-end">
+                            <button type="button" class="btn btn-danger mt-4" @onclick="() => RemoveCity(city)">Fjern Lokation</button>
+                        </div>
+                    }
+                </div>
+
+                <div class="form-check mb-3">
+                    <InputCheckbox id="openForRegistration" @bind-Value="city.OpenForRegistration" class="form-check-input" />
+                    <label class="form-check-label" for="openForRegistration">Åben for ansøgning</label>
+                </div>
+
+                <h5 class="card-title">Uger</h5>
+                @foreach (var week in city.Weeks)
+                {
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <label for="weekNumber" class="form-label">Uge</label>
+                            <InputText id="weekNumber" @bind-Value="week.WeekName" class="form-control" />
+                        </div>
+                        @foreach (var period in week.Periods)
+                        {
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <label for="periodName" class="form-label">Periode Navn</label>
+                                    <InputText id="periodName" @bind-Value="period.PeriodName" class="form-control" />
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="startDate" class="form-label">Start Dato</label>
+                                    <InputDate id="startDate" @bind-Value="period.StartDate" class="form-control" />
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="endDate" class="form-label">Slut Dato</label>
+                                    <InputDate id="endDate" @bind-Value="period.EndDate" class="form-control" />
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="capacity" class="form-label">Kapacitet</label>
+                                    <InputNumber id="capacity" @bind-Value="period.Capacity" class="form-control" />
+                                    <ValidationMessage For="@(() => period.Capacity)" />
+                                </div>
+
+                                <div class="col-md-12 text-end">
+                                    <button type="button" class="btn btn-danger mt-2" @onclick="() => RemovePeriod(city, week, period)">Fjern Periode</button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div class="text-end mb-3">
+                        <button type="button" class="btn btn-primary" @onclick="() => AddPeriod(city, week)">Tilføj Periode</button>
+                    </div>
+                }
+                <div class="text-end mb-3">
+                    <button type="button" class="btn btn-primary" @onclick="() => AddWeek(city)">Tilføj Uge</button>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="text-center mb-4">
+        <button type="button" class="btn btn-primary" @onclick="AddCity">Tilføj Lokation</button>
+    </div>
+
+    <div class="text-center">
+        <button type="submit" class="btn btn-success">Gem</button>
+    </div>
+</EditForm>
+
+@code {
+    // Variabel til at håndtere formularindsendelse og validering.
+    private EditContext aEditContext;
+
+    // Liste over byer.
+    private List<City> cities = new List<City>();
+
+    // Metode kaldet ved komponentinitialisering.
+    protected override void OnInitialized()
+    {
+        // Initialiserer EditContext med listen over byer.
+        aEditContext = new EditContext(cities);
+        // Tilføjer en ny by, når komponenten initialiseres.
+        AddCity();
+    }
+
+    // Asynkron metode til at håndtere gyldig formularindsendelse.
+    public async Task HandleValidSubmit()
+    {
+        // Validerer formularen.
+        if (!aEditContext.Validate())
+        {
+            Console.WriteLine("Form contains validation errors.");
+            return;
+        }
+
+        // Itererer gennem listen over byer.
+        foreach (var city in cities)
+        {
+            // Tjekker om bynavnet ikke er null eller tomt.
+            if (string.IsNullOrEmpty(city.Name))
+            {
+                Console.WriteLine("The city field is required.");
+                return;
+            }
+
+            // Sender en POST-anmodning til API'et for at oprette en ny by.
+            var response = await Http.PostAsJsonAsync("https://localhost:7026/api/City/create", city);
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("System settings saved successfully");
+            }
+            else
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Failed to save system settings: {response.StatusCode} - {responseContent}");
+            }
+        }
+        // Navigerer til "brugeroversigt" siden ved succes.
+        navigationManager.NavigateTo("brugeroversigt");
+    }
+
+    // Metode til at tilføje en periode til en uge i en by.
+    private void AddPeriod(City city, Week week)
+    {
+        // Initialiserer listen af perioder, hvis den er null.
+        if (week.Periods == null)
+        {
+            week.Periods = new List<Period>();
+        }
+        // Tilføjer en ny periode til ugen.
+        week.Periods.Add(new Period());
+    }
+
+    // Metode til at fjerne en periode fra en uge i en by.
+    private void RemovePeriod(City city, Week week, Period period)
+    {
+        // Fjerner den angivne periode fra listen af perioder.
+        week.Periods.Remove(period);
+        // Fjerner ugen fra byens liste af uger, hvis der ikke er flere perioder.
+        if (week.Periods.Count == 0)
+        {
+            city.Weeks.Remove(week);
+        }
+    }
+
+    // Metode til at tilføje en uge til en by.
+    private void AddWeek(City city)
+    {
+        // Tilføjer en ny uge med en tom liste af perioder til byens liste af uger.
+        city.Weeks.Add(new Week { Periods = new List<Period> { new Period() } });
+    }
+
+    // Metode til at tilføje en ny by.
+    private void AddCity()
+    {
+        // Tilføjer en ny by med en tom liste af uger og perioder til listen over byer.
+        cities.Add(new City { Weeks = new List<Week> { new Week { Periods = new List<Period> { new Period() } } } });
+    }
+
+    // Metode til at fjerne en by fra listen over byer.
+    private void RemoveCity(City city)
+    {
+        // Fjerner den angivne by fra listen over byer.
+        cities.Remove(city);
+    }
+
+}

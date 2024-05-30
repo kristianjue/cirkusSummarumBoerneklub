@@ -1,0 +1,388 @@
+﻿@page "/edit-application/{applicationId}"
+@using Core
+@inject NavigationManager navigationManager
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+<AdminRestriction></AdminRestriction>
+<PageTitle>Rediger Ansøgning</PageTitle>
+
+<h1>Rediger Ansøgning</h1>
+
+<h3>Forældre:</h3>
+
+<EditForm EditContext="@aEditContext" class="row p-3" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="row" style="margin-bottom: 30px">
+        <div class="col-md-6 mb-3">
+            <label for="fullName">Fulde navn</label>
+            <InputText id="fullName" @bind-Value="_existingApplication.Volunteer.Name" class="form-control" />
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="email">Email</label>
+            <InputText id="email" @bind-Value="_existingApplication.Volunteer.Email" class="form-control" />
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="phoneNumber">Telefonnummer</label>
+            <InputNumber id="phoneNumber" @bind-Value="_existingApplication.Volunteer.PhoneNumber" class="form-control" />
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="memberNumber">Krævnummer</label>
+            <InputNumber id="memberNumber" @bind-Value="_existingApplication.Volunteer.KrævNumber" class="form-control" />
+        </div>
+    </div>
+
+    @foreach (var child in _existingApplication.Volunteer.Children)
+    {
+        <h3>Barn @(child == _existingApplication.Volunteer.Children.First() ? 1 : 2):</h3>
+        <div class="row" style="margin-bottom: 30px">
+            <div class="col-md-3 mb-3">
+                <label for="kidName">Barnets navn</label>
+                <InputText id="kidName" @bind-Value="child.Name" class="form-control" />
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="kidAge">Alder</label>
+                <InputSelect id="kidAge" @bind-Value="child.Age" class="form-control">
+                    <option value="5">5 år</option>
+                    <option value="6">6 år</option>
+                    <option value="7">7 år</option>
+                    <option value="8">8 år</option>
+                    <option value="9">9 år</option>
+                    <option value="10">10 år</option>
+                    <option value="11">11 år</option>
+                    <option value="12">12 år</option>
+                    <option value="13">13 år</option>
+                    <option value="14">14 år</option>
+                    <option value="15">15 år</option>
+                </InputSelect>
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="kidSize">T-shirt størrelse</label>
+                <InputSelect id="kidSize" @bind-Value="child.Size" class="form-control">
+                    <option value="XXS">XXS</option>
+                    <option value="XS">XS</option>
+                    <option value="S">S</option>
+                    <option value="M">M</option>
+                    <option value="L">L</option>
+                    <option value="XL">XL</option>
+                </InputSelect>
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="beenThereBefore">Har været med før?</label>
+                <InputSelect id="beenThereBefore" @bind-Value="child.beenThereBefore" class="form-control">
+                    <option value="Nej">Nej</option>
+                    <option value="Ja">Ja</option>
+                </InputSelect>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="comment">Kommentar</label>
+                <InputTextArea id="comment" @bind-Value="child.comment" class="form-control" placeholder="Diagnoser, allergener samt evt. hensyn"></InputTextArea>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="interests">Interesser</label>
+                <InputTextArea id="interests" @bind-Value="child.interests" class="form-control" placeholder="F.eks. sport, musik, læsning..."></InputTextArea>
+            </div>
+        @if (_existingApplication.Volunteer.Children.Count >= 2)
+        {
+            <div class="col-12 text-end">
+                <button type="button" class="btn btn-danger" @onclick="() => RemoveChild(child)">Fjern barn</button>
+            </div>
+        }
+        </div>
+    }
+
+    @if (_existingApplication.Volunteer.Children.Count < 2)
+    {
+        <div class="row" style="margin-bottom: 50px; text-align: center">
+            <div class="col-12">
+                <button type="button" class="btn btn-primary" @onclick="AddChild" style="margin-top: 10px">Tilføj barn</button>
+            </div>
+        </div>
+    }
+
+    <h3>Pasnings Ønske - 1. prioritet</h3>
+    <div class="row" style="margin-bottom: 30px">
+        <div class="col-md-6 mb-3">
+            <label for="city1">By</label>
+            <InputSelect @bind-Value="_selectedCityId1" @oninput="OnCityChanged" id="city1" class="form-control">
+                @if (_selectedCityId1 == null)
+                {
+                    <option value="" disabled selected></option>
+                }
+                @if (_cities != null)
+                {
+                    @foreach (var city in _cities)
+                    {
+                        <option value="@city.Name">@city.Name</option>
+                    }
+                }
+            </InputSelect>
+        </div>
+
+        @if (_selectedCityId1 != null)
+        {
+            <div class="col-md-6 mb-3">
+                <label for="Priority1">Periode</label>
+                <InputSelect id="Priority1" @bind-Value="_existingApplication.Priority1" class="form-control">
+                    <option value="">Vælg periode</option> <!-- Tilføj denne linje -->
+                    @if (_filteredPeriodsFirst != null)
+                    {
+                        @foreach (var period in _filteredPeriodsFirst)
+                        {
+                            <option value="@period.PeriodName">@period.PeriodName</option>
+                        }
+                    }
+                    else
+                    {
+                        <option value="">No periods available</option>
+                    }
+                </InputSelect>
+            </div>
+        }
+    </div>
+
+    @if (_showSecondPriority)
+    {
+        <h3>Pasnings Ønske - 2. prioritet</h3>
+        <div class="row" style="margin-bottom: 30px">
+            <div class="col-md-6 mb-3">
+                <label for="city2">By</label>
+                <InputSelect id="city2" @bind-Value="_selectedCityId2" @oninput="OnSecondaryCityChanged" class="form-control">
+                    @if (_selectedCityId2 == null)
+                    {
+                        <option value="" disabled selected></option>
+                    }
+
+                    @if (_cities != null)
+                    {
+                        @foreach (var city in _cities)
+                        {
+                            <option value="@city.Name">@city.Name</option>
+                        }
+                    }
+                </InputSelect>
+            </div>
+
+            @if (_selectedCityId2 != null)
+            {
+                <div class="col-md-6 mb-3">
+                    <label for="Priority2">Periode</label>
+                    <InputSelect id="Priority2" @bind-Value="_existingApplication.Priority2" class="form-control">
+                        <option value="">Vælg periode</option>
+                        @if (_filteredPeriodsSecond != null && _filteredPeriodsSecond.Any())
+                        {
+                            @foreach (var period in _filteredPeriodsSecond)
+                            {
+                                <option value="@period.PeriodName">@period.PeriodName</option>
+                            }
+                        }
+                        else
+                        {
+                            <option value="">No periods available</option>
+                        }
+                    </InputSelect>
+                </div>
+            }
+            <div class="col-12 text-center">
+                <button type="button" class="btn btn-danger" @onclick="HideSecondPriority">Fjern 2. prioritet</button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div style="margin-bottom: 50px">
+            <button type="button" class="btn btn-secondary" @onclick="ShowSecondPriority">Tilføj 2. prioritet</button>
+        </div>
+    }
+
+
+
+    <div class="row" style="margin-bottom: 50px; text-align: center">
+        <div class="col-12 mb-3">
+            <br />
+            <button type="submit" class="btn btn-success" style="margin-top: 10px">Opdater ansøgning</button>
+        </div>
+    </div>
+</EditForm>
+
+
+@code {
+        // Parameter til at modtage applicationId som en offentlig egenskab.
+        [Parameter] public string applicationId { get; set; }
+
+// Initialisering af en eksisterende applikation med en frivillig og et barn.
+private Application _existingApplication = new Application
+{
+    Volunteer = new Volunteer
+    {
+        Children = new List<Child> { new Child() }
+    }
+};
+
+    // EditContext bruges til at håndtere formularindsendelse og validering.
+    private EditContext aEditContext;
+
+    // Liste over byer, der skal indlæses fra en ekstern kilde.
+    private List<City> _cities = new List<City>();
+
+    // Valgte by-id'er for primær og sekundær by.
+    private string _selectedCityId1;
+    private string _selectedCityId2;
+
+    // Filtrerede perioder baseret på den valgte by.
+    private List<Period> _filteredPeriodsFirst = new();
+    private List<Period> _filteredPeriodsSecond = new();
+
+    // Boolsk værdi til at vise eller skjule sekundær prioritet.
+    private bool _showSecondPriority = false;
+
+    // Metode kaldet ved komponentinitialisering.
+    protected override async Task OnInitializedAsync()
+    {
+        // Initialiserer EditContext med den eksisterende applikation.
+        aEditContext = new EditContext(_existingApplication);
+        // Indlæser byer og applikationsdata asynkront.
+        await LoadCities();
+        await LoadApplicationData();
+    }
+
+    // Asynkron metode til at indlæse byer fra en ekstern kilde.
+    private async Task LoadCities()
+    {
+        try
+        {
+            // Henter listen over aktive byer fra API'et.
+            _cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getallactive");
+        }
+        catch (Exception ex)
+        {
+            // Logger en fejlmeddelelse, hvis der opstår en fejl under indlæsning af byer.
+            Console.WriteLine($"Error loading cities: {ex.Message}");
+        }
+    }
+
+    // Asynkron metode til at indlæse applikationsdata fra en ekstern kilde.
+    private async Task LoadApplicationData()
+    {
+        try
+        {
+            // Henter applikationsdata fra API'et baseret på applicationId.
+            _existingApplication = await Http.GetFromJsonAsync<Application>($"https://localhost:7026/api/application/get/{applicationId}");
+            // Sætter den valgte by-id til den eksisterende applikations bynavn.
+            _selectedCityId1 = _existingApplication.City?.Name;
+            // Hvis der er en valgt by, opdateres perioderne.
+            if (!string.IsNullOrEmpty(_selectedCityId1))
+            {
+                OnCityChanged(); // Opdater perioder ved første indlæsning
+            }
+        }
+        catch (Exception ex)
+        {
+            // Logger en fejlmeddelelse, hvis der opstår en fejl under indlæsning af applikationsdata.
+            Console.WriteLine($"Error fetching application data: {ex.Message}");
+        }
+    }
+
+    // Metode kaldet, når den primære by ændres.
+    private void OnCityChanged()
+    {
+        // Finder den valgte by i listen over byer baseret på bynavn.
+        var selectedCity = _cities.FirstOrDefault(city => city.Name == _selectedCityId1);
+        if (selectedCity != null)
+        {
+            // Sætter byfeltet i den eksisterende applikation til den valgte by.
+            _existingApplication.City = selectedCity;
+            // Filtrerer perioderne for den valgte by og gemmer dem i _filteredPeriodsFirst.
+            _filteredPeriodsFirst = selectedCity.Weeks.SelectMany(week => week.Periods).ToList();
+        }
+        else
+        {
+            // Rydder listen over filtrerede perioder, hvis byen ikke findes.
+            _filteredPeriodsFirst.Clear();
+        }
+        // Opdaterer UI'et for at afspejle ændringerne.
+        StateHasChanged();
+    }
+
+    // Metode kaldet, når den sekundære by ændres.
+    private void OnSecondaryCityChanged()
+    {
+        // Finder den valgte sekundære by i listen over byer baseret på bynavn.
+        var selectedCity = _cities.FirstOrDefault(city => city.Name == _selectedCityId2);
+        if (selectedCity != null)
+        {
+            // Filtrerer perioderne for den valgte by og gemmer dem i _filteredPeriodsSecond.
+            _filteredPeriodsSecond = selectedCity.Weeks.SelectMany(week => week.Periods).ToList();
+        }
+        else
+        {
+            // Rydder listen over filtrerede perioder, hvis byen ikke findes.
+            _filteredPeriodsSecond.Clear();
+        }
+        // Opdaterer UI'et for at afspejle ændringerne.
+        StateHasChanged();
+    }
+
+    // Metode til at vise sekundær prioritet og vælge en sekundær by.
+    private void ShowSecondPriority()
+    {
+        // Sætter flaget til at vise sekundær prioritet.
+        _showSecondPriority = true;
+        // Vælger en sekundær by, som ikke er den samme som den primære by.
+        _selectedCityId2 = _cities.FirstOrDefault(city => city.Name != _selectedCityId1)?.Name;
+        // Opdaterer perioderne for den sekundære by.
+        OnSecondaryCityChanged();
+    }
+
+    // Metode til at skjule sekundær prioritet og rydde relevante felter.
+    private void HideSecondPriority()
+    {
+        // Sætter flaget til at skjule sekundær prioritet.
+        _showSecondPriority = false;
+        // Nulstiller sekundær prioritet i den eksisterende applikation.
+        _existingApplication.Priority2 = null;
+        // Nulstiller den valgte sekundære by-id.
+        _selectedCityId2 = null;
+        // Rydder listen over filtrerede perioder for den sekundære by.
+        _filteredPeriodsSecond.Clear();
+    }
+
+    // Metode til at håndtere formularindsendelse og opdatere applikationen.
+    public async Task HandleValidSubmit()
+    {
+        // Sender en PUT-anmodning til API'et for at opdatere applikationen.
+        var response = await Http.PutAsJsonAsync($"https://localhost:7026/api/application/update/{applicationId}", _existingApplication);
+        if (response.IsSuccessStatusCode)
+        {
+            // Navigerer til oversigtssiden, hvis anmodningen var succesfuld.
+            navigationManager.NavigateTo("/oversigt");
+        }
+        else
+        {
+            // Henter fejlmeddelelsen fra responsen og logger den, hvis anmodningen fejlede.
+            var responseContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Failed to update application: {response.StatusCode} - {responseContent}"); 
+        }
+    }
+
+    // Metode til at tilføje et barn til listen over børn i applikationen.
+    public void AddChild()
+    {
+        // Tilføjer et nyt barn, hvis der er mindre end 2 børn.
+        if (_existingApplication.Volunteer.Children.Count < 2)
+        {
+            _existingApplication.Volunteer.Children.Add(new Child()); // Tilføjer et nyt barn til listen.
+        }
+    }
+
+    // Metode til at fjerne et barn fra listen over børn i applikationen.
+    public void RemoveChild(Child child)
+    {
+        // Fjerner det angivne barn fra listen over børn.
+        _existingApplication.Volunteer.Children.Remove(child);
+    }
+}
+
+
+
+

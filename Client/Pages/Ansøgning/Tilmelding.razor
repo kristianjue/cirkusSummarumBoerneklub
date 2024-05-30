@@ -1,0 +1,483 @@
+﻿@page "/"
+@inject NavigationManager navigationManager
+@inject HttpClient Http
+@using Core
+@using System.Text.Json
+@using System.Net
+
+<PageTitle>Børneklub tilmelding</PageTitle>
+
+<div style="text-align: center; margin-bottom: 50px">
+    <h1>Børneklub tilmelding</h1>
+    <p>Her kan du tilmelde børn til børnepasning. Du skal være tilmeldt de uger, hvor du søger pasning. Hvis du kan deltage i uge 28 eller 29, skal du tilmelde begge uger og derefter vælge 1. og 2. prioritet. Kan du kun deltage i én uge, vælger du ingen anden prioritet.</p>
+</div>
+
+<EditForm EditContext="@aEditContext" class="row p-3" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <h3>Forældre:</h3>
+    <div class="row" style="margin-bottom: 30px">
+        <div class="col-md-6 mb-3">
+            <label for="fullName">Fulde navn</label>
+            <InputText id="fullName" @bind-Value="_newTilmelding.Volunteer.Name" class="form-control" />
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="email">Email</label>
+            <InputText id="email" @bind-Value="_newTilmelding.Volunteer.Email" class="form-control" />
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="phoneNumber">Telefonnummer</label>
+            <InputNumber min="0" id="phoneNumber" @bind-Value="_newTilmelding.Volunteer.PhoneNumber" class="form-control"  />
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="memberNumber">Krævnummer</label>
+            <InputNumber min="0" id="memberNumber" @bind-Value="_newTilmelding.Volunteer.KrævNumber" class="form-control" />
+        </div>
+    </div>
+
+    @if (ekstraKid == false)
+    {
+        <h3>Barn:</h3>
+    }
+    else
+    {
+        <h3>Barn 1:</h3>
+    }
+
+    <div class="row" style="margin-bottom: 30px">
+        <div class="col-md-3 mb-3">
+            <label for="kidName">Barnets navn</label>
+            <InputText id="kidName" @bind-Value="kid1.Name" class="form-control" />
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="kidAge">Alder</label>
+            <InputSelect id="kidAge" @bind-Value="kid1.Age" class="form-control">
+                @if(kid1.Age == null){<option value="" disabled></option>}
+                <option value="5">5 år</option>
+                <option value="6">6 år</option>
+                <option value="7">7 år</option>
+                <option value="8">8 år</option>
+                <option value="9">9 år</option>
+                <option value="10">10 år</option>
+                <option value="11">11 år</option>
+                <option value="12">12 år</option>
+                <option value="13">13 år</option>
+                <option value="14">14 år</option>
+                <option value="15">15 år</option>
+            </InputSelect>
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="kidSize">T-shirt størrelse</label>
+            <InputSelect id="kidSize" @bind-Value="kid1.Size" class="form-control">
+                @if(kid1.Size == null){<option value="" disabled selected="selected"></option>}
+                <option value="110-116">110-116</option>
+                <option value="122-128">122-128</option>
+                <option value="134-140">134-140</option>
+                <option value="146-152">146-152</option>
+                <option value="158-164">158-164</option>
+                <option value="XS">XS</option>
+                <option value="S">S</option>
+            </InputSelect>
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="beenThereBefore">Har været med før?</label>
+            <InputSelect @bind-Value="kid1.beenThereBefore" class="form-control">
+                @if(kid1.beenThereBefore == null){<option value="" disabled selected="selected"></option>}
+                <option value="Nej">Nej</option>
+                <option value="Ja">Ja</option>
+            </InputSelect>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="comment">Kommentar</label>
+            <InputTextArea id="comment" @bind-Value="kid1.comment" class="form-control" placeholder="Diagnoser, allergener samt evt. hensyn"></InputTextArea>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="interests">Interesser</label>
+            <InputTextArea id="interests" @bind-Value="kid1.interests" class="form-control" placeholder="F.eks. sport, musik, læsning..."></InputTextArea>
+        </div>
+
+        <div class="row" style="margin-top: 10px; text-align: center">
+            <div class="col-12 mb-3">
+                <input type="checkbox" name="confirm1" />
+                <label for="confirm">Jeg er indforstået med, og giver tilladelse til, at mit barn opholder sig og deltager i Cirkus Summarums Børneklub</label>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-3"></div>
+            <div class="col-6">
+                <h4 style="text-align: center;margin-bottom: 10px;">Underskrift</h4>
+                <SignaturePad @bind-Value="SignatureForKid1" style="width: 100%;background-color: #F7F7F7" />
+            </div>
+        </div>
+    </div>
+
+    @if (ekstraKid == false)
+    {
+        <div style="margin-bottom: 50px">
+            <button type="button" class="btn btn-primary" @onclick="addKid" style="margin-top: 10px">Tilføj barn</button>
+        </div>
+    }
+
+    @if (ekstraKid == true)
+    {
+        <h3>Barn 2:</h3>
+        <div class="row" style="margin-bottom: 30px">
+            <div class="col-md-3 mb-3">
+                <label for="kidName">Barnets navn</label>
+                <InputText id="kidName" @bind-Value="kid2.Name" class="form-control" />
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="kidAge">Alder</label>
+                <InputSelect id="kidAge" @bind-Value="kid2.Age" class="form-control">
+                    @if(kid2.Age == null){<option value="" disabled selected="selected"></option>}
+                    <option value="5">5 år</option>
+                    <option value="6">6 år</option>
+                    <option value="7">7 år</option>
+                    <option value="8">8 år</option>
+                    <option value="9">9 år</option>
+                    <option value="10">10 år</option>
+                    <option value="11">11 år</option>
+                    <option value="12">12 år</option>
+                    <option value="13">13 år</option>
+                    <option value="14">14 år</option>
+                    <option value="15">15 år</option>
+                </InputSelect>
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="kidSize">T-shirt størrelse</label>
+                <InputSelect id="kidSize" @bind-Value="kid2.Size" class="form-control">
+                    @if(kid2.Size == null){<option value="" disabled selected="selected"></option>}
+                    <option value="110-116">110-116</option>
+                    <option value="122-128">122-128</option>
+                    <option value="134-140">134-140</option>
+                    <option value="146-152">146-152</option>
+                    <option value="158-164">158-164</option>
+                    <option value="XS">XS</option>
+                    <option value="S">S</option>
+                    
+                </InputSelect>
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="beenThereBefore">Har været med før?</label>
+                <InputSelect id="beenThereBefore" @bind-Value="kid2.beenThereBefore" class="form-control">
+                    @if(kid2.beenThereBefore == null){<option value="" disabled selected="selected"></option>}
+                    <option value="Nej">Nej</option>
+                    <option value="Ja">Ja</option>
+                </InputSelect>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="comment">Kommentar</label>
+                <InputTextArea id="comment" @bind-Value="kid2.comment" class="form-control" placeholder="Diagnoser, allergener samt evt. hensyn"></InputTextArea>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="interests">Interesser</label>
+                <InputTextArea id="interests" @bind-Value="kid2.interests" class="form-control" placeholder="F.eks. sport, musik, læsning..."></InputTextArea>
+            </div>
+
+            <div class="row" style="margin-top: 10px; text-align: center">
+                <div class="col-12 mb-3">
+                    <input type="checkbox" name="confirm1" />
+                    <label for="confirm">Jeg er indforstået med, og giver tilladelse til, at mit barn opholder sig og deltager i Cirkus Summarums Børneklub.</label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-3"></div>
+                <div class="col-6">
+                    <h4 style="text-align: center;margin-bottom: 10px;">Underskrift</h4>
+                    <SignaturePad @bind-Value="SignatureForKid2" style="width: 100%;background-color: #F7F7F7;" />
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 50px">
+            <button type="button" class="btn btn-danger" @onclick="removeKid" style="margin-top: 10px">Fjern barn</button>
+        </div>
+    }
+
+    <h3>Pasnings Ønske - 1. prioritet</h3>
+    <div class="row" style="margin-bottom: 30px">
+        <div class="col-md-6 mb-3">
+            <label for="city1">By</label>
+            <InputSelect @bind-Value="_selectedCityId1" @oninput="OnCityChanged" id="city1" class="form-control">
+                @if(_selectedCityId1 == null){<option value="" disabled selected></option>}
+                @if (_cities != null)
+                {
+                    @foreach (var city in _cities)
+                    {
+                        <option value="@city.Name">@city.Name</option>
+                    }
+                }
+            </InputSelect>
+        </div>
+
+        @if (_selectedCityId1 != null)
+        {
+            <div class="col-md-6 mb-3">
+                <label for="Priority1">Periode</label>
+                <InputSelect id="Priority1" @bind-Value="_newTilmelding.Priority1" class="form-control">
+                    <option value="">Vælg periode</option> <!-- Tilføj denne linje -->
+                    @if (_filteredPeriodsFirst != null)
+                    {
+                        @foreach (var period in _filteredPeriodsFirst)
+                        {
+                            <option value="@period.PeriodName">@period.PeriodName</option>
+                        }
+                    }
+                    else
+                    {
+                        <option value="">No periods available</option>
+                    }
+                </InputSelect>
+            </div>
+        }
+    </div>
+
+    @if (_showSecondPriority)
+    {
+        <h3>Pasnings Ønske - 2. prioritet</h3>
+        <div class="row" style="margin-bottom: 30px">
+            <div class="col-md-6 mb-3">
+                <label for="city2">By</label>
+                <InputSelect id="city2" @bind-Value="_selectedCityId2" @oninput="OnSecondaryCityChanged" class="form-control">
+                    @if(_selectedCityId2 == null){<option value="" disabled selected></option>}
+
+                    @if (_cities != null)
+                    {
+                        @foreach (var city in _cities)
+                        {
+                            <option value="@city.Name">@city.Name</option>
+                        }
+                    }
+                </InputSelect>
+            </div>
+
+            @if(_selectedCityId2 != null){
+                <div class="col-md-6 mb-3">
+                    <label for="Priority2">Periode</label>
+                    <InputSelect id="Priority2" @bind-Value="_newTilmelding.Priority2" class="form-control">
+                        <option value="">Vælg periode</option>
+                        @if (_filteredPeriodsSecond != null && _filteredPeriodsSecond.Any())
+                        {
+                            @foreach (var period in _filteredPeriodsSecond)
+                            {
+                                <option value="@period.PeriodName">@period.PeriodName</option>
+                            }
+                        }
+                        else
+                        {
+                            <option value="">No periods available</option>
+                        }
+                    </InputSelect>
+                </div>
+            }
+            <div class="col-12 text-center">
+                <button type="button" class="btn btn-danger" @onclick="HideSecondPriority">Fjern 2. prioritet</button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div style="margin-bottom: 50px">
+            <button type="button" class="btn btn-secondary" @onclick="ShowSecondPriority">Tilføj 2. prioritet</button>
+        </div>
+    }
+
+    <div class="row" style="margin-bottom: 50px; text-align: center">
+        <div class="col-12 mb-3">
+            <input type="checkbox" name="confirm2" />
+            <label for="confirm">Jeg bekræfter at jeg er tilmeldt den/de uger jeg ansøger om pasning.</label>
+            <br />
+            <button type="submit" class="btn btn-success" style="margin-top: 10px">Send ansøgning</button>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private EditContext aEditContext; // EditContext for form
+    private List<City> _cities; // Liste af byer
+    private string _selectedCityId1; // Valgt by
+    private string _selectedCityId2; // Valgt by
+    private List<Period> _filteredPeriodsFirst = new(); // Filtreret liste af perioder
+    private List<Period> _filteredPeriodsSecond = new(); // Filtreret liste af perioder
+    private bool _showSecondPriority = false; // Vis 2. prioritet
+
+    Application _newTilmelding = new(); // Ny tilmelding
+
+    protected override async Task OnInitializedAsync() // Initialisering
+    {
+        _newTilmelding.Volunteer = new Volunteer(); // Initialiser ny frivillig
+        _newTilmelding.Volunteer.Children = new List<Child>(); // Initialiser liste af børn
+        _newTilmelding.Type = "Børneklubben"; // Sæt type ved initialisering
+        aEditContext = new EditContext(_newTilmelding); // Initialiser EditContext med ny tilmelding som argument
+
+        await LoadCity(); // Hent byer
+    }
+
+    private async Task LoadCity() // metode til at hente byer
+    {
+        _cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getallactive"); // hent byer fra API med en liste af áf klassen City
+    }
+
+    private void OnCityChanged(ChangeEventArgs e)
+    {
+        // Konverterer værdien fra ChangeEventArgs til en streng og tildeler den til _selectedCityId1.
+        // Hvis e.Value er null, bruges en tom streng i stedet.
+        _selectedCityId1 = e.Value?.ToString() ?? string.Empty;
+
+        // Finder den første by i listen _cities, hvis navn matcher _selectedCityId1.
+        var selectedCity = _cities.FirstOrDefault(city => city.Name == _selectedCityId1);
+
+        // Hvis en matchende by findes:
+        if (selectedCity != null)
+        {
+            // Sætter byens egenskab på _newTilmelding til den valgte by.
+            _newTilmelding.City = selectedCity;
+
+            // Filtrerer perioder fra alle uger i den valgte by og gemmer dem i _filteredPeriodsFirst.
+            _filteredPeriodsFirst = selectedCity.Weeks.SelectMany(week => week.Periods).ToList();
+
+            // Hvis der findes nogen perioder i _filteredPeriodsFirst:
+            if (_filteredPeriodsFirst.Any())
+            {
+                // Skriver antallet af fundne perioder og bynavnet til konsollen.
+                Console.WriteLine($"{_filteredPeriodsFirst.Count} periods found for city {_selectedCityId1}");
+            }
+            else
+            {
+                // Hvis ingen perioder blev fundet, skrives en besked til konsollen.
+                Console.WriteLine("No periods found for the selected city");
+            }
+        }
+        else
+        {
+            // Hvis den valgte by ikke blev fundet i listen, skrives en besked til konsollen.
+            Console.WriteLine("Selected city not found in the list");
+        }
+    }
+
+
+    private void OnSecondaryCityChanged(ChangeEventArgs e)
+    {
+        // Konverterer værdien fra ChangeEventArgs til en streng og tildeler den til _selectedCityId2.
+        // Hvis e.Value er null, bruges en tom streng i stedet.
+        _selectedCityId2 = e.Value?.ToString() ?? string.Empty;
+
+        // Finder den første by i listen _cities, hvis navn matcher _selectedCityId2.
+        var selectedCity = _cities.FirstOrDefault(city => city.Name == _selectedCityId2);
+
+        // Hvis en matchende by findes:
+        if (selectedCity != null)
+        {
+            // Filtrerer perioder fra alle uger i den valgte by og gemmer dem i _filteredPeriodsSecond.
+            _filteredPeriodsSecond = selectedCity.Weeks.SelectMany(week => week.Periods).ToList();
+
+            // Hvis der findes nogen perioder i _filteredPeriodsSecond:
+            if (_filteredPeriodsSecond.Any())
+            {
+                // Skriver antallet af fundne perioder og bynavnet til konsollen.
+                Console.WriteLine($"{_filteredPeriodsSecond.Count} periods found for city {_selectedCityId2}");
+            }
+            else
+            {
+                // Hvis ingen perioder blev fundet, skrives en besked til konsollen.
+                Console.WriteLine("No periods found for the selected city");
+            }
+        }
+        else
+        {
+            // Hvis den valgte by ikke blev fundet i listen, skrives en besked til konsollen.
+            Console.WriteLine("Selected city not found in the list");
+        }
+    }
+
+
+    private void ShowSecondPriority() // Vis 2. prioritet
+    {
+        _showSecondPriority = true; // Sæt _showSecondPriority til true
+    }
+
+    private void HideSecondPriority() // Metode til at skjule 2. prioritet
+    {
+        _showSecondPriority = false; // Sæt _showSecondPriority til false
+        _newTilmelding.Priority2 = null; // Nulstil 2. prioritet
+        _selectedCityId2 = null; // Nulstil valgt by
+        _filteredPeriodsSecond.Clear(); // Ryd filtrerede perioder
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        // Tjekker om listen over børn ikke er null og rydder den, hvis der er nogen børn i listen.
+        if (_newTilmelding.Volunteer.Children.Count != null)
+        {
+            _newTilmelding.Volunteer.Children.Clear();
+        }
+
+        // Hvis der ikke er et ekstra barn, tilføjes det første barn med sin signatur.
+        if (ekstraKid == false)
+        {
+            // Sætter signaturen for det første barn.
+            kid1.Signature = SignatureForKid1AsBase64;
+            // Tilføjer det første barn til listen over børn i _newTilmelding.Volunteer.
+            _newTilmelding.Volunteer.Children.Add(kid1);
+        }
+        else
+        {
+            // Sætter signaturerne for begge børn.
+            kid1.Signature = SignatureForKid1AsBase64;
+            kid2.Signature = SignatureForKid2AsBase64;
+            // Tilføjer begge børn til listen over børn i _newTilmelding.Volunteer.
+            _newTilmelding.Volunteer.Children.Add(kid1);
+            _newTilmelding.Volunteer.Children.Add(kid2);
+        }
+
+        // Genererer nye unikke ID'er for tilmeldingen og frivillige.
+        _newTilmelding.Id = System.Guid.NewGuid().ToString();
+        _newTilmelding.Volunteer.Id = Guid.NewGuid().ToString();
+        // Sætter status for tilmeldingen til "Ny".
+        _newTilmelding.Status = "Ny";
+
+        // Sender _newTilmelding som JSON til den angivne URL via en HTTP POST-anmodning.
+        var response = await Http.PostAsJsonAsync<Application>($"https://localhost:7026/api/application/create", _newTilmelding);
+
+        // Tjekker om POST-anmodningen var succesfuld.
+        if (response.IsSuccessStatusCode)
+        {
+            // Navigerer til "ansøgningsbekræftelse" siden, hvis anmodningen var succesfuld.
+            navigationManager.NavigateTo($"ansøgningsbekræftelse");
+        }
+        else
+        {
+            // Henter fejlmeddelelsen fra responsen og skriver den til konsollen, hvis anmodningen fejlede.
+            var responseContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Failed to submit application: {response.StatusCode} - {responseContent}");
+        }
+    }
+
+
+    public Child kid1 = new Child(); // Initialiser barn 1
+    public Child kid2 = new Child(); // Initialiser barn 2
+
+    private bool ekstraKid = false; // Ekstra barn
+
+    private void addKid() // metode til at tilføje ekstra barn
+    {
+        ekstraKid = true; // Sæt ekstraKid til true
+    }
+
+    private void removeKid() // metode til at fjerne ekstra barn
+    {
+        ekstraKid = false; // Sæt ekstraKid til false
+    }
+
+    // Egenskab til at gemme signaturen for barn 1 som en byte-array.
+    // Initialiseres med en tom byte-array.
+    public byte[] SignatureForKid1 { get; set; } = Array.Empty<byte>();
+    public byte[] SignatureForKid2 { get; set; } = Array.Empty<byte>(); // Egenskab til at gemme signaturen for barn 2 som en byte-array.
+
+    // Egenskab, der returnerer signaturen for barn 1 som en Base64-kodet streng.
+    // Dette konverterer byte-array'en i SignatureForKid1 til en Base64-kodet streng ved hjælp af UTF8-kodning.
+    private string SignatureForKid1AsBase64 => System.Text.Encoding.UTF8.GetString(SignatureForKid1);
+    private string SignatureForKid2AsBase64 => System.Text.Encoding.UTF8.GetString(SignatureForKid2); // Egenskab, der returnerer signaturen for barn 2 som en Base64-kodet streng.
+}

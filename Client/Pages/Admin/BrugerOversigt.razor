@@ -3,6 +3,7 @@
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 
+<AdminRestriction></AdminRestriction>
 <div class="row">
     <div class="col-9">
             <h3 class="mb-0">Bruger oversigt</h3>
@@ -37,6 +38,7 @@
                                     <h5 class="card-title">@admin.Name</h5>
                                     <p class="card-text"><strong>Email:</strong> @admin.Email</p>
                                     <p class="card-text"><strong>Telefon:</strong> @admin.PhoneNumber</p>
+                                    <p class="card-text"><strong>Rolle:</strong> @admin.Role</p>
                                     <button class="btn btn-success" @onclick="() => ViewUser(admin.Email)">Se bruger</button>
                                 </div>
                             </div>
@@ -82,26 +84,35 @@
 </style>
 
 @code {
+    // Liste over alle administratorer.
     private List<Administrator> AllAdmins;
 
+    // Metode kaldet ved komponentinitialisering.
     protected override async Task OnInitializedAsync()
     {
+        // Henter alle administratorer asynkront.
         await GetAllAdmins();
     }
 
+    // Asynkron metode til at hente alle administratorer fra API'et.
     public async Task GetAllAdmins()
     {
+        // Sender en GET-anmodning til API'et og får resultatet som en liste over administratorer.
         AllAdmins = await Http.GetFromJsonAsync<List<Administrator>>("https://localhost:7026/api/admin/get-all");
     }
 
+    // Metode til at navigere til siden for at tilføje en ny administrator.
     private void AddNewUser()
     {
-        NavigationManager.NavigateTo("/tilføjadmin");
+        // Navigerer til siden "/nyadmin".
+        NavigationManager.NavigateTo("/nyadmin");
     }
-    
 
+    // Metode til at se en specifik administrator baseret på email.
     private void ViewUser(string email)
     {
+        // Navigerer til siden for den specifikke administrator ved hjælp af email.
         NavigationManager.NavigateTo($"/admin/{email}");
     }
+
 }

@@ -1,0 +1,327 @@
+﻿@page "/planlaegning"
+@using Core
+@using System.Net.Http
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject NavigationManager Navigation
+<StaffRestriction></StaffRestriction>
+<div class="admin-dashboard">
+    <div class="row justify-content-end" style="margin-bottom: 20px">
+        <div class="col-3">
+            <h5><label for="city">Lokation</label></h5>
+            <select name="city" class="form-select" @onchange="UpdateCity">
+                <option value="" disabled selected="selected"></option>
+                @foreach (var city in cities)
+                {
+                    <option value="@city.Name">@city.Name</option>
+                }
+            </select>
+        </div>
+    </div>
+    <div class="top-sections">
+        <div class="section">
+            <h3>Applikationer</h3>
+            @if (applications == null)
+            {
+                <p>Loading...</p>
+            }
+            else if (!applications.Any())
+            {
+                <p>No applications found.</p>
+            }
+            else
+            {
+                @foreach (var app in applications.Where(a => string.IsNullOrEmpty(a.Status) || a.Status == "Ny"))
+                {
+                    <div class="application">
+
+                        @app.Volunteer.Name <br /> @app.Volunteer.Email <br /> @app.Priority1 + @app.Priority2 <br /> @app.Volunteer.Children.Count børn
+                        <select @bind="app.SelectedStatus" @oninput="(e) => UpdateApplicationStatus(app, e.Value.ToString())" class="form-select">
+                            <option value="">Vælg uge</option>
+                            @foreach (var period in _filteredPeriods)
+                            {
+                                <option value="@period.PeriodName">@period.PeriodName</option>
+                            }
+                            <option value="Venteliste">Venteliste</option>
+                            <option value="Afvist">Afvist</option>
+                        </select>
+                    </div>
+                }
+
+            }
+        </div>
+
+        <div class="week-sections">
+            @if (!string.IsNullOrEmpty(selectedCity))
+            {
+                var city = cities.FirstOrDefault(c => c.Name == selectedCity);
+                if (city != null)
+                {
+                    @foreach (var week in city.Weeks)
+                    {
+                        <div class="section">
+                            <h3> @week.WeekName</h3>
+                            @foreach (var period in week.Periods)
+                            {
+                                <div class="sub-section">
+                                    <h4 style="color:@GetWeekColor(period.PeriodName)">@period.PeriodName (@GetChildrenCount(period.PeriodName) / @period.Capacity)</h4>
+                                    @foreach (var app in applications.Where(a => a.Status == period.PeriodName))
+                                    {
+                                        <div class="application">
+                                            @app.Volunteer.Name <br /> @app.Volunteer.Children.Count børn
+                                            <button class="btn btn-danger" @onclick="() => RemoveApplication(app)">Fortryd</button>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                }
+            }
+        </div>
+    </div>
+
+    <div class="bottom-sections">
+        <div class="section">
+            <h3>Venteliste</h3>
+            <div class="drop-zone">
+                @foreach (var app in applications.Where(a => a.Status == "Venteliste"))
+                {
+                    <div class="application">
+                        @app.Volunteer.Name <br /> @app.Volunteer.Children.Count børn
+                        <button class="btn btn-danger" @onclick="() => RemoveApplication(app)">Fortryd</button>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Afvist</h3>
+            <div class="drop-zone">
+                @foreach (var app in applications.Where(a => a.Status == "Afvist"))
+                {
+                    <div class="application">
+                        @app.Volunteer.Name <br /> @app.Volunteer.Children.Count børn
+                        <button class="btn btn-danger" @onclick="() => RemoveApplication(app)">Fortryd</button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <h3>Oversigt over ansøgninger pr. periode</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Periode</th>
+                    <th>Antal ansøgninger</th>
+                    <th>Kapacitet</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var period in _filteredPeriods)
+                {
+                    <tr>
+                        <td>@period.PeriodName</td>
+                        <td>@GetApplicationCountForPeriod(period.PeriodName)</td>
+                        <td>@period.Capacity</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="row justify-content-end" style="margin-top: 20px">
+        <div class="col-3">
+            <button class="btn btn-primary" @onclick="SaveChanges">Gem</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    // Liste over alle applikationer.
+    private List<Application> applications = new List<Application>();
+
+    // Liste over alle byer.
+    private List<City> cities = new List<City>();
+
+    // Liste over filtrerede perioder baseret på den valgte by.
+    private List<Period> _filteredPeriods = new List<Period>();
+
+    // Variabel til at gemme den valgte by.
+    private string selectedCity;
+
+    // Metode kaldet ved komponentinitialisering.
+    protected override async Task OnInitializedAsync()
+    {
+        // Indlæser byer.
+        await LoadCities();
+        // Indlæser applikationer.
+        await LoadApplications();
+    }
+
+    // Asynkron metode til at indlæse byer fra en ekstern kilde.
+    private async Task LoadCities()
+    {
+        // Henter listen over aktive byer fra API'et.
+        cities = await Http.GetFromJsonAsync<List<City>>("https://localhost:7026/api/City/getallactive");
+    }
+
+    // Asynkron metode til at indlæse applikationer fra en ekstern kilde.
+    private async Task LoadApplications()
+    {
+        try
+        {
+            // Henter alle applikationer fra API'et.
+            applications = await Http.GetFromJsonAsync<List<Application>>("https://localhost:7026/api/application/getall");
+            // Filtrerer applikationerne baseret på den valgte by.
+            FilterApplicationsByCity();
+        }
+        catch (Exception ex)
+        {
+            // Logger en fejlmeddelelse, hvis der opstår en fejl under indlæsning af applikationer.
+            Console.WriteLine($"Error loading applications: {ex.Message}");
+        }
+    }
+
+    // Asynkron metode kaldet, når den valgte by ændres.
+    private async Task UpdateCity(ChangeEventArgs e)
+    {
+        // Opdaterer den valgte by baseret på brugerens valg.
+        selectedCity = e.Value.ToString();
+        // Opdaterer de filtrerede perioder baseret på den valgte by.
+        await RefreshFilteredPeriods();
+        // Indlæser applikationerne igen baseret på den nye by.
+        await LoadApplications();
+    }
+
+    // Asynkron metode til at opdatere de filtrerede perioder baseret på den valgte by.
+    private async Task RefreshFilteredPeriods()
+    {
+        // Finder den valgte by i listen over byer.
+        var city = cities.FirstOrDefault(c => c.Name == selectedCity);
+        if (city != null)
+        {
+            // Henter opdaterede data for den valgte by fra API'et.
+            var updatedCity = await Http.GetFromJsonAsync<City>($"https://localhost:7026/api/City/get/{city.Name}");
+            if (updatedCity != null)
+            {
+                // Opdaterer byen i listen over byer.
+                var index = cities.IndexOf(city);
+                cities[index] = updatedCity;
+                // Opdaterer de filtrerede perioder baseret på opdaterede data.
+                _filteredPeriods = updatedCity.Weeks.SelectMany(w => w.Periods).ToList();
+                // Tvinger UI'et til at opdatere for at afspejle ændringerne.
+                StateHasChanged();
+            }
+        }
+    }
+
+    // Metode til at opdatere status for en applikation.
+    private void UpdateApplicationStatus(Application app, string newStatus)
+    {
+        Task.Run(() =>
+        {
+            // Opdaterer applikationens status.
+            app.Status = newStatus;
+            // Nulstiller den valgte status.
+            app.SelectedStatus = "";
+            // Tvinger UI'et til at opdatere for at afspejle ændringerne.
+            InvokeAsync(StateHasChanged);
+            // Logger en besked om opdatering af applikationens status.
+            Console.WriteLine($"Application {app.Id} status updated to {newStatus}");
+        });
+    }
+
+    // Metode til at fjerne en applikation fra den nuværende uge og returnere til applikationslisten.
+    private void RemoveApplication(Application app)
+    {
+        // Nulstiller applikationens status.
+        app.Status = "";
+        // Tvinger UI'et til at opdatere for at afspejle ændringen.
+        StateHasChanged();
+    }
+
+    // Asynkron metode til at gemme ændringer for alle applikationer.
+    private async Task SaveChanges()
+    {
+        foreach (var app in applications)
+        {
+            try
+            {
+                // Sender en PUT-anmodning til API'et for at opdatere applikationen.
+                var response = await Http.PutAsJsonAsync($"https://localhost:7026/api/application/update/{app.Id}", app);
+                if (!response.IsSuccessStatusCode)
+                {
+                    // Logger en fejlmeddelelse, hvis opdateringen fejlede.
+                    Console.WriteLine($"Error saving application {app.Id}: {response.ReasonPhrase}");
+                }
+                else
+                {
+                    // Logger en besked om succesfuld opdatering.
+                    Console.WriteLine($"Successfully saved application {app.Id}");
+                }
+            }
+            catch (Exception ex)
+            {
+                // Logger en fejlmeddelelse, hvis der opstår en undtagelse under opdateringen.
+                Console.WriteLine($"Exception saving application {app.Id}: {ex.Message}");
+            }
+        }
+        // Tvinger siden til at genindlæse for at hente friske data.
+        //Navigation.NavigateTo("/planlaegning", forceLoad: true);
+    }
+
+    // Metode til at tælle antallet af børn i en given periode.
+    private int GetChildrenCount(string periodName)
+    {
+        // Tæller antallet af børn i applikationer, der matcher perioden.
+        return applications.Where(a => a.Status == periodName).Sum(a => a.Volunteer.Children.Count);
+    }
+
+    // Metode til at tælle antallet af applikationer for en given periode.
+    private int GetApplicationCountForPeriod(string periodName)
+    {
+        // Tæller antallet af applikationer, der prioriterer den givne periode.
+        return applications.Count(a => a.Priority1 == periodName);
+    }
+
+    // Metode til at bestemme farven på en uge baseret på belægningsgraden.
+    private string GetWeekColor(string periodName)
+    {
+        // Finder perioden i de filtrerede perioder baseret på periodens navn.
+        var period = _filteredPeriods.FirstOrDefault(p => p.PeriodName == periodName);
+        if (period == null)
+        {
+            return "black"; // Standardfarve hvis perioden ikke findes.
+        }
+
+        // Tæller antallet af børn i perioden.
+        int childrenCount = GetChildrenCount(periodName);
+        // Beregner belægningsgraden.
+        double occupancyRate = (double)childrenCount / period.Capacity * 100;
+
+        if (occupancyRate == 0)
+        {
+            return "black"; // Ingen børn tildelt endnu.
+        }
+        if (occupancyRate <= 50)
+        {
+            return "green"; // Sikker rækkevidde.
+        }
+        if (occupancyRate <= 90)
+        {
+            return "orange"; // Advarselsområde.
+        }
+        return "red"; // Fuldt eller over kapacitet.
+    }
+
+    // Metode til at filtrere applikationerne baseret på den valgte by.
+    private void FilterApplicationsByCity()
+    {
+        // Filtrerer applikationerne baseret på byens navn.
+        applications = applications.Where(a => a.City.Name == selectedCity).ToList();
+    }
+
+}
