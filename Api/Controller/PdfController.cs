@@ -27,10 +27,10 @@ public class PdfController : ControllerBase
     public async Task<ActionResult> GeneratePdf(string ApplicationId)
     {
         
-        // Fetch or create the Signature object using the ApplicationId
+        // Henter en specifik ansøgning fra databasen ved hjælp af ApplicationId
         var application =  _applicationRepository.GetApplicationById(ApplicationId);
         
-        // Use the injected service to create a document
+        // Opretter en PDF-fil ud fra ansøgningen
         var document = _pdfForSignature.CreateDocumentForSpecifcApplication(application);
         
         // Generer PDF-fil og returner den som et svar
@@ -47,10 +47,10 @@ public class PdfController : ControllerBase
     public async Task<ActionResult> GenerateSignaturePdf(string SignatureId)
     {
         
-        // Fetch or create the Signature object using the ApplicationId
+        // Henter en specifik signatur fra databasen ved hjælp af SignatureId
         var signature = _signatureRepository.GetSignatureById(SignatureId);
         
-        // Use the injected service to create a document
+        // Opretter en PDF-fil ud fra signaturen
         var document = _pdfForSignature.CreateDocumentForSpecifcSignature(signature);
         
         // Generer PDF-fil og returner den som et svar
@@ -67,6 +67,7 @@ public class PdfController : ControllerBase
     
     public async Task<ActionResult> GenerateAll(string city, string period, string status)
     {
+        // Dekoder URL-parametrene
         string encodedCity = city;
         city = HttpUtility.UrlDecode(encodedCity);
         
@@ -76,10 +77,14 @@ public class PdfController : ControllerBase
         string encodedStatus = status;
         status = HttpUtility.UrlDecode(encodedStatus);
         
+        // Henter alle ansøgninger fra databasen, som opfylder de givne filtre
         var allApplications = _applicationRepository.GetApplicationsByfilter(city, period, status);
         
+        // Opretter en PDF-fil ud fra de fundne ansøgninger
         var document = _pdfForSignature.CreateDocumentForAllApplication(allApplications);
         
+        
+        // Generer PDF-fil og returner den som et svar
         using (var stream = new MemoryStream())
         {
             document.GeneratePdf(stream);
@@ -94,10 +99,15 @@ public class PdfController : ControllerBase
     
     public async Task<ActionResult> GenerateAllSignatures()
     {
+        // Henter alle signaturer fra databasen
         var allSignatures = _signatureRepository.GetAllSignatures();
 
+        
+        // Opretter en PDF-fil ud fra de fundne signaturer
         var document = _pdfForSignature.CreateDocumentForAllSignatures(allSignatures);
         
+        
+        // Generer PDF-fil og returner den som et svar
         using (var stream = new MemoryStream())
         {
             document.GeneratePdf(stream);
