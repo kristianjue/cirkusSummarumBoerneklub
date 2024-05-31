@@ -11,6 +11,5 @@ namespace Core
         [Required] public int KrævNumber { get; set; }
         [Required] public List<Child>? Children { get; set; }
         
-        public YoungVolunteer? YoungVolunteer { get; set; }
     }
 }
